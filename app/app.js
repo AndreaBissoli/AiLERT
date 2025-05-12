@@ -12,5 +12,8 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
+const authentication = require('./authentication');
+
+app.use('/api/v1/auth/login', authentication);
 
 module.exports = app;

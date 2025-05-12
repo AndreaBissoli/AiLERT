@@ -27,7 +27,7 @@ paths:
             examples:
               example1:
                 value:
-                  username: 'john.doe'
+                  email: 'john.doe@example.com'
                   password: 'securepassword123'
       responses:
         '200':
@@ -54,12 +54,12 @@ components:
     LoginRequest:
       type: object
       required:
-        - username
+        - email
         - password
       properties:
-        username:
+        email:
           type: string
-          description: User's username
+          description: User's email address
         password:
           type: string
           description: User's password
@@ -68,16 +68,12 @@ components:
     LoginResponse:
       type: object
       properties:
-        accessToken:
+        token:
           type: string
           description: JWT access token
-        tokenType:
-          type: string
-          description: Type of token (usually "Bearer")
-          default: Bearer
-        expiresIn:
-          type: integer
-          description: Token expiration time in seconds
+        success:
+          type: boolean
+          description: Whether the login was successful
 
     ErrorResponse:
       type: object
