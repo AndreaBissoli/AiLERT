@@ -1,0 +1,90 @@
+openapi: 3.0.4
+info:
+  version: '1.0'
+  title: "AiLERT API"
+  description: API for the AiLERT application.
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+  - url: https://example.com/api/v1
+    description: Production server
+
+paths:
+  /auth/login:
+    post:
+      summary: User Login
+      description: 
+        Authenticate user and generate JWT token. **IMPORTANT:** Ensure to use HTTPS in production for security.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              example1:
+                value:
+                  username: 'john.doe'
+                  password: 'securepassword123'
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: User's username
+        password:
+          type: string
+          description: User's password
+          format: password
+
+    LoginResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token
+        tokenType:
+          type: string
+          description: Type of token (usually "Bearer")
+          default: Bearer
+        expiresIn:
+          type: integer
+          description: Token expiration time in seconds
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        errorCode:
+          type: string
+          description: Specific error code for the failure
