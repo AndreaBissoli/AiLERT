@@ -1,0 +1,19 @@
+{
+  "name": "ailert",
+  "version": "1.0.0",
+  "description": "AiLERT è un progetto sviluppato per il corso di Ingegneria del Software presso l'Università di Trento",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node -r dotenv/config index.js",
+    "start": "node index.js"
+  },
+  "author": "Andrea Bissoli, Kuba Di Quattro, Bilal Soussane",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.14.2"
+  }
+}
