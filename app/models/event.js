@@ -9,12 +9,12 @@ const eventSchema = new mongoose.Schema({
     title: {
         type: String,
         required: true,
-        maxlenght: 100,
+        maxlength: 100,
     },
     description: {
         type: String,
         required: false,
-        maxlenght: 500,
+        maxlength: 500,
     },
     createdAt: {
         type: Date,
@@ -34,11 +34,11 @@ const eventSchema = new mongoose.Schema({
             type: String,
             required: true,
         },
-        required: true,
     },
     status:  {
+        type: String,
         enum: ['pending', 'solved', 'unsolved', 'false_alarm'],
-        default: 'pending',
+        //default: 'pending',
         required: true,
     },
     cameraId: {
@@ -61,7 +61,7 @@ const eventSchema = new mongoose.Schema({
     },
     notifiedServices: [{
         service: {
-            ditype: String,
+            type: String,
             enum: ['polizia', 'carabinieri', 'vigili_del_fuoco', 'ambulanza', 'protezione_civile'],
         },
         notifiedAt: {
