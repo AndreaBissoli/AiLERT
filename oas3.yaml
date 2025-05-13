@@ -108,6 +108,42 @@ paths:
                   value:
                     error: 'Invalid or expired token'
                     errorCode: 'INVALID_TOKEN'
+  /events:
+    get:
+      summary: Ottieni tutti gli eventi
+      description: Restituisce la lista di eventi. Richiede autenticazione.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista ottenuta con successo
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        '401':
+          description: Utente non autenticato
+    post:
+      summary: Crea un nuovo evento
+      description: Registra un nuovo evento (incidente o ingorgo). Richiede autenticazione.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+      responses:
+        '201':
+          description: Evento creato con successo
+        '400':
+          description: Errore nei dati inviati
+        '401':
+          description: Utente non autenticato
+
 
 components:
   securitySchemes:
@@ -150,3 +186,55 @@ components:
         errorCode:
           type: string
           description: Specific error code for the failure
+    
+    Event:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [incidente, ingorgo]
+        title:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        eventDate:
+          type: string
+          format: date-time
+        location:
+          type: object
+          properties:
+            address:
+              type: string
+        status:
+          type: string
+          enum: [pending, solved, unsolved, false_alarm]
+        cameraId:
+          type: string
+        videoUrl:
+          type: string
+        confirmed:
+          type: boolean
+        confirmedBy:
+          type: string
+        notifiedServices:
+          type: array
+          items:
+            type: object
+            properties:
+              service:
+                type: string
+                enum: [polizia, carabinieri, vigili_del_fuoco, ambulanza, protezione_civile]
+              notifiedAt:
+                type: string
+                format: date-time
+              responseTime:
+                type: number
+        severity:
+          type: string
+          enum: [bassa, media, alta]
