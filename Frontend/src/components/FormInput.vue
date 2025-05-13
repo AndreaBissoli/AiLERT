@@ -31,13 +31,11 @@ const updateValue = (event) => {
 
 <template>
   <div class="form-control">
-    <label class="label">
-      <span class="label-text font-medium">{{ label }}</span>
-    </label>
+    <label class="block text-sm font-medium text-gray-700 mb-1">{{ label }}</label>
     <input 
       :type="type" 
       :placeholder="placeholder" 
-      class="input input-bordered w-full bg-base-100 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200" 
+      class="input input-bordered w-full bg-base-100 rounded-lg h-12 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200" 
       :value="modelValue"
       @input="updateValue"
       :required="required" 
