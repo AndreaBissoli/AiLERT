@@ -1,0 +1,85 @@
+const mongoose = require('mongoose');
+
+const eventSchema = new mongoose.Schema({
+    type: {
+        type: String,
+        enum: ['incidente', 'ingorgo'], 
+        required: true,
+    },
+    title: {
+        type: String,
+        required: true,
+        maxlenght: 100,
+    },
+    description: {
+        type: String,
+        required: false,
+        maxlenght: 500,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+        required: true,
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now,
+    },
+    eventDate: {
+        type: Date,
+        required: true,
+    },
+    location: {
+        address: {
+            type: String,
+            required: true,
+        },
+        required: true,
+    },
+    status:  {
+        enum: ['pending', 'solved', 'unsolved', 'false_alarm'],
+        default: 'pending',
+        required: true,
+    },
+    cameraId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Camera', // Questo ID fa riferimento a un documento nella collection chiamata Camera, non definitivo
+        required: false,
+    },
+    videoUrl: {
+        type: String, // URL del video registrato
+        required: false,
+    },
+    confirmed: {
+        type: Boolean,
+        default: false, // confermato da sorvegliante
+    },
+    confirmedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Sorvegliante', // non definitivo
+        required: function() { return this.confirmed; } // solo se è stato confermato
+    },
+    notifiedServices: [{
+        service: {
+            ditype: String,
+            enum: ['polizia', 'carabinieri', 'vigili_del_fuoco', 'ambulanza', 'protezione_civile'],
+        },
+        notifiedAt: {
+            type: Date,
+            default: Date.now
+        },
+        responseTime: {
+            type: Number, // in minuti
+            required: false
+        }
+    }],
+    severity: {
+        type: String,
+        enum: ['bassa', 'media', 'alta'],
+        required: false,
+    },
+});
+
+const Event = mongoose.model('Event', eventSchema);
+
+module.exports = Event;
