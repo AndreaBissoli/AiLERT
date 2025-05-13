@@ -3,7 +3,14 @@ const jwt = require('jsonwebtoken');
 
 const tokenChecker = function(req, res, next) {
     // header or url parameters or post parameters
-    var token = req.body.token || req.query.token || req.headers['x-access-token'];
+    let token
+    if (req.body) {
+        token = req.body.token;
+    } else if (req.query) {
+        token = req.query.token;
+    } else if (req.headers) {
+        token = req.headers['x-access-token'] || req.headers['authorization'].split(' ')[1];
+    }
 
     if (!token) res.status(401).json({error: 'Invalid email', errorCode: 'INVALID_EMAIL'});
 
