@@ -42,6 +42,72 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /auth/changepass:
+    post:
+      summary: Change Password
+      description: 
+        Change the user's password. Requires authentication.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: JWT token for authentication
+                newpassword:
+                  type: string
+                  description: New password
+                
+            examples:
+              example1:
+                value:
+                  token: 'token'
+                  newpassword: 'newSecurePassword456'
+                summary: Standard password change request
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Whether the password change was successful
+                  message:
+                    type: string
+                    description: Success message
+              examples:
+                success:
+                  value:
+                    success: true
+                    message: 'Password changed successfully'
+        '401':
+          description: Unauthorized access (invalid user)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                userNotFound:
+                  value:
+                    error: 'Invalid email'
+                    errorCode: 'INVALID_EMAIL'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidToken:
+                  value:
+                    error: 'Invalid or expired token'
+                    errorCode: 'INVALID_TOKEN'
 
 components:
   securitySchemes:

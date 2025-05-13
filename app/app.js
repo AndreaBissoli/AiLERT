@@ -13,7 +13,14 @@ app.get('/', (req, res) => {
 });
 
 const authentication = require('./authentication');
+const changepass = require('./changepass');
+const tokenChecker = require('./tokenchecker');
 
 app.use('/api/v1/auth/login', authentication);
+
+
+app.use(tokenChecker);
+// this middleware is used to check the token for all the routes below
+app.use('/api/v1/auth/changepass', changepass)
 
 module.exports = app;
