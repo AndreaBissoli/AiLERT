@@ -8,9 +8,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors())
 
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
+app.use('/', express.static(process.env.FRONTEND_DIR))
 
 const authentication = require('./authentication');
 const changepass = require('./changepass');
