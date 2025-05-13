@@ -1,15 +1,43 @@
 <script setup>
-import LoginForm from './components/LoginForm.vue';
+import Header from './components/Header.vue';
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center p-4">
-    <div class="w-full max-w-md">
-      <LoginForm />
-    </div>
+  <div class="min-h-screen flex flex-col bg-base-100">
+    <Header />
     
-    <footer class="fixed bottom-0 w-full text-center p-4 text-gray-600 text-xs">
-      <p>&copy; 2025 AiLERT - Urban Monitoring System</p>
+    <main class="flex-grow container mx-auto px-4 py-8">
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
+    </main>
+    
+    <footer class="bg-base-200 py-6">
+      <div class="container mx-auto px-4 text-center">
+        <p class="text-sm text-gray-600">&copy; 2025 AiLERT - Urban Monitoring System</p>
+      </div>
     </footer>
   </div>
 </template>
+
+<style>
+/* Add fade transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Import font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+</style>
