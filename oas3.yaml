@@ -47,6 +47,8 @@ paths:
       summary: Change Password
       description: 
         Change the user's password. Requires authentication.
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -54,9 +56,6 @@ paths:
             schema:
               type: object
               properties:
-                token:
-                  type: string
-                  description: JWT token for authentication
                 newpassword:
                   type: string
                   description: New password
@@ -64,7 +63,6 @@ paths:
             examples:
               example1:
                 value:
-                  token: 'token'
                   newpassword: 'newSecurePassword456'
                 summary: Standard password change request
       responses:
