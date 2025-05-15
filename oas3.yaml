@@ -16,8 +16,7 @@ paths:
   /auth/login:
     post:
       summary: User Login
-      description: 
-        Authenticate user and generate JWT token. **IMPORTANT:** Ensure to use HTTPS in production for security.
+      description: Authenticate user and generate JWT token. **IMPORTANT:** Ensure to use HTTPS in production for security.
       requestBody:
         required: true
         content:
@@ -42,11 +41,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  
   /auth/changepass:
     post:
       summary: Change Password
-      description: 
-        Change the user's password. Requires authentication.
+      description: Change the user's password. Requires authentication.
       security:
         - BearerAuth: []
       requestBody:
@@ -59,7 +58,6 @@ paths:
                 newpassword:
                   type: string
                   description: New password
-                
             examples:
               example1:
                 value:
@@ -106,6 +104,7 @@ paths:
                   value:
                     error: 'Invalid or expired token'
                     errorCode: 'INVALID_TOKEN'
+  
   /events:
     get:
       summary: Ottieni tutti gli eventi
@@ -142,6 +141,347 @@ paths:
         '401':
           description: Utente non autenticato
 
+  # Stream API endpoints
+  /stream/list:
+    get:
+      summary: Ottieni tutti gli stream attivi
+      description: Restituisce la lista di stream attivi disponibili. Richiede autenticazione.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista di stream ottenuta con successo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Indica se la richiesta è andata a buon fine
+                  streams:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StreamResponse'
+              examples:
+                success:
+                  value:
+                    success: true
+                    streams: [
+                      {
+                        id: "60d21b4667d0d8992e610c85",
+                        cameraId: {
+                          name: "Camera Centro Città",
+                          location: {
+                            address: "Via Roma 123, Trento"
+                          }
+                        },
+                        isActive: true,
+                        streamUrl: "rtsp://example.com/stream1",
+                        streamType: "rtsp",
+                        startTime: "2025-05-14T10:00:00Z",
+                        viewCount: 5
+                      }
+                    ]
+        '401':
+          description: Utente non autenticato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Errore del server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error:
+                  value:
+                    error: 'Failed to retrieve streams'
+                    errorCode: 'STREAM_FETCH_ERROR'
+
+  /stream/{streamId}:
+    get:
+      summary: Ottieni dettagli di uno stream specifico
+      description: Restituisce i dettagli di uno stream specifico. Richiede autenticazione.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: streamId
+          in: path
+          required: true
+          description: ID dello stream
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dettagli dello stream ottenuti con successo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Indica se la richiesta è andata a buon fine
+                  stream:
+                    $ref: '#/components/schemas/StreamDetails'
+        '401':
+          description: Utente non autenticato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Stream non trovato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    error: 'Stream not found'
+                    errorCode: 'STREAM_NOT_FOUND'
+        '500':
+          description: Errore del server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error:
+                  value:
+                    error: 'Failed to retrieve stream'
+                    errorCode: 'STREAM_FETCH_ERROR'
+
+  /stream/start:
+    post:
+      summary: Avvia uno stream RTSP per una telecamera
+      description: Avvia lo streaming di una telecamera specifica convertendo RTSP in HLS. Richiede autenticazione.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cameraId:
+                  type: string
+                  description: ID della telecamera da cui avviare lo stream
+              required:
+                - cameraId
+            examples:
+              example1:
+                value:
+                  cameraId: "60d21b4667d0d8992e610c85"
+      responses:
+        '200':
+          description: Stream avviato con successo o già attivo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Indica se la richiesta è andata a buon fine
+                  message:
+                    type: string
+                    description: Messaggio informativo
+                  streamId:
+                    type: string
+                    description: ID dello stream creato o esistente
+              examples:
+                created:
+                  value:
+                    success: true
+                    message: 'Stream started successfully'
+                    streamId: "60d21b4667d0d8992e610c85"
+                alreadyActive:
+                  value:
+                    success: true
+                    message: 'Stream already active'
+                    streamId: "60d21b4667d0d8992e610c85"
+        '401':
+          description: Utente non autenticato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Telecamera non trovata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    error: 'Camera not found'
+                    errorCode: 'CAMERA_NOT_FOUND'
+        '500':
+          description: Errore del server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error:
+                  value:
+                    error: 'Failed to start stream'
+                    errorCode: 'STREAM_START_ERROR'
+
+  /stream/stop/{streamId}:
+    post:
+      summary: Interrompi uno stream attivo
+      description: Interrompe uno stream attivo e aggiorna il suo stato. Richiede autenticazione.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: streamId
+          in: path
+          required: true
+          description: ID dello stream da interrompere
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Stream interrotto con successo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Indica se la richiesta è andata a buon fine
+                  message:
+                    type: string
+                    description: Messaggio informativo
+              examples:
+                success:
+                  value:
+                    success: true
+                    message: 'Stream stopped successfully'
+        '401':
+          description: Utente non autenticato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Stream non trovato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    error: 'Stream not found'
+                    errorCode: 'STREAM_NOT_FOUND'
+        '500':
+          description: Errore del server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error:
+                  value:
+                    error: 'Failed to stop stream'
+                    errorCode: 'STREAM_STOP_ERROR'
+
+  /stream/view/{streamId}:
+    get:
+      summary: Visualizza uno stream
+      description: Ottiene il manifest HLS per visualizzare uno stream. Richiede autenticazione.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: streamId
+          in: path
+          required: true
+          description: ID dello stream da visualizzare
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Manifest HLS restituito con successo
+          content:
+            application/vnd.apple.mpegurl:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Utente non autenticato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Stream non trovato o non ancora pronto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    error: 'Stream not found or inactive'
+                    errorCode: 'STREAM_NOT_FOUND'
+                notReady:
+                  value:
+                    error: 'Stream not ready yet'
+                    errorCode: 'STREAM_NOT_READY'
+        '500':
+          description: Errore del server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error:
+                  value:
+                    error: 'Failed to access stream'
+                    errorCode: 'STREAM_ACCESS_ERROR'
+
+  /stream/segments/{streamKey}/{filename}:
+    get:
+      summary: Ottieni un segmento dello stream
+      description: Ottiene un segmento specifico di uno stream HLS. Non richiede autenticazione esplicita.
+      parameters:
+        - name: streamKey
+          in: path
+          required: true
+          description: Chiave univoca dello stream
+          schema:
+            type: string
+        - name: filename
+          in: path
+          required: true
+          description: Nome del file del segmento
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Segmento restituito con successo
+          content:
+            video/mp2t:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Segmento non trovato
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: 'Segment not found'
 
 components:
   securitySchemes:
@@ -236,3 +576,107 @@ components:
         severity:
           type: string
           enum: [bassa, media, alta]
+    
+    # Nuovi schemi per Stream API
+    Camera:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID della telecamera
+        name:
+          type: string
+          description: Nome della telecamera
+        location:
+          type: object
+          properties:
+            address:
+              type: string
+              description: Indirizzo dove è installata la telecamera
+        installationDate:
+          type: string
+          format: date-time
+          description: Data di installazione
+        lastMaintenance:
+          type: string
+          format: date-time
+          description: Data dell'ultima manutenzione
+        isActive:
+          type: boolean
+          description: Indica se la telecamera è attiva
+        ipAddress:
+          type: string
+          description: Indirizzo IP della telecamera
+        streamUrl:
+          type: string
+          description: URL RTSP originale della telecamera
+        modelInfo:
+          type: object
+          properties:
+            brand:
+              type: string
+              description: Marca della telecamera
+            model:
+              type: string
+              description: Modello della telecamera
+
+    StreamResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID dello stream
+        cameraId:
+          $ref: '#/components/schemas/Camera'
+          description: Riferimento alla telecamera
+        isActive:
+          type: boolean
+          description: Indica se lo stream è attivo
+        startTime:
+          type: string
+          format: date-time
+          description: Data e ora di inizio dello stream
+        endTime:
+          type: string
+          format: date-time
+          description: Data e ora di fine dello stream, se presente
+        streamUrl:
+          type: string
+          description: URL RTSP originale
+        streamType:
+          type: string
+          enum: [rtsp, hls, webrtc]
+          description: Tipo di stream
+        viewCount:
+          type: integer
+          description: Numero di visualizzazioni
+        lastAccessed:
+          type: string
+          format: date-time
+          description: Ultima volta che lo stream è stato visualizzato
+
+    StreamDetails:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID dello stream
+        cameraName:
+          type: string
+          description: Nome della telecamera
+        cameraLocation:
+          type: object
+          properties:
+            address:
+              type: string
+              description: Indirizzo della telecamera
+        streamUrl:
+          type: string
+          description: URL per visualizzare lo stream
+        streamType:
+          type: string
+          enum: [rtsp, hls, webrtc]
+          description: Tipo di stream
+        isActive:
+          type: boolean
+          description: Indica se lo stream è attivo
