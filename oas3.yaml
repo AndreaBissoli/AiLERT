@@ -470,7 +470,20 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          description: Forbidden access (user is not an admin or attempting to modify their own account)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorizedRole:
+                  value:
+                    error: 'Unauthorized role'
+                    errorCode: 'UNAUTHORIZED_ROLE'
+                selfModification:
+                  value:
+                    error: 'Cannot modify your own account'
+                    errorCode: 'SELF_MODIFICATION_FORBIDDEN'
         '404':
           description: User not found
           content:
@@ -505,7 +518,20 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          description: Forbidden access (user is not an admin or attempting to delete their own account)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorizedRole:
+                  value:
+                    error: 'Unauthorized role'
+                    errorCode: 'UNAUTHORIZED_ROLE'
+                selfDeletion:
+                  value:
+                    error: 'Cannot delete your own account'
+                    errorCode: 'SELF_DELETION_FORBIDDEN'
         '404':
           description: User not found
           content:
@@ -690,7 +716,7 @@ components:
                 errorCode: 'INVALID_TOKEN'
     
     Forbidden:
-      description: Forbidden access (user is not an admin)
+      description: Forbidden access (user is not an admin or attempting unauthorized action)
       content:
         application/json:
           schema:
@@ -700,6 +726,14 @@ components:
               value:
                 error: 'Unauthorized role'
                 errorCode: 'UNAUTHORIZED_ROLE'
+            selfModification:
+              value:
+                error: 'Cannot modify your own account'
+                errorCode: 'SELF_MODIFICATION_FORBIDDEN'
+            selfDeletion:
+              value:
+                error: 'Cannot delete your own account'
+                errorCode: 'SELF_DELETION_FORBIDDEN'
     
     InternalServerError:
       description: Internal server error

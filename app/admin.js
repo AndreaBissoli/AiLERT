@@ -33,6 +33,12 @@ router.post('/', async (req, res) => {
 // UPDATE user
 router.put('/:id', async (req, res) => {
     try {
+        // Prevent admin from modifying their own account
+        const loggedUserId = req.loggedUser.id;
+        if (loggedUserId.toString() === req.params.id) {
+            return res.status(403).json({ error: 'Cannot modify your own account', errorCode: 'SELF_MODIFICATION_FORBIDDEN' });
+        }
+
         const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!user) {
             return res.status(404).json({ error: 'User not found', errorCode: 'USER_NOT_FOUND' });
@@ -45,6 +51,12 @@ router.put('/:id', async (req, res) => {
 // DELETE user
 router.delete('/:id', async (req, res) => {
     try {
+        // Prevent admin from deleting their own account
+        const loggedUserId = req.loggedUser.id;
+        if (loggedUserId.toString() === req.params.id) {
+            return res.status(403).json({ error: 'Cannot delete your own account', errorCode: 'SELF_DELETION_FORBIDDEN' });
+        }
+
         const user = await User.findByIdAndDelete(req.params.id);
         if (!user) {
             return res.status(404).json({ error: 'User not found', errorCode: 'USER_NOT_FOUND' });
