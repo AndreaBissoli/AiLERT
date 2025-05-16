@@ -8,7 +8,7 @@ onMounted(async () => {
   const token = localStorage.getItem('token')
 
   try {
-    const res = await fetch('http://localhost:8080/api/v1/events', {
+    const res = await fetch('/api/v1/events', {
       headers: {
         Authorization: `Bearer ${token}`
       }
