@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const SALT_ROUNDS = 10;
+const SALT_ROUNDS = require('./config').SALT_ROUNDS;
 const User = require('./models/user');
 
 router.post('', async function(req, res) {
