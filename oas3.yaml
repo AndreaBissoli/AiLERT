@@ -116,6 +116,52 @@ paths:
                   value:
                     error: 'Internal server error'
                     errorCode: 'INTERNAL_SERVER_ERROR'
+  
+  /public/events:
+    get:
+      summary: Ottieni eventi pubblici
+      description: |
+        Restituisce gli eventi pubblici delle ultime 2 ore. Non richiede autenticazione.
+        Include solo eventi con status 'solved' o 'unsolved' per i cittadini.
+      tags:
+        - Public API
+      responses:
+        '200':
+          description: Lista eventi pubblici ottenuta con successo
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicEvent'
+              examples:
+                publicEvents:
+                  value:
+                    - _id: "60d21b4667d0d8992e610c85"
+                      type: "incidente"
+                      title: "Incidente su Via Roma"
+                      description: "Lieve tamponamento risolto"
+                      eventDate: "2025-05-16T14:30:00.000Z"
+                      location:
+                        address: "Via Roma 45, Trento"
+                      status: "solved"
+                      severity: "bassa"
+                    - _id: "60d21b4667d0d8992e610c86"
+                      type: "ingorgo"
+                      title: "Traffico intenso"
+                      description: "Blocco temporaneo in centro"
+                      eventDate: "2025-05-16T15:00:00.000Z"
+                      location:
+                        address: "Via Manci, Trento"
+                      status: "unsolved"
+                      severity: "media"
+        '500':
+          description: Errore del server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  
   /events:
     get:
       summary: Ottieni tutti gli eventi
@@ -228,7 +274,7 @@ paths:
                   value:
                     error: 'Unauthorized role'
                     errorCode: 'UNAUTHORIZED_ROLE'
-
+  
 
   # Admin endpoints
   /admin:
@@ -979,6 +1025,42 @@ components:
         severity:
           type: string
           enum: [bassa, media, alta]
+    
+    PublicEvent:
+      description: "Versione pubblica di un evento per cittadini non autenticati"
+      type: object
+      properties:
+        _id:
+          type: string
+          description: ID dell'evento
+        type:
+          type: string
+          enum: [incidente, ingorgo]
+          description: Tipo di evento
+        title:
+          type: string
+          description: Titolo dell'evento
+        description:
+          type: string
+          description: Descrizione dell'evento
+        eventDate:
+          type: string
+          format: date-time
+          description: Data e ora dell'evento
+        location:
+          type: object
+          properties:
+            address:
+              type: string
+              description: Indirizzo dell'evento
+        status:
+          type: string
+          enum: [solved, unsolved]
+          description: Stato dell'evento (solo eventi risolti o non risolti)
+        severity:
+          type: string
+          enum: [bassa, media, alta]
+          description: Gravità dell'evento
 
     User:
       type: object

@@ -80,6 +80,33 @@ const eventSchema = new mongoose.Schema({
     },
 });
 
+// Metodo per ottenere la versione pubblica
+eventSchema.methods.toPublicJSON = function() {
+    return {
+        _id: this._id,
+        type: this.type,
+        title: this.title,
+        description: this.description,
+        eventDate: this.eventDate,
+        location: this.location,
+        status: this.status,
+        severity: this.severity
+    };
+};
+
+// Metodo statico per query pubbliche
+eventSchema.statics.findPublic = function(filters = {}) {
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+    
+    return this.find({
+        eventDate: { $gte: twoHoursAgo },
+        status: { $in: ['solved', 'unsolved'] },
+        ...filters
+    })
+    .select('title type eventDate location status severity description')
+    .sort({ eventDate: -1 });
+};
+
 const Event = mongoose.model('Event', eventSchema);
 
 module.exports = Event;

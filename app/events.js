@@ -2,17 +2,17 @@ const express = require('express');
 const router = express.Router();
 const Event = require('./models/event');
 
-// GET tutti gli eventi
+// GET tutti gli eventi (richiede autenticazione)
 router.get('/', async (req, res) => {
   try {
-    const eventi = await Event.find();
+    const eventi = await Event.find().sort({ eventDate: -1 });
     res.json(eventi);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST nuovo evento
+// POST nuovo evento (richiede autenticazione)
 router.post('/', async (req, res) => {
   try {
     const nuovoEvento = new Event(req.body);
