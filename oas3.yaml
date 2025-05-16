@@ -1036,6 +1036,112 @@ components:
           type: string
           description: User's role
           enum: [amministratore, sorvegliante, dipendentecomunale]
+    Camera:
+      description: "Camera"
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID della telecamera
+        name:
+          type: string
+          description: Nome della telecamera
+        location:
+          type: object
+          properties:
+            address:
+              type: string
+              description: Indirizzo dove è installata la telecamera
+        installationDate:
+          type: string
+          format: date-time
+          description: Data di installazione
+        lastMaintenance:
+          type: string
+          format: date-time
+          description: Data dell'ultima manutenzione
+        isActive:
+          type: boolean
+          description: Indica se la telecamera è attiva
+        ipAddress:
+          type: string
+          description: Indirizzo IP della telecamera
+        streamUrl:
+          type: string
+          description: URL RTSP originale della telecamera
+        modelInfo:
+          type: object
+          properties:
+            brand:
+              type: string
+              description: Marca della telecamera
+            model:
+              type: string
+              description: Modello della telecamera
+
+    StreamResponse:
+      description: "StreamResponse"
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID dello stream
+        cameraId:
+          $ref: '#/components/schemas/Camera'
+          description: Riferimento alla telecamera
+        isActive:
+          type: boolean
+          description: Indica se lo stream è attivo
+        startTime:
+          type: string
+          format: date-time
+          description: Data e ora di inizio dello stream
+        endTime:
+          type: string
+          format: date-time
+          description: Data e ora di fine dello stream, se presente
+        streamUrl:
+          type: string
+          description: URL RTSP originale
+        streamType:
+          type: string
+          enum: [rtsp, hls, webrtc]
+          description: Tipo di stream
+        viewCount:
+          type: integer
+          description: Numero di visualizzazioni
+        lastAccessed:
+          type: string
+          format: date-time
+          description: Ultima volta che lo stream è stato visualizzato
+
+    StreamDetails:
+      description: "StreamDetails"
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID dello stream
+        cameraName:
+          type: string
+          description: Nome della telecamera
+        cameraLocation:
+          type: object
+          properties:
+            address:
+              type: string
+              description: Indirizzo della telecamera
+        streamUrl:
+          type: string
+          description: URL per visualizzare lo stream
+        streamType:
+          type: string
+          enum: [rtsp, hls, webrtc]
+          description: Tipo di stream
+        isActive:
+          type: boolean
+          description: Indica se lo stream è attivo
+
   
   responses:
     Unauthorized:
@@ -1085,107 +1191,3 @@ components:
               value:
                 error: 'Internal server error'
                 errorCode: 'INTERNAL_SERVER_ERROR'
-    
-    # Nuovi schemi per Stream API
-    Camera:
-      type: object
-      properties:
-        id:
-          type: string
-          description: ID della telecamera
-        name:
-          type: string
-          description: Nome della telecamera
-        location:
-          type: object
-          properties:
-            address:
-              type: string
-              description: Indirizzo dove è installata la telecamera
-        installationDate:
-          type: string
-          format: date-time
-          description: Data di installazione
-        lastMaintenance:
-          type: string
-          format: date-time
-          description: Data dell'ultima manutenzione
-        isActive:
-          type: boolean
-          description: Indica se la telecamera è attiva
-        ipAddress:
-          type: string
-          description: Indirizzo IP della telecamera
-        streamUrl:
-          type: string
-          description: URL RTSP originale della telecamera
-        modelInfo:
-          type: object
-          properties:
-            brand:
-              type: string
-              description: Marca della telecamera
-            model:
-              type: string
-              description: Modello della telecamera
-
-    StreamResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: ID dello stream
-        cameraId:
-          $ref: '#/components/schemas/Camera'
-          description: Riferimento alla telecamera
-        isActive:
-          type: boolean
-          description: Indica se lo stream è attivo
-        startTime:
-          type: string
-          format: date-time
-          description: Data e ora di inizio dello stream
-        endTime:
-          type: string
-          format: date-time
-          description: Data e ora di fine dello stream, se presente
-        streamUrl:
-          type: string
-          description: URL RTSP originale
-        streamType:
-          type: string
-          enum: [rtsp, hls, webrtc]
-          description: Tipo di stream
-        viewCount:
-          type: integer
-          description: Numero di visualizzazioni
-        lastAccessed:
-          type: string
-          format: date-time
-          description: Ultima volta che lo stream è stato visualizzato
-
-    StreamDetails:
-      type: object
-      properties:
-        id:
-          type: string
-          description: ID dello stream
-        cameraName:
-          type: string
-          description: Nome della telecamera
-        cameraLocation:
-          type: object
-          properties:
-            address:
-              type: string
-              description: Indirizzo della telecamera
-        streamUrl:
-          type: string
-          description: URL per visualizzare lo stream
-        streamType:
-          type: string
-          enum: [rtsp, hls, webrtc]
-          description: Tipo di stream
-        isActive:
-          type: boolean
-          description: Indica se lo stream è attivo
