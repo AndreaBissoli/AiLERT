@@ -39,7 +39,8 @@ router.post('', async function(req, res) {
 	// if user is found or created create a token
 	var payload = {
 		email: user.email,
-		id: user._id
+		id: user._id,
+        role: user.role
 	}
 	var options = {
 		expiresIn: 86400 // expires in 24 hours

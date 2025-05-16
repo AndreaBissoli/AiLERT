@@ -25,10 +25,14 @@ paths:
             schema:
               $ref: '#/components/schemas/LoginRequest'
             examples:
-              example1:
+              dipendentecomunale:
                 value:
                   email: 'john.doe@example.com'
                   password: 'securepassword123'
+              amministratore:
+                value:
+                  email: 'bob@bob.com'
+                  password: 'password'
       responses:
         '200':
           description: Successful authentication
@@ -95,17 +99,25 @@ paths:
                   value:
                     error: 'Invalid email'
                     errorCode: 'INVALID_EMAIL'
-        '403':
-          description: Forbidden
+                authTokenRequired:
+                  value:
+                    error: 'Authentication token required'
+                    errorCode: 'TOKEN_REQUIRED'
+                invalidToken:
+                  value:
+                    error: 'Invalid or expired token'
+                    errorCode: 'INVALID_TOKEN'
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
-                invalidToken:
+                serverError:
                   value:
-                    error: 'Invalid or expired token'
-                    errorCode: 'INVALID_TOKEN'
+                    error: 'Internal server error'
+                    errorCode: 'INTERNAL_SERVER_ERROR'
   /events:
     get:
       summary: Ottieni tutti gli eventi
@@ -158,6 +170,17 @@ paths:
                       severity: media
         '401':
           description: Utente non autenticato
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidToken:
+                  value:
+                    error: 'Unauthorized role'
+                    errorCode: 'UNAUTHORIZED_ROLE'
     post:
       summary: Crea un nuovo evento
       description: Registra un nuovo evento (incidente o ingorgo). Richiede autenticazione.
@@ -196,6 +219,17 @@ paths:
           description: Errore nei dati inviati
         '401':
           description: Utente non autenticato
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidToken:
+                  value:
+                    error: 'Unauthorized role'
+                    errorCode: 'UNAUTHORIZED_ROLE'
 
 
 components:

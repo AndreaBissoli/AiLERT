@@ -14,6 +14,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    role: {
+        type: String,
+        enum: ['amministratore', 'sorvegliante', 'dipendentecomunale'],
+        required: true,
+    }
 });
 
 const User = mongoose.model('User', userSchema);
