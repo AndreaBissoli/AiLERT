@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-const tokenChecker = function(req, res, next) {
+const tokenChecker = async function(req, res, next) {
     // Initialize token variable
     let token = null;
     
@@ -30,7 +30,7 @@ const tokenChecker = function(req, res, next) {
     }
     
     // Verify token
-    jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
+    await jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
         if (err) {
             return res.status(401).json({error: 'Invalid or expired token', errorCode: 'INVALID_TOKEN'});
         } else {
