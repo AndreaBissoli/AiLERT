@@ -31,6 +31,6 @@ app.use('/api/v1/events', checkrole(['dipendentecomunale', 'sorvegliante']), eve
 
 app.use('/api/v1/admin', checkrole('amministratore'), admin);
 
-app.use('/api/v1/stream', streamRouter);
+app.use('/api/v1/stream', checkrole(['dipendentecomunale', 'sorvegliante']), streamRouter);
 
 module.exports = app;
