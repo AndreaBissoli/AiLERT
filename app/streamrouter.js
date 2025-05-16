@@ -7,8 +7,6 @@ router.get('/list', async (req, res) => {
     try {
         const streams = await Stream.find({isActive: true});
 
-        console.log("Stream trovati:", streams);
-
         const formattedStreams = streams.map(stream => ({
             _id: stream._id,
             cameraId: stream.cameraId,
