@@ -1,89 +1,196 @@
+<!-- Frontend/src/views/HomeView.vue -->
 <script setup>
-import AiLertLogo from '../components/AiLertLogo.vue';
-import { useRouter } from 'vue-router';
-import { ref, onMounted } from 'vue';
+import PublicEventsList from '../components/PublicEventsList.vue'
+import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
 
-const router = useRouter();
-const isLoggedIn = ref(false);
+const router = useRouter()
+const isLoggedIn = ref(false)
 
 onMounted(() => {
-  const token = localStorage.getItem('token');
-  isLoggedIn.value = !!token;
-});
+  const token = localStorage.getItem('token')
+  isLoggedIn.value = !!token
+})
 
 const navigateToLogin = () => {
-  router.push('/login');
-};
+  router.push('/login')
+}
 
 const navigateToDashboard = () => {
-  router.push('/dashboard');
-};
+  router.push('/dashboard')
+}
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto">
-    <!-- Hero section -->
-    <div class="text-center py-12">
-      <AiLertLogo class="mx-auto" />
+  <div class="min-h-screen">
+    <!-- Hero Section con Gradiente Moderno -->
+    <section class="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <!-- Background Pattern -->
+      <div class="absolute inset-0 opacity-5">
+        <svg class="absolute top-0 left-0 w-96 h-96" viewBox="0 0 100 100" fill="currentColor">
+          <circle cx="50" cy="20" r="2" class="text-blue-600" />
+          <circle cx="20" cy="80" r="1.5" class="text-purple-600" />
+          <circle cx="80" cy="60" r="1" class="text-blue-600" />
+          <circle cx="30" cy="40" r="0.5" class="text-purple-600" />
+        </svg>
+      </div>
       
-      <h1 class="mt-8 text-4xl md:text-5xl font-extrabold text-gray-900">
-        AI-Powered Urban Safety
-      </h1>
+      <div class="relative max-w-7xl mx-auto px-4 pt-20 pb-32">
+        <div class="text-center">
+          <!-- Logo Moderno -->
+          <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl mb-8 shadow-xl shadow-blue-500/25 transform hover:scale-105 transition-transform duration-300">
+            <span class="text-3xl font-black text-white">Ai</span>
+          </div>
+          
+          <!-- Titolo Principal con Effetto -->
+          <h1 class="text-6xl md:text-7xl font-black mb-6">
+            <span class="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
+              AiLERT
+            </span>
+          </h1>
+          
+          <!-- Sottotitolo Elegante -->
+          <p class="text-2xl text-gray-600 font-light mb-12 max-w-3xl mx-auto leading-relaxed">
+            Il futuro della sicurezza urbana è <span class="font-semibold text-blue-600">qui</span>
+          </p>
+          
+          <!-- CTA Button con Gradient -->
+          <div class="space-y-4">
+            <button 
+              v-if="!isLoggedIn" 
+              @click="navigateToLogin" 
+              class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl hover:shadow-xl hover:shadow-blue-500/25 transition-all duration-300 transform hover:scale-105"
+            >
+              <span class="relative z-10">Accedi al Sistema</span>
+              <div class="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </button>
+            <button 
+              v-else 
+              @click="navigateToDashboard" 
+              class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl hover:shadow-xl hover:shadow-blue-500/25 transition-all duration-300 transform hover:scale-105"
+            >
+              <span class="relative z-10">Vai alla Dashboard</span>
+              <div class="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </button>
+          </div>
+        </div>
+      </div>
       
-      <p class="mt-6 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
-        AiLERT is an intelligent monitoring system for urban areas that uses
-        computer vision to detect incidents and ensure a rapid emergency response.
-      </p>
-      
-      <div class="mt-10">
+      <!-- Decorative Wave -->
+      <div class="absolute bottom-0 left-0 right-0">
+        <svg className="w-full h-20" viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 120L1440 120L1440 0C1440 0 1140 80 720 80C300 80 0 0 0 0L0 120Z" fill="white"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-20 bg-white">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="text-center group">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4 group-hover:bg-blue-600 transition-colors duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600 group-hover:text-white transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900 mb-2">24/7</h3>
+            <p class="text-gray-600">Monitoraggio continuo</p>
+          </div>
+          
+          <div class="text-center group">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4 group-hover:bg-purple-600 transition-colors duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-600 group-hover:text-white transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900 mb-2">&lt; 30s</h3>
+            <p class="text-gray-600">Tempo di risposta</p>
+          </div>
+          
+          <div class="text-center group">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4 group-hover:bg-green-600 transition-colors duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600 group-hover:text-white transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900 mb-2">99.9%</h3>
+            <p class="text-gray-600">Accuratezza AI</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Events Section -->
+    <section class="py-20 bg-gray-50">
+      <div class="max-w-7xl mx-auto px-4">
+        <PublicEventsList />
+      </div>
+    </section>
+
+    <!-- How it Works Section -->
+    <section class="py-20 bg-white">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold text-gray-900 mb-4">
+            Come Funziona
+          </h2>
+          <p class="text-xl text-gray-600">Tecnologia all'avanguardia per la sicurezza urbana</p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <!-- Step 1 -->
+          <div class="relative">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl p-8 h-full">
+              <div class="w-12 h-12 bg-blue-600 rounded-xl mb-6 flex items-center justify-center">
+                <span class="text-white font-bold text-xl">1</span>
+              </div>
+              <h3 class="text-xl font-bold text-gray-900 mb-4">Rilevamento AI</h3>
+              <p class="text-gray-600">Le telecamere analizzano il traffico in tempo reale con algoritmi di computer vision avanzati</p>
+            </div>
+          </div>
+          
+          <!-- Step 2 -->
+          <div class="relative">
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-3xl p-8 h-full">
+              <div class="w-12 h-12 bg-purple-600 rounded-xl mb-6 flex items-center justify-center">
+                <span class="text-white font-bold text-xl">2</span>
+              </div>
+              <h3 class="text-xl font-bold text-gray-900 mb-4">Allerta Immediata</h3>
+              <p class="text-gray-600">I sorveglianti confermano gli incidenti e allertano automaticamente i servizi di emergenza</p>
+            </div>
+          </div>
+          
+          <!-- Step 3 -->
+          <div class="relative">
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-3xl p-8 h-full">
+              <div class="w-12 h-12 bg-green-600 rounded-xl mb-6 flex items-center justify-center">
+                <span class="text-white font-bold text-xl">3</span>
+              </div>
+              <h3 class="text-xl font-bold text-gray-900 mb-4">Info Pubbliche</h3>
+              <p class="text-gray-600">I cittadini ricevono aggiornamenti in tempo reale sullo stato del traffico cittadino</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer Call to Action -->
+    <section v-if="!isLoggedIn" class="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
+      <div class="max-w-4xl mx-auto px-4 text-center">
+        <h2 class="text-3xl font-bold text-white mb-4">
+          Sei un operatore autorizzato?
+        </h2>
+        <p class="text-blue-100 mb-8 text-lg">
+          Accedi alla dashboard per gestire eventi e visualizzare statistiche avanzate
+        </p>
         <button 
-          v-if="!isLoggedIn" 
           @click="navigateToLogin" 
-          class="btn btn-primary btn-lg text-white rounded-lg px-8 shadow-md"
+          class="bg-white text-blue-600 font-semibold py-3 px-8 rounded-2xl hover:bg-gray-50 transition-colors shadow-lg"
         >
-          Sign In
-        </button>
-        <button 
-          v-else 
-          @click="navigateToDashboard" 
-          class="btn btn-primary btn-lg text-white rounded-lg px-8 shadow-md"
-        >
-          Go to Dashboard
+          Accedi alla Dashboard
         </button>
       </div>
-    </div>
-    
-    <!-- Features section -->
-    <div class="grid md:grid-cols-3 gap-8 py-12">
-      <div class="bg-white p-6 rounded-xl shadow-soft border border-gray-100">
-        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-          </svg>
-        </div>
-        <h3 class="text-lg font-bold text-gray-800 mb-2">Real-time Monitoring</h3>
-        <p class="text-gray-600">Advanced video analysis for automatic incident detection across urban areas.</p>
-      </div>
-      
-      <div class="bg-white p-6 rounded-xl shadow-soft border border-gray-100">
-        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-          </svg>
-        </div>
-        <h3 class="text-lg font-bold text-gray-800 mb-2">Rapid Response</h3>
-        <p class="text-gray-600">Immediate alerts to emergency services for faster incident response times.</p>
-      </div>
-      
-      <div class="bg-white p-6 rounded-xl shadow-soft border border-gray-100">
-        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-        </div>
-        <h3 class="text-lg font-bold text-gray-800 mb-2">Data Analytics</h3>
-        <p class="text-gray-600">Comprehensive statistics and interactive maps for better urban planning.</p>
-      </div>
-    </div>
+    </section>
   </div>
 </template>

@@ -1,9 +1,9 @@
+<!-- Frontend/src/components/LoginForm.vue -->
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import FormInput from './FormInput.vue';
 import AlertMessage from './AlertMessage.vue';
-import AiLertLogo from './AiLertLogo.vue';
 
 const router = useRouter();
 const email = ref('');
@@ -13,7 +13,7 @@ const isLoading = ref(false);
 
 async function login() {
   if (!email.value || !password.value) {
-    errorMessage.value = 'Please enter both email and password';
+    errorMessage.value = 'Inserisci email e password';
     return;
   }
 
@@ -35,7 +35,7 @@ async function login() {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Login failed');
+      throw new Error(data.error || 'Login fallito');
     }
 
     // Store token in localStorage for future API calls
@@ -44,8 +44,8 @@ async function login() {
     // Dispatch event to notify other components (especially Header)
     window.dispatchEvent(new Event('auth-changed'));
     
-    // Redirect to home page
-    router.push('/');
+    // Redirect to dashboard
+    router.push('/dashboard');
     
   } catch (error) {
     errorMessage.value = error.message;
@@ -56,68 +56,98 @@ async function login() {
 </script>
 
 <template>
-  <div class="bg-white rounded-xl shadow-soft border border-gray-100 overflow-hidden max-w-md w-full mx-auto">
-    <div class="p-8">
-      <!-- Logo and title -->
-      <div class="mb-8 text-center">
-        <div class="inline-flex items-center justify-center w-12 h-12 bg-primary rounded-xl mb-4">
-          <span class="text-xl font-bold text-white">Ai</span>
+  <!-- Login Form con Glassmorphism -->
+  <div class="bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl border border-white/20 p-8 transform transition-all duration-300 hover:shadow-2xl">
+    
+    <!-- Logo Section -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl mb-4 shadow-lg transform hover:scale-110 transition-transform duration-200">
+        <span class="text-2xl font-bold text-white">Ai</span>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900">Accedi ad AiLERT</h2>
+      <p class="text-gray-600 mt-2">Inserisci le tue credenziali</p>
+    </div>
+    
+    <!-- Login Form -->
+    <form @submit.prevent="login" class="space-y-6">
+      <FormInput 
+        v-model="email"
+        type="email"
+        label="Email"
+        placeholder="nome@example.com"
+        required
+      />
+      
+      <FormInput 
+        v-model="password"
+        type="password"
+        label="Password"
+        placeholder="••••••••"
+        required
+      />
+      
+      <AlertMessage 
+        v-if="errorMessage" 
+        :message="errorMessage"
+        type="error"
+      />
+      
+      <!-- Login Button -->
+      <button 
+        type="submit" 
+        class="group relative w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+        :disabled="isLoading"
+      >
+        <span v-if="isLoading" class="flex items-center justify-center">
+          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Accesso in corso...
+        </span>
+        <span v-else class="flex items-center justify-center">
+          Accedi
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </span>
+        <div class="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      </button>
+    </form>
+    
+    <!-- Demo Credentials con Design Moderno -->
+    <div class="mt-8">
+      <div class="relative">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gray-200"></div>
         </div>
-        <h1 class="text-2xl font-bold text-gray-800">Sign in to AiLERT</h1>
-        <p class="text-gray-500 mt-2">Enter your credentials to access your account</p>
+        <div class="relative flex justify-center text-sm">
+          <span class="px-2 bg-white text-gray-500">Credenziali Demo</span>
+        </div>
       </div>
       
-      <!-- Login form -->
-      <form @submit.prevent="login" class="space-y-5">
-        <FormInput 
-          v-model="email"
-          type="email"
-          label="Email address"
-          placeholder="name@example.com"
-          required
-        />
-        
-        <FormInput 
-          v-model="password"
-          type="password"
-          label="Password"
-          placeholder="••••••••"
-          required
-        />
-        
-        <AlertMessage 
-          v-if="errorMessage" 
-          :message="errorMessage"
-          type="error"
-        />
-        
-        <button 
-          type="submit" 
-          class="btn btn-primary w-full text-white rounded-lg h-12" 
-          :class="{ 'opacity-70': isLoading }"
-          :disabled="isLoading"
-        >
-          <span v-if="isLoading" class="loading loading-spinner loading-sm mr-2"></span>
-          {{ isLoading ? 'Signing in...' : 'Sign in' }}
-        </button>
-      </form>
-      
-      <!-- Demo credentials -->
-      <div class="mt-8">
-        <div class="divider text-xs text-gray-400 uppercase">Demo Credentials</div>
-        <div class="bg-base-100 rounded-lg p-4 border border-gray-100">
-          <div class="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <p class="text-gray-500 mb-1 text-xs">Email</p>
-              <p class="font-medium font-mono text-gray-800">john.doe@example.com</p>
-            </div>
-            <div>
-              <p class="text-gray-500 mb-1 text-xs">Password</p>
-              <p class="font-medium font-mono text-gray-800">securepassword123</p>
+      <div class="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-4 border border-blue-100/50">
+        <div class="grid grid-cols-1 gap-3 text-sm">
+          <div class="text-center">
+            <p class="text-gray-600 mb-2 font-medium">Account di Test</p>
+            <div class="space-y-1">
+              <p class="font-mono text-blue-700 bg-white rounded-lg px-3 py-1 inline-block">
+                john.doe@example.com
+              </p>
+              <p class="font-mono text-purple-700 bg-white rounded-lg px-3 py-1 inline-block">
+                securepassword123
+              </p>
             </div>
           </div>
         </div>
       </div>
+    </div>
+    
+    <!-- Footer Links -->
+    <div class="mt-6 text-center">
+      <router-link to="/" class="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+        ← Torna alla homepage
+      </router-link>
     </div>
   </div>
 </template>
