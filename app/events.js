@@ -4,9 +4,6 @@ const Event = require('./models/event');
 
 // GET tutti gli eventi
 router.get('/', async (req, res) => {
-  if (req.loggedUser.role !== 'dipendentecomunale' && req.loggedUser.role !== 'sorvegliante') {
-    return res.status(403).json({ error: 'Unauthorized role', errorCode: 'UNAUTHORIZED_ROLE' });
-  }
   try {
     const eventi = await Event.find();
     res.json(eventi);
@@ -17,9 +14,6 @@ router.get('/', async (req, res) => {
 
 // POST nuovo evento
 router.post('/', async (req, res) => {
-  if (req.loggedUser.role !== 'dipendentecomunale' && req.loggedUser.role !== 'sorvegliante') {
-    return res.status(403).json({ error: 'Unauthorized role', errorCode: 'UNAUTHORIZED_ROLE' });
-  }
   try {
     const nuovoEvento = new Event(req.body);
     await nuovoEvento.save();

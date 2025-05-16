@@ -7,9 +7,6 @@ const SALT_ROUNDS = require('./config').SALT_ROUNDS;
 
 // GET all users
 router.get('/', async (req, res) => {
-    if (req.loggedUser.role !== 'amministratore') {
-        return res.status(403).json({ error: 'Unauthorized role', errorCode: 'UNAUTHORIZED_ROLE' });
-    }
     try {
         const users = await User.find();
         res.json(users);
@@ -20,9 +17,6 @@ router.get('/', async (req, res) => {
 });
 // CREATE new user
 router.post('/', async (req, res) => {
-    if (req.loggedUser.role !== 'amministratore') {
-        return res.status(403).json({ error: 'Unauthorized role', errorCode: 'UNAUTHORIZED_ROLE' });
-    }
     try {
         const { email, password, role } = req.body;
         const newUser = new User({
@@ -38,9 +32,6 @@ router.post('/', async (req, res) => {
 });
 // UPDATE user
 router.put('/:id', async (req, res) => {
-    if (req.loggedUser.role !== 'amministratore') {
-        return res.status(403).json({ error: 'Unauthorized role', errorCode: 'UNAUTHORIZED_ROLE' });
-    }
     try {
         const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!user) {
@@ -53,9 +44,6 @@ router.put('/:id', async (req, res) => {
 });
 // DELETE user
 router.delete('/:id', async (req, res) => {
-    if (req.loggedUser.role !== 'amministratore') {
-        return res.status(403).json({ error: 'Unauthorized role', errorCode: 'UNAUTHORIZED_ROLE' });
-    }
     try {
         const user = await User.findByIdAndDelete(req.params.id);
         if (!user) {
@@ -69,9 +57,6 @@ router.delete('/:id', async (req, res) => {
 
 // GET user by ID
 router.get('/:id', async (req, res) => {
-    if (req.loggedUser.role !== 'amministratore') {
-        return res.status(403).json({ error: 'Unauthorized role', errorCode: 'UNAUTHORIZED_ROLE' });
-    }
     try {
         const user = await User.findById(req.params.id);
         if (!user) {
