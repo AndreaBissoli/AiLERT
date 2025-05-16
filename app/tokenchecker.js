@@ -32,7 +32,7 @@ const tokenChecker = function(req, res, next) {
     // Verify token
     jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
         if (err) {
-            return res.status(403).json({error: 'Invalid or expired token', errorCode: 'INVALID_TOKEN'});
+            return res.status(401).json({error: 'Invalid or expired token', errorCode: 'INVALID_TOKEN'});
         } else {
             // Token is valid, save user info to request for use in other routes
             req.loggedUser = decoded;

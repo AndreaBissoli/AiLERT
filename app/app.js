@@ -14,8 +14,9 @@ const authentication = require('./authentication');
 const changepass = require('./changepass');
 const streamRouter = require('./streamrouter');
 const tokenChecker = require('./tokenchecker');
-
+const checkrole = require('./rolechecker');
 const events = require('./events');
+const admin = require('./admin');
 
 
 app.use('/api/v1/auth/login', authentication);
@@ -26,7 +27,9 @@ app.use(tokenChecker);
 // this middleware is used to check the token for all the routes below
 app.use('/api/v1/auth/changepass', changepass)
 
-app.use('/api/v1/events', events);
+app.use('/api/v1/events', checkrole(['dipendentecomunale', 'sorvegliante']), events);
+
+app.use('/api/v1/admin', checkrole('amministratore'), admin);
 
 app.use('/api/v1/stream', streamRouter);
 
