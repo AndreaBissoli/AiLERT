@@ -58,9 +58,16 @@ const logout = () => {
               Home
             </router-link>
           </li>
+          
           <li v-if="isLoggedIn">
             <router-link to="/dashboard" class="text-gray-700 hover:text-primary transition-colors">
               Dashboard
+            </router-link>
+          </li>
+
+          <li v-if="isLoggedIn">
+            <router-link to="/cameras" class="text-gray-700 hover:text-primary transition-colors">
+              Telecamere
             </router-link>
           </li>
         </ul>
