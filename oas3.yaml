@@ -680,7 +680,7 @@ paths:
             examples:
               example1:
                 value:
-                  cameraId: "60d21b4667d0d8992e610c85"
+                  cameraId: "68266cef683978f9108a7394"
       responses:
         '200':
           description: Stream avviato con successo o già attivo
@@ -703,12 +703,12 @@ paths:
                   value:
                     success: true
                     message: 'Stream started successfully'
-                    streamId: "60d21b4667d0d8992e610c85"
+                    streamId: "68266cef683978f9108a7394"
                 alreadyActive:
                   value:
                     success: true
                     message: 'Stream already active'
-                    streamId: "60d21b4667d0d8992e610c85"
+                    streamId: "68266cef683978f9108a7394"
         '401':
           description: Utente non autenticato
           content:
@@ -1037,7 +1037,7 @@ components:
           description: User's role
           enum: [amministratore, sorvegliante, dipendentecomunale]
     Camera:
-      description: "Camera"
+      description: "Rappresenta una telecamera installata nel sistema di videosorveglianza."
       type: object
       properties:
         id:
@@ -1080,7 +1080,7 @@ components:
               description: Modello della telecamera
 
     StreamResponse:
-      description: "StreamResponse"
+      description: "Risposta generata a seguito della richiesta di avvio di uno stream"
       type: object
       properties:
         id:
@@ -1116,7 +1116,7 @@ components:
           description: Ultima volta che lo stream è stato visualizzato
 
     StreamDetails:
-      description: "StreamDetails"
+      description: "Contiene i dettagli tecnici e identificativi relativi a uno stream video attivo"
       type: object
       properties:
         id:
