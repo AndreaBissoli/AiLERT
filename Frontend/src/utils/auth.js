@@ -1,8 +1,8 @@
-const jwt = require('jsonwebtoken');
+import { jwtDecode } from 'jwt-decode'; // Using jwt-decode which is browser-compatible
 
 export function decodeJWT(token) {
     try {
-        const decoded = jwt.decode(token);
+        const decoded = jwtDecode(token);
         return decoded;
     } catch (error) {
         console.error('Error decoding JWT:', error);
