@@ -2,14 +2,17 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
+import { isAdmin } from '../utils/auth';
 
 const router = useRouter();
 const isLoggedIn = ref(false);
+const userIsAdmin = ref(false);
 
 // Check if token exists in localStorage
 const checkLoginStatus = () => {
   const token = localStorage.getItem('token');
   isLoggedIn.value = !!token;
+  userIsAdmin.value = isAdmin();
 };
 
 // Function to handle auth state changes
@@ -34,6 +37,7 @@ onBeforeUnmount(() => {
 const logout = () => {
   localStorage.removeItem('token');
   isLoggedIn.value = false;
+  userIsAdmin.value = false;
   // Dispatch event to notify other components
   window.dispatchEvent(new Event('auth-changed'));
   router.push('/');
@@ -63,20 +67,31 @@ const logout = () => {
             Home
           </router-link>
           
+          <!-- Show Dashboard link only for non-admin users -->
           <router-link 
-            v-if="isLoggedIn"
+            v-if="isLoggedIn && !userIsAdmin"
             to="/dashboard" 
             class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-blue-600 hover:after:w-full after:transition-all after:duration-200"
           >
             Dashboard
           </router-link>
 
+          <!-- Show Telecamere link only for non-admin users -->
           <router-link 
-            v-if="isLoggedIn"
+            v-if="isLoggedIn && !userIsAdmin"
             to="/cameras" 
             class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-blue-600 hover:after:w-full after:transition-all after:duration-200"
           >
             Telecamere
+          </router-link>
+          
+          <!-- Show Admin link only for admin users -->
+          <router-link 
+            v-if="isLoggedIn && userIsAdmin"
+            to="/admin" 
+            class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-blue-600 hover:after:w-full after:transition-all after:duration-200"
+          >
+            Admin
           </router-link>
         </div>
         

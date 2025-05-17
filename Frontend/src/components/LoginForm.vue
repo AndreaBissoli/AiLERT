@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import FormInput from './FormInput.vue';
 import AlertMessage from './AlertMessage.vue';
+import { isAdmin } from '../utils/auth';
 
 const router = useRouter();
 const email = ref('');
@@ -44,8 +45,15 @@ async function login() {
     // Dispatch event to notify other components (especially Header)
     window.dispatchEvent(new Event('auth-changed'));
     
-    // Redirect to dashboard
-    router.push('/dashboard');
+    // Small delay to ensure token is processed
+    setTimeout(() => {
+      // Check if user is admin to redirect to appropriate page
+      if (isAdmin()) {
+        router.push('/admin');
+      } else {
+        router.push('/dashboard');
+      }
+    }, 100);
     
   } catch (error) {
     errorMessage.value = error.message;
