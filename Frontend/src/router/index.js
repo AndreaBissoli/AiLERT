@@ -36,6 +36,11 @@ const router = createRouter({
       component: CameraDetailView,
       meta: { requiresAuth: true, adminForbidden: true }
     },
+    {
+      path: '/map',
+      name: 'map',
+      component: () => import('../views/MapView.vue')
+    },
     // Admin Routes
     {
       path: '/admin',

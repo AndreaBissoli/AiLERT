@@ -66,6 +66,13 @@ const logout = () => {
           >
             Home
           </router-link>
+
+          <router-link 
+            to="/map" 
+            class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-blue-600 hover:after:w-full after:transition-all after:duration-200"
+          >
+            Mappa
+          </router-link>
           
           <!-- Show Dashboard link only for non-admin users -->
           <router-link 
