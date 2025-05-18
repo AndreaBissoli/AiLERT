@@ -2,7 +2,9 @@
 <script setup>
 import EventsList from '../components/EventsList.vue'
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router' // Aggiungiamo l'import del router
 
+const router = useRouter() // Inizializziamo il router
 const userRole = ref(null)
 
 onMounted(() => {
@@ -10,6 +12,15 @@ onMounted(() => {
   // Per ora usiamo un placeholder
   userRole.value = 'sorvegliante' // o 'dipendenteComunale' o 'amministratore'
 })
+
+// Funzioni di navigazione
+const navigateToStatistics = () => {
+  router.push('/statistics')
+}
+
+const navigateToCameras = () => {
+  router.push('/cameras')
+}
 </script>
 
 <template>
@@ -40,27 +51,31 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    
+
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 py-8">
       <!-- Navigation Tabs -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
         <div class="flex flex-wrap gap-4">
-          <button class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg">
+          <button
+            class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg">
             📋 Eventi
           </button>
-          <button class="bg-white text-gray-600 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200">
+          <button @click="navigateToStatistics"
+            class="bg-white text-gray-600 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200">
             📊 Statistiche
           </button>
-          <button class="bg-white text-gray-600 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200">
+          <button @click="navigateToCameras"
+            class="bg-white text-gray-600 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200">
             📹 Telecamere
           </button>
-          <button class="bg-white text-gray-600 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200">
+          <button
+            class="bg-white text-gray-600 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200">
             📈 Report
           </button>
         </div>
       </div>
-      
+
       <!-- Events List -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <EventsList />

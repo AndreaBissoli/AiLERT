@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import CamerasView from '../views/CamerasView.vue'
 import CameraDetailView from '../views/CameraDetailView.vue'
+import StatisticsView from '../views/StatisticsView.vue'
 import { isAuthenticated, isAdmin } from '../utils/auth'
 
 const router = createRouter({
@@ -40,6 +41,12 @@ const router = createRouter({
       path: '/map',
       name: 'map',
       component: () => import('../views/MapView.vue')
+    },
+    {
+      path: '/statistics',
+      name: 'statistics',
+      component: StatisticsView,
+      meta: { requiresAuth: true, adminForbidden: true }
     },
     // Admin Routes
     {
