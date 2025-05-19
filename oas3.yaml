@@ -993,6 +993,19 @@ components:
         success:
           type: boolean
           description: Whether the login was successful
+        user:
+          type: object
+          properties:
+            email:
+              type: string
+              description: User's email address
+            name:
+              type: string
+              description: User's full name
+            role:
+              type: string
+              description: User's role
+              enum: [amministratore, sorvegliante, dipendentecomunale]
 
     ErrorResponse:
       type: object
