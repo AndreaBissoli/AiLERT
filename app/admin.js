@@ -19,6 +19,16 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         const { email, password, role, name } = req.body;
+        if (!email || !password || !role || !name) {
+            return res.status(400).json({ error: 'All fields are required', errorCode: 'MISSING_FIELDS' });
+        }
+        // Check if user already exists
+        const existingUser = await User.findOne({   
+            email
+        });
+        if (existingUser) {
+            return res.status(400).json({ error: 'User already exists', errorCode: 'USER_ALREADY_EXISTS' });
+        }
         const newUser = new User({
             name,
             email,
@@ -38,6 +48,21 @@ router.put('/:id', async (req, res) => {
         const loggedUserId = req.loggedUser.id;
         if (loggedUserId.toString() === req.params.id) {
             return res.status(403).json({ error: 'Cannot modify your own account', errorCode: 'SELF_MODIFICATION_FORBIDDEN' });
+        }
+        // Check if the user exists
+        const userToUpdate = await User.findById(req.params.id);
+        if (!userToUpdate) {
+            return res.status(404).json({ error: 'User not found', errorCode: 'USER_NOT_FOUND' });
+        }
+        // Check if the email is already in use by another user
+        if (req.body.email) {
+            const existingUser = await User.findOne({
+                email: req.body.email,
+                _id: { $ne: req.params.id } // Exclude the current user
+            });
+            if (existingUser) {
+                return res.status(400).json({ error: 'Email already in use', errorCode: 'EMAIL_ALREADY_IN_USE' });
+            }
         }
 
         const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
