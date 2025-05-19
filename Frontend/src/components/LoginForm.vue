@@ -42,6 +42,15 @@ async function login() {
     // Store token in localStorage for future API calls
     localStorage.setItem('token', data.token);
     
+    // Store user info in localStorage
+    if (data.user) {
+      localStorage.setItem('userInfo', JSON.stringify({
+        email: data.user.email,
+        name: data.user.name || 'Utente',
+        role: data.user.role
+      }));
+    }
+    
     // Dispatch event to notify other components (especially Header)
     window.dispatchEvent(new Event('auth-changed'));
     
