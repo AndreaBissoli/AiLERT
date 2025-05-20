@@ -130,45 +130,8 @@ onMounted(() => {
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
     </div>
     
-    <!-- Users table -->
-    <div v-else-if="users.length > 0" class="bg-white rounded-2xl shadow-soft overflow-hidden">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ruolo</th>
-            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Azioni</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="user in users" :key="user._id" class="hover:bg-gray-50 cursor-pointer" @click="viewUser(user._id)">
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">{{ user.email }}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ user.name || 'N/A' }}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border" :class="roleBadgeClasses[user.role] || 'bg-gray-100 text-gray-800 border-gray-200'">
-                {{ roleNames[user.role] || user.role }}
-              </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button 
-                class="text-blue-600 hover:text-blue-900 mr-3"
-                @click.stop="viewUser(user._id)"
-              >
-                Dettagli
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    
     <!-- Empty state -->
-    <div v-else class="bg-white rounded-2xl shadow-soft p-8 text-center">
+    <div v-else-if="users.length === 0" class="bg-white rounded-2xl shadow-md p-8 text-center">
       <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -185,6 +148,89 @@ onMounted(() => {
         </svg>
         Riprova
       </button>
+    </div>
+
+    <!-- Content when users are loaded -->
+    <div v-else>
+      <!-- Desktop view (tabella) - visibile solo su schermi md e superiori -->
+      <div class="hidden md:block overflow-hidden bg-white rounded-2xl shadow-md">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nome
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ruolo
+                </th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Azioni
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr v-for="user in users" :key="user._id" class="hover:bg-gray-50 cursor-pointer" @click="viewUser(user._id)">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-medium text-gray-900">{{ user.email }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">{{ user.name || 'N/A' }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border" 
+                    :class="roleBadgeClasses[user.role] || 'bg-gray-100 text-gray-800 border-gray-200'">
+                    {{ roleNames[user.role] || user.role }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <button 
+                    class="text-blue-600 hover:text-blue-900 mr-3"
+                    @click.stop="viewUser(user._id)"
+                  >
+                    Dettagli
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Mobile view (cards) - visibile solo su schermi piccoli -->
+      <div class="md:hidden space-y-4">
+        <div 
+          v-for="user in users" 
+          :key="user._id" 
+          class="bg-white rounded-xl shadow-md p-4 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all cursor-pointer"
+          @click="viewUser(user._id)"
+        >
+          <!-- Modificato il layout per mostrare il tag del ruolo sotto l'email -->
+          <div class="flex flex-col mb-3">
+            <div class="text-base font-medium text-gray-900 mb-0.5">{{ user.email }}</div>
+            <div class="text-sm text-gray-600 mb-2">{{ user.name || 'Nome non specificato' }}</div>
+            <span class="px-2.5 py-0.5 text-xs leading-tight font-medium rounded-full border self-start" 
+              :class="roleBadgeClasses[user.role] || 'bg-gray-100 text-gray-800 border-gray-200'">
+              {{ roleNames[user.role] || user.role }}
+            </span>
+          </div>
+          
+          <div class="flex justify-end">
+            <button 
+              class="text-blue-600 hover:text-blue-900 text-sm font-medium flex items-center"
+              @click.stop="viewUser(user._id)"
+            >
+              Dettagli
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

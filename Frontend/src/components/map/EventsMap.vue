@@ -150,11 +150,11 @@ const refreshData = () => {
 </script>
 
 <template>
-  <div class="relative">
+  <div class="map-wrapper relative z-0">
     <div ref="mapContainer" class="h-[600px] w-full rounded-xl shadow-md overflow-hidden"></div>
     
     <!-- Legenda -->
-    <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm p-3 rounded-lg shadow-md z-[1000]">
+    <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm p-3 rounded-lg shadow-md z-10">
       <p class="text-sm font-semibold mb-2">Legenda:</p>
       <div class="flex items-center mb-1">
         <div class="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
@@ -169,7 +169,7 @@ const refreshData = () => {
     <!-- Bottone refresh -->
     <button 
       @click="refreshData" 
-      class="absolute bottom-4 right-4 bg-white shadow-md rounded-full p-3 hover:bg-gray-50 transition-colors z-[1000]"
+      class="absolute bottom-4 right-4 bg-white shadow-md rounded-full p-3 hover:bg-gray-50 transition-colors z-10"
       :disabled="props.isLoading"
       title="Aggiorna dati"
     >
@@ -186,7 +186,7 @@ const refreshData = () => {
     <!-- Info panel -->
     <div 
       v-if="props.events.length === 0 && !props.isLoading" 
-      class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm py-4 px-6 rounded-lg shadow-lg z-50 text-center"
+      class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm py-4 px-6 rounded-lg shadow-lg z-10 text-center"
     >
       <p class="text-gray-700">Non ci sono eventi attivi nelle ultime 2 ore</p>
       <p class="text-sm text-gray-500 mt-2">La mappa è comunque navigabile</p>
@@ -210,5 +210,29 @@ const refreshData = () => {
 :deep(.event-popup p) {
   margin: 4px 0;
   font-size: 14px;
+}
+
+/* Forza i controlli di Leaflet a rispettare il nostro stacking context */
+:deep(.leaflet-top),
+:deep(.leaflet-bottom) {
+  z-index: 9 !important;
+}
+
+:deep(.leaflet-pane),
+:deep(.leaflet-tile),
+:deep(.leaflet-marker-icon),
+:deep(.leaflet-marker-shadow),
+:deep(.leaflet-tile-container),
+:deep(.leaflet-pane > svg),
+:deep(.leaflet-map-pane svg),
+:deep(.leaflet-zoom-box),
+:deep(.leaflet-image-layer),
+:deep(.leaflet-layer) {
+  z-index: 1 !important;
+}
+
+.map-wrapper {
+  position: relative;
+  isolation: isolate;
 }
 </style>
