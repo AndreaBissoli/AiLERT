@@ -132,34 +132,6 @@ async function login() {
       </button>
     </form>
     
-    <!-- Demo Credentials con Design Moderno -->
-    <div class="mt-8">
-      <div class="relative">
-        <div class="absolute inset-0 flex items-center">
-          <div class="w-full border-t border-gray-200"></div>
-        </div>
-        <div class="relative flex justify-center text-sm">
-          <span class="px-2 bg-white text-gray-500">Credenziali Demo</span>
-        </div>
-      </div>
-      
-      <div class="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-4 border border-blue-100/50">
-        <div class="grid grid-cols-1 gap-3 text-sm">
-          <div class="text-center">
-            <p class="text-gray-600 mb-2 font-medium">Account di Test</p>
-            <div class="space-y-1">
-              <p class="font-mono text-blue-700 bg-white rounded-lg px-3 py-1 inline-block">
-                john.doe@example.com
-              </p>
-              <p class="font-mono text-purple-700 bg-white rounded-lg px-3 py-1 inline-block">
-                securepassword123
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
     <!-- Footer Links -->
     <div class="mt-6 text-center">
       <router-link to="/" class="text-sm text-gray-600 hover:text-blue-600 transition-colors">
