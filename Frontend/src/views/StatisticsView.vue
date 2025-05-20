@@ -8,6 +8,7 @@ import EventTimeTrend from '../components/statistics/EventTimeTrend.vue';
 import EventsByCamera from '../components/statistics/EventsByCamera.vue';
 import SeverityDistribution from '../components/statistics/SeverityDistribution.vue';
 import HourlyDistribution from '../components/statistics/HourlyDistribution.vue';
+import DashboardNav from '../components/DashboardNav.vue';
 
 const router = useRouter();
 const events = ref([]);
@@ -42,11 +43,6 @@ function formatDateForInput(date) {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
-
-// Funzione per tornare alla dashboard
-const backToDashboard = () => {
-    router.push('/dashboard');
-};
 
 // Funzione per impostare il range di date
 const setDateRange = (range) => {
@@ -251,6 +247,7 @@ function generateMockCameras() {
         { _id: '682880cf683978f9108a739b', cameraId: '682880cf683978f9108a739b', streamKey: 'stream_duomo' }
     ];
 }
+
 </script>
 
 <template>
@@ -258,18 +255,6 @@ function generateMockCameras() {
         <!-- Header con Gradiente e Pulsante di ritorno -->
         <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8 mb-8">
             <div class="max-w-7xl mx-auto relative">
-                <!-- Pulsante per tornare alla dashboard -->
-                <button @click="backToDashboard"
-                    class="absolute left-0 top-1/2 -translate-y-1/2 flex items-center bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition-colors text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20"
-                        fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-                            clip-rule="evenodd" />
-                    </svg>
-                    Dashboard
-                </button>
-
                 <!-- Titolo centrato -->
                 <div class="text-center">
                     <h1 class="text-3xl font-bold mb-2">Statistiche Eventi</h1>
@@ -279,6 +264,9 @@ function generateMockCameras() {
         </div>
 
         <div class="max-w-7xl mx-auto px-4 pb-12">
+
+            <DashboardNav />
+
             <!-- Filtri per data con nuovo selettore di intervallo personalizzato -->
             <div class="bg-white rounded-2xl shadow-md p-6 mb-8 border border-gray-100">
                 <h2 class="text-xl font-bold text-gray-900 mb-6">Filtri</h2>
@@ -446,19 +434,6 @@ function generateMockCameras() {
                     <EventsByCamera :events="filteredEvents" :cameras="cameras" />
                 </div>
             </div>
-        </div>
-
-        <!-- Pulsante fisso di ritorno alla dashboard (sempre visibile durante lo scroll) -->
-        <div class="fixed bottom-6 right-6 z-50">
-            <button @click="backToDashboard"
-                class="bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center p-4 transition-all duration-200 transform hover:scale-105"
-                title="Torna alla Dashboard">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-            </button>
         </div>
     </div>
 </template>
