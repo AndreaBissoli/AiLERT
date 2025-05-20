@@ -85,7 +85,7 @@ const navigateToDashboard = () => {
     </section>
 
     <!-- Stats Section -->
-    <section class="py-20 bg-white">
+    <section class="py-10 bg-white">
       <div class="max-w-7xl mx-auto px-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div class="text-center group">

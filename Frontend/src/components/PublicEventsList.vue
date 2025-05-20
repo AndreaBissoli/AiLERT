@@ -1,11 +1,49 @@
 <!-- Frontend/src/components/PublicEventsList.vue -->
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import AlertMessage from './AlertMessage.vue'
 
 const events = ref([])           
 const loading = ref(true)        
-const error = ref(null)          
+const error = ref(null)
+const activeFilter = ref('recent') // 'recent' o 'severity'       
+
+// Computed property per gli eventi filtrati
+const filteredEvents = computed(() => {
+  if (!events.value || events.value.length === 0) return []
+  
+  // Crea una copia dell'array per non modificare l'originale
+  let result = [...events.value]
+  
+  // Applica l'ordinamento in base al filtro attivo
+  if (activeFilter.value === 'recent') {
+    // Ordina per data di evento (più recente prima)
+    result.sort((a, b) => new Date(b.eventDate) - new Date(a.eventDate))
+  } else if (activeFilter.value === 'severity') {
+    // Ordinamento per gravità e poi per data
+    // Mapping numerico della gravità per facilitare l'ordinamento
+    const severityMap = {
+      'alta': 3,
+      'media': 2,
+      'bassa': 1,
+      undefined: 0
+    }
+    
+    result.sort((a, b) => {
+      // Prima ordina per gravità (discendente)
+      const severityDiff = (severityMap[b.severity] || 0) - (severityMap[a.severity] || 0)
+      
+      // Se la gravità è uguale, ordina per data (più recente prima)
+      if (severityDiff === 0) {
+        return new Date(b.eventDate) - new Date(a.eventDate)
+      }
+      
+      return severityDiff
+    })
+  }
+  
+  return result
+})
 
 const fetchPublicEvents = async () => {
   try {
@@ -27,6 +65,11 @@ const fetchPublicEvents = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// Funzione per cambiare il filtro attivo
+const changeFilter = (filter) => {
+  activeFilter.value = filter
 }
 
 onMounted(() => {
@@ -110,6 +153,45 @@ const translateStatus = (status) => {
   if (status === 'false_alarm') return 'Falso allarme'
   return status
 }
+
+// Funzione per tradurre la gravità
+const translateSeverity = (severity) => {
+  if (!severity) return 'Non specificata'
+  if (severity === 'bassa') return 'Bassa'
+  if (severity === 'media') return 'Media'
+  if (severity === 'alta') return 'Alta'
+  return severity.charAt(0).toUpperCase() + severity.slice(1)
+}
+
+// Funzione per ottenere lo stile in base alla gravità
+const getSeverityStyle = (severity) => {
+  if (severity === 'alta') {
+    return {
+      bg: 'bg-red-100',
+      text: 'text-red-800',
+      border: 'border-red-200'
+    }
+  }
+  if (severity === 'media') {
+    return {
+      bg: 'bg-orange-100',
+      text: 'text-orange-800',
+      border: 'border-orange-200'
+    }
+  }
+  if (severity === 'bassa') {
+    return {
+      bg: 'bg-green-100',
+      text: 'text-green-800',
+      border: 'border-green-200'
+    }
+  }
+  return {
+    bg: 'bg-gray-100',
+    text: 'text-gray-800',
+    border: 'border-gray-200'
+  }
+}
 </script>
 
 <template>
@@ -119,6 +201,48 @@ const translateStatus = (status) => {
         Situazione Traffico
       </h2>
       <p class="text-lg text-gray-600">Eventi degli ultimi 120 minuti a Trento</p>
+    </div>
+    
+    <!-- Controlli di filtro - Design migliorato -->
+    <div class="mb-8 flex justify-center">
+      <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-md p-5 inline-block text-center border border-gray-100 min-w-[260px]">
+        <h3 class="text-gray-800 font-semibold mb-3">Ordina per</h3>
+        <div class="flex">
+          <button 
+            @click="changeFilter('recent')" 
+            class="flex-1 py-2.5 text-sm font-medium focus:outline-none relative min-w-[120px]"
+          >
+            <!-- Sfondo base dei bottoni -->
+            <div class="absolute inset-0 bg-gray-100/80 rounded-l-lg"></div>
+            <!-- Indicatore attivo (visibile solo se selezionato) -->
+            <div 
+              v-if="activeFilter === 'recent'"
+              class="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-l-lg shadow-sm"
+            ></div>
+            <!-- Testo con z-index più alto per stare sopra gli sfondi -->
+            <span class="relative z-10" :class="activeFilter === 'recent' ? 'text-white' : 'text-gray-700'">
+              Più recenti
+            </span>
+          </button>
+          
+          <button 
+            @click="changeFilter('severity')" 
+            class="flex-1 py-2.5 text-sm font-medium focus:outline-none relative min-w-[120px]"
+          >
+            <!-- Sfondo base dei bottoni -->
+            <div class="absolute inset-0 bg-gray-100/80 rounded-r-lg"></div>
+            <!-- Indicatore attivo (visibile solo se selezionato) -->
+            <div 
+              v-if="activeFilter === 'severity'"
+              class="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 rounded-r-lg shadow-sm"
+            ></div>
+            <!-- Testo con z-index più alto per stare sopra gli sfondi -->
+            <span class="relative z-10" :class="activeFilter === 'severity' ? 'text-white' : 'text-gray-700'">
+              Gravità
+            </span>
+          </button>
+        </div>
+      </div>
     </div>
     
     <!-- Loading State con animazione moderna -->
@@ -139,7 +263,7 @@ const translateStatus = (status) => {
     />
     
     <!-- Empty State Migliorato -->
-    <div v-else-if="events.length === 0" class="text-center py-16">
+    <div v-else-if="filteredEvents.length === 0" class="text-center py-16">
       <div class="max-w-md mx-auto">
         <div class="w-24 h-24 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center mx-auto mb-6">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -158,7 +282,7 @@ const translateStatus = (status) => {
     <!-- Events Grid Modernizzato -->
     <div v-else class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       <div 
-        v-for="event in events" 
+        v-for="event in filteredEvents" 
         :key="event._id"
         class="group bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-1 hover:border-blue-200"
       >
@@ -199,6 +323,20 @@ const translateStatus = (status) => {
           {{ event.description }}
         </p>
         
+        <!-- Badge di gravità -->
+        <div v-if="event.severity" class="mb-5">
+          <span 
+            class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold border"
+            :class="[
+              getSeverityStyle(event.severity).bg,
+              getSeverityStyle(event.severity).text,
+              getSeverityStyle(event.severity).border
+            ]"
+          >
+            Gravità: {{ translateSeverity(event.severity) }}
+          </span>
+        </div>
+        
         <!-- Info Details con Icone Moderne -->
         <div class="space-y-3 text-sm">
           <div class="flex items-center text-gray-600">
@@ -218,15 +356,6 @@ const translateStatus = (status) => {
               </svg>
             </div>
             <span>{{ event.location.address }}</span>
-          </div>
-          
-          <div v-if="event.severity" class="flex items-center text-gray-600">
-            <div class="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center mr-3">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <span>Livello: <span class="font-semibold">{{ event.severity }}</span></span>
           </div>
         </div>
       </div>
