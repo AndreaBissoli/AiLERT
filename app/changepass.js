@@ -22,6 +22,12 @@ router.post('', async function(req, res) {
     }
     // change the password in the local db
     const hash = await bcrypt.hash(newpassword, SALT_ROUNDS);
+    if (user.hash === hash) {
+        return res.status(400).json({
+            error: 'New password cannot be the same as the old password',
+            errorCode: 'SAME_PASSWORD'
+        });
+    }
     user.hash = hash;
     user.save().then(() => {
         res.json({

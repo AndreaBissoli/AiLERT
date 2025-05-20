@@ -50,6 +50,11 @@ router.post('', async function(req, res) {
 	res.json({
 		success: true,
 		token: token,
+        user: {
+            name: user.name,
+            email: user.email,
+            role: user.role
+        }
 	});
 
 });

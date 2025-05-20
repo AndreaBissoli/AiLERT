@@ -5,6 +5,7 @@ import CamerasView from '../views/CamerasView.vue'
 import CameraDetailView from '../views/CameraDetailView.vue'
 import StatisticsView from '../views/StatisticsView.vue'
 import { isAuthenticated, isAdmin } from '../utils/auth'
+import ChangePasswordView from '../views/ChangePasswordView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -47,6 +48,12 @@ const router = createRouter({
       name: 'statistics',
       component: StatisticsView,
       meta: { requiresAuth: true, adminForbidden: true }
+    },
+    {
+      path: '/change-password',
+      name: 'change-password',
+      component: ChangePasswordView,
+      meta: { requiresAuth: true }
     },
     // Admin Routes
     {
