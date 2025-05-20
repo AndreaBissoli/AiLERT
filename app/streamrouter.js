@@ -16,18 +16,17 @@ router.get('/list', async (req, res) => {
             viewCount: stream.viewCount
         }));
       
-      return res.status(200).json({
-        success: true,
-        streams: formattedStreams
-      });
+        return res.status(200).json({
+            success: true,
+            streams: formattedStreams
+        });
 
     } catch (error) {
         console.error('Errore nel recupero degli stream:', error);
         return res.status(500).json({
-          error: 'Errore interno del server',
-          errorCode: 'SERVER_ERROR'
+            error: 'Errore interno del server',
+            errorCode: 'SERVER_ERROR'
         });
-
     }
 });
 
@@ -111,6 +110,15 @@ router.post('/', async (req, res) => {
         });
     } catch (error) {
         console.error('Errore nella creazione dello stream:', error);
+        
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({
+                error: 'Dati di input non validi',
+                errorCode: 'INVALID_DATA',
+                details: error.message
+            });
+        }
+        
         return res.status(500).json({
             error: 'Errore interno del server',
             errorCode: 'SERVER_ERROR'
@@ -123,6 +131,13 @@ router.put('/:streamId', async (req, res) => {
     try {
         const { streamId } = req.params;
         const updateData = req.body;
+        
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({
+                error: 'Dati di aggiornamento non validi',
+                errorCode: 'INVALID_UPDATE_DATA'
+            });
+        }
 
         // Cerca e aggiorna lo stream
         const updatedStream = await Stream.findByIdAndUpdate(
@@ -144,6 +159,24 @@ router.put('/:streamId', async (req, res) => {
         });
     } catch (error) {
         console.error('Errore nell\'aggiornamento dello stream:', error);
+        
+        // Verifica se l'errore è dovuto a un ID non valido
+        if (error.name === 'CastError' && error.kind === 'ObjectId') {
+            return res.status(400).json({
+                error: 'ID dello stream non valido',
+                errorCode: 'INVALID_ID'
+            });
+        }
+        
+        // Verifica se l'errore è legato alla validazione dello schema
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({
+                error: 'Dati di aggiornamento non validi',
+                errorCode: 'INVALID_UPDATE_DATA',
+                details: error.message
+            });
+        }
+        
         return res.status(500).json({
             error: 'Errore interno del server',
             errorCode: 'SERVER_ERROR'
@@ -181,6 +214,15 @@ router.put('/:streamId/end', async (req, res) => {
         });
     } catch (error) {
         console.error('Errore nella terminazione dello stream:', error);
+        
+        // Verifica se l'errore è dovuto a un ID non valido
+        if (error.name === 'CastError' && error.kind === 'ObjectId') {
+            return res.status(400).json({
+                error: 'ID dello stream non valido',
+                errorCode: 'INVALID_ID'
+            });
+        }
+        
         return res.status(500).json({
             error: 'Errore interno del server',
             errorCode: 'SERVER_ERROR'

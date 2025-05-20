@@ -618,16 +618,11 @@ paths:
                     success: true
                     streams: [
                       {
-                        id: "60d21b4667d0d8992e610c85",
-                        cameraId: {
-                          name: "Camera Centro Città",
-                          location: {
-                            address: "Via Roma 123, Trento"
-                          }
-                        },
-                        isActive: true,
+                        _id: "60d21b4667d0d8992e610c85",
+                        cameraId: "68266cd1683978f9108a7393",
+                        streamKey: "stream_test_manuale",
                         streamUrl: "rtsp://example.com/stream1",
-                        streamType: "rtsp",
+                        isActive: true,
                         startTime: "2025-05-14T10:00:00Z",
                         viewCount: 5
                       }
@@ -647,8 +642,101 @@ paths:
               examples:
                 error:
                   value:
-                    error: 'Failed to retrieve streams'
-                    errorCode: 'STREAM_FETCH_ERROR'
+                    error: 'Errore interno del server'
+                    errorCode: 'SERVER_ERROR'
+
+  /stream:
+    post:
+      summary: Crea un nuovo stream
+      description: Crea un nuovo stream per una telecamera. Richiede autenticazione.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cameraId:
+                  type: string
+                  description: ID della telecamera associata allo stream
+                streamKey:
+                  type: string
+                  description: Chiave identificativa dello stream
+                streamUrl:
+                  type: string
+                  description: URL dello stream
+                streamType:
+                  type: string
+                  enum: [rtsp, hls, webrtc]
+                  description: Tipo di stream
+              required:
+                - cameraId
+                - streamUrl
+                - streamType
+            examples:
+              example1:
+                value:
+                  cameraId: "68266cd1683978f9108a7393"
+                  streamKey: "stream_test_manuale"
+                  streamUrl: "rtsp://example.com/stream1"
+                  streamType: "rtsp"
+      responses:
+        '201':
+          description: Stream creato con successo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Indica se la richiesta è andata a buon fine
+                  stream:
+                    $ref: '#/components/schemas/StreamDetails'
+              examples:
+                created:
+                  value:
+                    success: true
+                    stream: {
+                      _id: "60d21b4667d0d8992e610c85",
+                      cameraId: "68266cd1683978f9108a7393",
+                      streamKey: "stream_test_manuale",
+                      streamUrl: "rtsp://example.com/stream1",
+                      isActive: true,
+                      startTime: "2025-05-14T10:00:00Z",
+                      streamType: "rtsp",
+                      viewCount: 0
+                    }
+        '400':
+          description: Campi obbligatori mancanti
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingFields:
+                  value:
+                    error: 'Campi obbligatori mancanti'
+                    errorCode: 'MISSING_FIELDS'
+        '401':
+          description: Utente non autenticato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Errore del server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error:
+                  value:
+                    error: 'Errore nella creazione dello stream'
+                    errorCode: 'SERVER_ERROR'
 
   /stream/{streamId}:
     get:
@@ -704,13 +792,18 @@ paths:
                   value:
                     error: 'Failed to retrieve stream'
                     errorCode: 'STREAM_FETCH_ERROR'
-
-  /stream/start:
-    post:
-      summary: Avvia uno stream RTSP per una telecamera
-      description: Avvia lo streaming di una telecamera specifica convertendo RTSP in HLS. Richiede autenticazione.
+    put:
+      summary: Aggiorna un stream esistente
+      description: Modifica i parametri di uno stream esistente. Richiede autenticazione.
       security:
         - BearerAuth: []
+      parameters:
+        - name: streamId
+          in: path
+          required: true
+          description: ID dello stream da aggiornare
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -718,18 +811,27 @@ paths:
             schema:
               type: object
               properties:
-                cameraId:
+                streamKey:
                   type: string
-                  description: ID della telecamera da cui avviare lo stream
-              required:
-                - cameraId
+                  description: Chiave identificativa dello stream
+                streamUrl:
+                  type: string
+                  description: URL dello stream
+                isActive:
+                  type: boolean
+                  description: Stato di attività dello stream
+                streamType:
+                  type: string
+                  enum: [rtsp, hls, webrtc]
+                  description: Tipo di stream
             examples:
-              example1:
+              updateStream:
                 value:
-                  cameraId: "68266cef683978f9108a7394"
+                  streamKey: "new_stream_key"
+                  isActive: true
       responses:
         '200':
-          description: Stream avviato con successo o già attivo
+          description: Stream aggiornato con successo
           content:
             application/json:
               schema:
@@ -738,84 +840,28 @@ paths:
                   success:
                     type: boolean
                     description: Indica se la richiesta è andata a buon fine
-                  message:
-                    type: string
-                    description: Messaggio informativo
-                  streamId:
-                    type: string
-                    description: ID dello stream creato o esistente
-              examples:
-                created:
-                  value:
-                    success: true
-                    message: 'Stream started successfully'
-                    streamId: "68266cef683978f9108a7394"
-                alreadyActive:
-                  value:
-                    success: true
-                    message: 'Stream already active'
-                    streamId: "68266cef683978f9108a7394"
-        '401':
-          description: Utente non autenticato
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Telecamera non trovata
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                notFound:
-                  value:
-                    error: 'Camera not found'
-                    errorCode: 'CAMERA_NOT_FOUND'
-        '500':
-          description: Errore del server
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                error:
-                  value:
-                    error: 'Failed to start stream'
-                    errorCode: 'STREAM_START_ERROR'
-
-  /stream/stop/{streamId}:
-    post:
-      summary: Interrompi uno stream attivo
-      description: Interrompe uno stream attivo e aggiorna il suo stato. Richiede autenticazione.
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: streamId
-          in: path
-          required: true
-          description: ID dello stream da interrompere
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Stream interrotto con successo
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    description: Indica se la richiesta è andata a buon fine
-                  message:
-                    type: string
-                    description: Messaggio informativo
+                  stream:
+                    $ref: '#/components/schemas/StreamDetails'
               examples:
                 success:
                   value:
                     success: true
-                    message: 'Stream stopped successfully'
+                    stream: {
+                      _id: "60d21b4667d0d8992e610c85",
+                      cameraId: "68266cd1683978f9108a7393",
+                      streamKey: "new_stream_key",
+                      streamUrl: "rtsp://example.com/stream1",
+                      isActive: true,
+                      startTime: "2025-05-14T10:00:00Z",
+                      streamType: "rtsp",
+                      viewCount: 5
+                    }
+        '400':
+          description: Dati di aggiornamento non validi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Utente non autenticato
           content:
@@ -842,30 +888,50 @@ paths:
               examples:
                 error:
                   value:
-                    error: 'Failed to stop stream'
-                    errorCode: 'STREAM_STOP_ERROR'
+                    error: 'Errore interno del server'
+                    errorCode: 'SERVER_ERROR'
 
-  /stream/view/{streamId}:
-    get:
-      summary: Visualizza uno stream
-      description: Ottiene il manifest HLS per visualizzare uno stream. Richiede autenticazione.
+  /stream/{streamId}/end:
+    put:
+      summary: Termina uno stream
+      description: Imposta isActive=false e aggiunge endTime allo stream. Richiede autenticazione.
       security:
         - BearerAuth: []
       parameters:
         - name: streamId
           in: path
           required: true
-          description: ID dello stream da visualizzare
+          description: ID dello stream da terminare
           schema:
             type: string
       responses:
         '200':
-          description: Manifest HLS restituito con successo
+          description: Stream terminato con successo
           content:
-            application/vnd.apple.mpegurl:
+            application/json:
               schema:
-                type: string
-                format: binary
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Indica se la richiesta è andata a buon fine
+                  stream:
+                    $ref: '#/components/schemas/StreamDetails'
+              examples:
+                success:
+                  value:
+                    success: true
+                    stream: {
+                      _id: "60d21b4667d0d8992e610c85",
+                      cameraId: "68266cd1683978f9108a7393",
+                      streamKey: "stream_test_manuale",
+                      streamUrl: "rtsp://example.com/stream1",
+                      isActive: false,
+                      startTime: "2025-05-14T10:00:00Z",
+                      endTime: "2025-05-14T11:30:00Z",
+                      streamType: "rtsp",
+                      viewCount: 7
+                    }
         '401':
           description: Utente non autenticato
           content:
@@ -873,7 +939,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Stream non trovato o non ancora pronto
+          description: Stream non trovato
           content:
             application/json:
               schema:
@@ -881,12 +947,8 @@ paths:
               examples:
                 notFound:
                   value:
-                    error: 'Stream not found or inactive'
+                    error: 'Stream not found'
                     errorCode: 'STREAM_NOT_FOUND'
-                notReady:
-                  value:
-                    error: 'Stream not ready yet'
-                    errorCode: 'STREAM_NOT_READY'
         '500':
           description: Errore del server
           content:
@@ -896,41 +958,8 @@ paths:
               examples:
                 error:
                   value:
-                    error: 'Failed to access stream'
-                    errorCode: 'STREAM_ACCESS_ERROR'
-
-  /stream/segments/{streamKey}/{filename}:
-    get:
-      summary: Ottieni un segmento dello stream
-      description: Ottiene un segmento specifico di uno stream HLS. Non richiede autenticazione esplicita.
-      parameters:
-        - name: streamKey
-          in: path
-          required: true
-          description: Chiave univoca dello stream
-          schema:
-            type: string
-        - name: filename
-          in: path
-          required: true
-          description: Nome del file del segmento
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Segmento restituito con successo
-          content:
-            video/mp2t:
-              schema:
-                type: string
-                format: binary
-        '404':
-          description: Segmento non trovato
-          content:
-            text/plain:
-              schema:
-                type: string
-              example: 'Segment not found'
+                    error: 'Errore nella terminazione dello stream'
+                    errorCode: 'SERVER_ERROR'
 
 components:
   securitySchemes:
@@ -1118,6 +1147,7 @@ components:
           type: string
           description: User's role
           enum: [amministratore, sorvegliante, dipendentecomunale]
+    
     Camera:
       description: "Rappresenta una telecamera installata nel sistema di videosorveglianza."
       type: object
@@ -1162,15 +1192,21 @@ components:
               description: Modello della telecamera
 
     StreamResponse:
-      description: "Risposta generata a seguito della richiesta di avvio di uno stream"
+      description: "Rappresentazione di uno stream nella risposta della lista di stream attivi"
       type: object
       properties:
-        id:
+        _id:
           type: string
           description: ID dello stream
         cameraId:
-          $ref: '#/components/schemas/Camera'
-          description: Riferimento alla telecamera
+          type: string
+          description: ID della telecamera associata
+        streamKey:
+          type: string
+          description: Chiave identificativa dello stream
+        streamUrl:
+          type: string
+          description: URL dello stream
         isActive:
           type: boolean
           description: Indica se lo stream è attivo
@@ -1181,10 +1217,7 @@ components:
         endTime:
           type: string
           format: date-time
-          description: Data e ora di fine dello stream, se presente
-        streamUrl:
-          type: string
-          description: URL RTSP originale
+          description: Data e ora di fine dello stream (se terminato)
         streamType:
           type: string
           enum: [rtsp, hls, webrtc]
@@ -1198,32 +1231,43 @@ components:
           description: Ultima volta che lo stream è stato visualizzato
 
     StreamDetails:
-      description: "Contiene i dettagli tecnici e identificativi relativi a uno stream video attivo"
+      description: "Dettagli completi di uno stream specifico"
       type: object
       properties:
-        id:
+        _id:
           type: string
           description: ID dello stream
-        cameraName:
+        cameraId:
           type: string
-          description: Nome della telecamera
-        cameraLocation:
-          type: object
-          properties:
-            address:
-              type: string
-              description: Indirizzo della telecamera
+          description: ID della telecamera associata
+        streamKey:
+          type: string
+          description: Chiave identificativa dello stream
         streamUrl:
           type: string
-          description: URL per visualizzare lo stream
+          description: URL dello stream
+        isActive:
+          type: boolean
+          description: Indica se lo stream è attivo
+        startTime:
+          type: string
+          format: date-time
+          description: Data e ora di inizio dello stream
+        endTime:
+          type: string
+          format: date-time
+          description: Data e ora di fine dello stream (se terminato)
         streamType:
           type: string
           enum: [rtsp, hls, webrtc]
           description: Tipo di stream
-        isActive:
-          type: boolean
-          description: Indica se lo stream è attivo
-
+        viewCount:
+          type: integer
+          description: Numero di visualizzazioni
+        lastAccessed:
+          type: string
+          format: date-time
+          description: Ultima volta che lo stream è stato visualizzato
   
   responses:
     Unauthorized:
