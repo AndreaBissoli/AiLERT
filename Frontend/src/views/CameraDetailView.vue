@@ -60,7 +60,7 @@ const fetchEvents = async () => {
   loadingEvents.value = true;
 
   try {
-    const res = await fetch('http://localhost:8080/api/v1/events', {
+    const res = await fetch('/api/v1/events', {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -82,7 +82,7 @@ const fetchStream = async () => {
   loading.value = true;
 
   try {
-    const res = await fetch(`http://localhost:8080/api/v1/stream/${streamId}`, {
+    const res = await fetch(`/api/v1/stream/${streamId}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -94,7 +94,7 @@ const fetchStream = async () => {
     stream.value = data.stream;
     
     // Registra la visualizzazione
-    await fetch(`http://localhost:8080/api/v1/stream/view/${streamId}`, {
+    await fetch(`/api/v1/stream/view/${streamId}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
