@@ -16,7 +16,7 @@ paths:
   /auth/login:
     post:
       summary: User Login
-      description: Authenticate user and generate JWT token. **IMPORTANT:** Ensure to use HTTPS in production for security.
+      description: Authenticate user and generate JWT token.
       requestBody:
         required: true
         content:
@@ -30,8 +30,8 @@ paths:
                   password: 'securepassword123'
               amministratore:
                 value:
-                  email: 'bob@bob.com'
-                  password: 'password'
+                  email: 'admin@comune.it'
+                  password: 'password123'
       responses:
         '200':
           description: Successful authentication
@@ -98,47 +98,21 @@ paths:
                     error: 'New password cannot be the same as the old password'
                     errorCode: 'SAME_PASSWORD'
         '401':
-          description: Unauthorized access (invalid user)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                userNotFound:
-                  value:
-                    error: 'Invalid email'
-                    errorCode: 'INVALID_EMAIL'
-                authTokenRequired:
-                  value:
-                    error: 'Authentication token required'
-                    errorCode: 'TOKEN_REQUIRED'
-                invalidToken:
-                  value:
-                    error: 'Invalid or expired token'
-                    errorCode: 'INVALID_TOKEN'
+          $ref: '#/components/responses/Unauthorized'
         '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                serverError:
-                  value:
-                    error: 'Internal server error'
-                    errorCode: 'INTERNAL_SERVER_ERROR'
+          $ref: '#/components/responses/InternalServerError'
   
   /public/events:
     get:
-      summary: Ottieni eventi pubblici
+      summary: Obtain public events
       description: |
-        Restituisce gli eventi pubblici delle ultime 2 ore. Non richiede autenticazione.
-        Include solo eventi con status 'solved' o 'unsolved' per i cittadini.
+        Returns the events of the last 2 hours, which are publicly available. No authentication required.
+        Only include events with status 'solved' or 'unsolved' for citizens.
       tags:
         - Public API
       responses:
         '200':
-          description: Lista eventi pubblici ottenuta con successo
+          description: Successfully retrieved public events
           content:
             application/json:
               schema:
@@ -167,21 +141,17 @@ paths:
                       status: "unsolved"
                       severity: "media"
         '500':
-          description: Errore del server
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/InternalServerError'
   
   /events:
     get:
-      summary: Ottieni tutti gli eventi
-      description: Restituisce la lista di eventi. Richiede autenticazione.
+      summary: Get all events
+      description: Returns a list of all events in the system. Requires authentication.
       security:
         - BearerAuth: []
       responses:
         '200':
-          description: Lista ottenuta con successo
+          description: List of events retrieved successfully
           content:
             application/json:
               schema:
@@ -190,7 +160,7 @@ paths:
                   $ref: '#/components/schemas/Event'
               examples:
                 exampleResponse:
-                  summary: Esempio di lista eventi
+                  summary: Example response for GET /events
                   value:
                     - type: incidente
                       title: "Auto contro semaforo"
@@ -224,21 +194,12 @@ paths:
                       confirmed: false
                       severity: media
         '401':
-          description: Utente non autenticato
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                invalidToken:
-                  value:
-                    error: 'Unauthorized role'
-                    errorCode: 'UNAUTHORIZED_ROLE'
+          $ref: '#/components/responses/Forbidden'
     post:
-      summary: Crea un nuovo evento
-      description: Registra un nuovo evento (incidente o ingorgo). Richiede autenticazione.
+      summary: Create new event
+      description: Creates a new event in the system. Requires authentication.
       security:
         - BearerAuth: []
       requestBody:
@@ -249,7 +210,7 @@ paths:
               $ref: '#/components/schemas/Event'
             examples:
               validEventExample:
-                summary: Esempio valido per test POST
+                summary: Example of a valid accident event creation request
                 value:
                   type: incidente
                   title: "Auto contro semaforo"
@@ -269,22 +230,17 @@ paths:
                   severity: media
       responses:
         '201':
-          description: Evento creato con successo
+          description: Event created successfully
         '400':
-          description: Errore nei dati inviati
-        '401':
-          description: Utente non autenticato
-        '403':
-          description: Forbidden
+          description: Error in request body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                invalidToken:
-                  value:
-                    error: 'Unauthorized role'
-                    errorCode: 'UNAUTHORIZED_ROLE'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   
 
   # Admin endpoints
@@ -317,42 +273,11 @@ paths:
                       role: "dipendentecomunale"
                       hash: "hashedpassword"
         '401':
-          description: Unauthorized access (invalid token)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                tokenRequired:
-                  value:
-                    error: 'Authentication token required'
-                    errorCode: 'TOKEN_REQUIRED'
-                invalidToken:
-                  value:
-                    error: 'Invalid or expired token'
-                    errorCode: 'INVALID_TOKEN'
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden access (user is not an admin)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                unauthorizedRole:
-                  value:
-                    error: 'Unauthorized role'
-                    errorCode: 'UNAUTHORIZED_ROLE'
+          $ref: '#/components/responses/Forbidden'
         '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                serverError:
-                  value:
-                    error: 'Internal server error'
-                    errorCode: 'INTERNAL_SERVER_ERROR'
+          $ref: '#/components/responses/InternalServerError'
                     
     post:
       summary: Create new user
@@ -423,19 +348,7 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
         '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                duplicateEmail:
-                  value:
-                    error: "E11000 duplicate key error collection: users index: email_1 dup key"
-                serverError:
-                  value:
-                    error: 'Internal server error'
-                    errorCode: 'INTERNAL_SERVER_ERROR'
+          $ref: '#/components/responses/InternalServerError'
                     
   /admin/{id}:
     parameters:
@@ -544,20 +457,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden access (user is not an admin or attempting to modify their own account)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                unauthorizedRole:
-                  value:
-                    error: 'Unauthorized role'
-                    errorCode: 'UNAUTHORIZED_ROLE'
-                selfModification:
-                  value:
-                    error: 'Cannot modify your own account'
-                    errorCode: 'SELF_MODIFICATION_FORBIDDEN'
+          $ref: '#/components/responses/Forbidden'
         '404':
           description: User not found
           content:
@@ -569,6 +469,8 @@ paths:
                   value:
                     error: 'User not found'
                     errorCode: 'USER_NOT_FOUND'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
                     
     delete:
       summary: Delete user
@@ -592,20 +494,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden access (user is not an admin or attempting to delete their own account)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                unauthorizedRole:
-                  value:
-                    error: 'Unauthorized role'
-                    errorCode: 'UNAUTHORIZED_ROLE'
-                selfDeletion:
-                  value:
-                    error: 'Cannot delete your own account'
-                    errorCode: 'SELF_DELETION_FORBIDDEN'
+          $ref: '#/components/responses/Forbidden'
         '404':
           description: User not found
           content:
@@ -623,13 +512,13 @@ paths:
   # Stream API endpoints
   /stream/list:
     get:
-      summary: Ottieni tutti gli stream attivi
-      description: Restituisce la lista di stream attivi disponibili. Richiede autenticazione.
+      summary: Get active streams
+      description: Returns a list of active streams. Requires authentication.
       security:
         - BearerAuth: []
       responses:
         '200':
-          description: Lista di stream ottenuta con successo
+          description: Successfully retrieved active streams
           content:
             application/json:
               schema:
@@ -637,7 +526,7 @@ paths:
                 properties:
                   success:
                     type: boolean
-                    description: Indica se la richiesta è andata a buon fine
+                    description: Indicates if the request was successful
                   streams:
                     type: array
                     items:
@@ -658,27 +547,14 @@ paths:
                       }
                     ]
         '401':
-          description: Utente non autenticato
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/Unauthorized'
         '500':
-          description: Errore del server
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                error:
-                  value:
-                    error: 'Errore interno del server'
-                    errorCode: 'SERVER_ERROR'
+          $ref: '#/components/responses/InternalServerError'
 
   /stream:
     post:
-      summary: Crea un nuovo stream
-      description: Crea un nuovo stream per una telecamera. Richiede autenticazione.
+      summary: Create a new stream
+      description: Creates a new stream in the system. Requires authentication.
       security:
         - BearerAuth: []
       requestBody:
@@ -690,17 +566,17 @@ paths:
               properties:
                 cameraId:
                   type: string
-                  description: ID della telecamera associata allo stream
+                  description: ID of the associated camera
                 streamKey:
                   type: string
-                  description: Chiave identificativa dello stream
+                  description: Unique key for the stream
                 streamUrl:
                   type: string
-                  description: URL dello stream
+                  description: URL of the stream
                 streamType:
                   type: string
                   enum: [rtsp, hls, webrtc]
-                  description: Tipo di stream
+                  description: Stream type
               required:
                 - cameraId
                 - streamUrl
@@ -714,7 +590,7 @@ paths:
                   streamType: "rtsp"
       responses:
         '201':
-          description: Stream creato con successo
+          description: Stream created successfully
           content:
             application/json:
               schema:
@@ -722,7 +598,7 @@ paths:
                 properties:
                   success:
                     type: boolean
-                    description: Indica se la richiesta è andata a buon fine
+                    description: Indicates if the request was successful
                   stream:
                     $ref: '#/components/schemas/StreamDetails'
               examples:
@@ -740,7 +616,7 @@ paths:
                       viewCount: 0
                     }
         '400':
-          description: Campi obbligatori mancanti
+          description: Missing or invalid fields
           content:
             application/json:
               schema:
@@ -748,42 +624,29 @@ paths:
               examples:
                 missingFields:
                   value:
-                    error: 'Campi obbligatori mancanti'
+                    error: 'Missing required fields'
                     errorCode: 'MISSING_FIELDS'
         '401':
-          description: Utente non autenticato
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/Unauthorized'
         '500':
-          description: Errore del server
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                error:
-                  value:
-                    error: 'Errore nella creazione dello stream'
-                    errorCode: 'SERVER_ERROR'
+          $ref: '#/components/responses/InternalServerError'
 
   /stream/{streamId}:
     get:
-      summary: Ottieni dettagli di uno stream specifico
-      description: Restituisce i dettagli di uno stream specifico. Richiede autenticazione.
+      summary: Obtain stream details
+      description: Returns details of a specific stream. Requires authentication.
       security:
         - BearerAuth: []
       parameters:
         - name: streamId
           in: path
           required: true
-          description: ID dello stream
+          description: Stream ID
           schema:
             type: string
       responses:
         '200':
-          description: Dettagli dello stream ottenuti con successo
+          description: Successfully retrieved stream details
           content:
             application/json:
               schema:
@@ -791,17 +654,13 @@ paths:
                 properties:
                   success:
                     type: boolean
-                    description: Indica se la richiesta è andata a buon fine
+                    description: Indicates if the request was successful
                   stream:
                     $ref: '#/components/schemas/StreamDetails'
         '401':
-          description: Utente non autenticato
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/Unauthorized'
         '404':
-          description: Stream non trovato
+          description: Stream not found
           content:
             application/json:
               schema:
@@ -812,26 +671,17 @@ paths:
                     error: 'Stream not found'
                     errorCode: 'STREAM_NOT_FOUND'
         '500':
-          description: Errore del server
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                error:
-                  value:
-                    error: 'Failed to retrieve stream'
-                    errorCode: 'STREAM_FETCH_ERROR'
+          $ref: '#/components/responses/InternalServerError'
     put:
-      summary: Aggiorna un stream esistente
-      description: Modifica i parametri di uno stream esistente. Richiede autenticazione.
+      summary: Update existing stream parameters
+      description: Modifies the parameters of an existing stream. Requires authentication.
       security:
         - BearerAuth: []
       parameters:
         - name: streamId
           in: path
           required: true
-          description: ID dello stream da aggiornare
+          description: ID of the stream to update
           schema:
             type: string
       requestBody:
@@ -843,17 +693,17 @@ paths:
               properties:
                 streamKey:
                   type: string
-                  description: Chiave identificativa dello stream
+                  description: Unique key for the stream
                 streamUrl:
                   type: string
-                  description: URL dello stream
+                  description: URL of the stream
                 isActive:
                   type: boolean
-                  description: Stato di attività dello stream
+                  description: Indicates if the stream is active
                 streamType:
                   type: string
                   enum: [rtsp, hls, webrtc]
-                  description: Tipo di stream
+                  description: Stream type
             examples:
               updateStream:
                 value:
@@ -861,7 +711,7 @@ paths:
                   isActive: true
       responses:
         '200':
-          description: Stream aggiornato con successo
+          description: Stream updated successfully
           content:
             application/json:
               schema:
@@ -869,7 +719,7 @@ paths:
                 properties:
                   success:
                     type: boolean
-                    description: Indica se la richiesta è andata a buon fine
+                    description: Indicates if the request was successful
                   stream:
                     $ref: '#/components/schemas/StreamDetails'
               examples:
@@ -887,19 +737,15 @@ paths:
                       viewCount: 5
                     }
         '400':
-          description: Dati di aggiornamento non validi
+          description: Missing or invalid fields
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
-          description: Utente non autenticato
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/Unauthorized'
         '404':
-          description: Stream non trovato
+          description: Stream not found
           content:
             application/json:
               schema:
@@ -910,33 +756,24 @@ paths:
                     error: 'Stream not found'
                     errorCode: 'STREAM_NOT_FOUND'
         '500':
-          description: Errore del server
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                error:
-                  value:
-                    error: 'Errore interno del server'
-                    errorCode: 'SERVER_ERROR'
+          $ref: '#/components/responses/InternalServerError'
 
   /stream/{streamId}/end:
     put:
-      summary: Termina uno stream
-      description: Imposta isActive=false e aggiunge endTime allo stream. Richiede autenticazione.
+      summary: End a stream
+      description: Ends an active stream. Requires authentication.
       security:
         - BearerAuth: []
       parameters:
         - name: streamId
           in: path
           required: true
-          description: ID dello stream da terminare
+          description: ID of the stream to end
           schema:
             type: string
       responses:
         '200':
-          description: Stream terminato con successo
+          description: Stream ended successfully
           content:
             application/json:
               schema:
@@ -944,7 +781,7 @@ paths:
                 properties:
                   success:
                     type: boolean
-                    description: Indica se la richiesta è andata a buon fine
+                    description: Indicates if the request was successful
                   stream:
                     $ref: '#/components/schemas/StreamDetails'
               examples:
@@ -963,13 +800,9 @@ paths:
                       viewCount: 7
                     }
         '401':
-          description: Utente non autenticato
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/Unauthorized'
         '404':
-          description: Stream non trovato
+          description: Stream not found
           content:
             application/json:
               schema:
@@ -980,16 +813,7 @@ paths:
                     error: 'Stream not found'
                     errorCode: 'STREAM_NOT_FOUND'
         '500':
-          description: Errore del server
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                error:
-                  value:
-                    error: 'Errore nella terminazione dello stream'
-                    errorCode: 'SERVER_ERROR'
+          $ref: '#/components/responses/InternalServerError'
 
 components:
   securitySchemes:
@@ -1099,40 +923,40 @@ components:
           enum: [bassa, media, alta]
     
     PublicEvent:
-      description: "Versione pubblica di un evento per cittadini non autenticati"
+      description: "Public version of the Event schema, used for public access"
       type: object
       properties:
         _id:
           type: string
-          description: ID dell'evento
+          description: Event unique identifier
         type:
           type: string
           enum: [incidente, ingorgo]
-          description: Tipo di evento
+          description: Event type
         title:
           type: string
-          description: Titolo dell'evento
+          description: Event title
         description:
           type: string
-          description: Descrizione dell'evento
+          description: Event description
         eventDate:
           type: string
           format: date-time
-          description: Data e ora dell'evento
+          description: Event date and time
         location:
           type: object
           properties:
             address:
               type: string
-              description: Indirizzo dell'evento
+              description: Event location address
         status:
           type: string
           enum: [solved, unsolved]
-          description: Stato dell'evento (solo eventi risolti o non risolti)
+          description: Event status
         severity:
           type: string
           enum: [bassa, media, alta]
-          description: Gravità dell'evento
+          description: Event severity
 
     User:
       type: object
@@ -1192,125 +1016,125 @@ components:
           enum: [amministratore, sorvegliante, dipendentecomunale]
     
     Camera:
-      description: "Rappresenta una telecamera installata nel sistema di videosorveglianza."
+      description: "Represents a camera in the system"
       type: object
       properties:
         id:
           type: string
-          description: ID della telecamera
+          description: Camera unique identifier
         name:
           type: string
-          description: Nome della telecamera
+          description: Camera name
         location:
           type: object
           properties:
             address:
               type: string
-              description: Indirizzo dove è installata la telecamera
+              description: Address of the camera location
         installationDate:
           type: string
           format: date-time
-          description: Data di installazione
+          description: Installation date of the camera
         lastMaintenance:
           type: string
           format: date-time
-          description: Data dell'ultima manutenzione
+          description: Last maintenance date of the camera
         isActive:
           type: boolean
-          description: Indica se la telecamera è attiva
+          description: Indicates if the camera is active
         ipAddress:
           type: string
-          description: Indirizzo IP della telecamera
+          description: IP address of the camera
         streamUrl:
           type: string
-          description: URL RTSP originale della telecamera
+          description: URL of the camera stream
         modelInfo:
           type: object
           properties:
             brand:
               type: string
-              description: Marca della telecamera
+              description: Camera brand name
             model:
               type: string
-              description: Modello della telecamera
+              description: Camera model name
 
     StreamResponse:
-      description: "Rappresentazione di uno stream nella risposta della lista di stream attivi"
+      description: "Represents a stream in the system"
       type: object
       properties:
         _id:
           type: string
-          description: ID dello stream
+          description: Stream unique identifier
         cameraId:
           type: string
-          description: ID della telecamera associata
+          description: ID of the associated camera
         streamKey:
           type: string
-          description: Chiave identificativa dello stream
+          description: Unique key for the stream
         streamUrl:
           type: string
-          description: URL dello stream
+          description: Stream URL
         isActive:
           type: boolean
-          description: Indica se lo stream è attivo
+          description: Indicates if the stream is active
         startTime:
           type: string
           format: date-time
-          description: Data e ora di inizio dello stream
+          description: Date and time of stream start
         endTime:
           type: string
           format: date-time
-          description: Data e ora di fine dello stream (se terminato)
+          description: Date and time of stream end (if ended)
         streamType:
           type: string
           enum: [rtsp, hls, webrtc]
-          description: Tipo di stream
+          description: Stream type
         viewCount:
           type: integer
-          description: Numero di visualizzazioni
+          description: Number of views
         lastAccessed:
           type: string
           format: date-time
-          description: Ultima volta che lo stream è stato visualizzato
+          description: Last time the stream was accessed
 
     StreamDetails:
-      description: "Dettagli completi di uno stream specifico"
+      description: "Complete details of a stream"
       type: object
       properties:
         _id:
           type: string
-          description: ID dello stream
+          description: Stream unique identifier
         cameraId:
           type: string
-          description: ID della telecamera associata
+          description: ID of the associated camera
         streamKey:
           type: string
-          description: Chiave identificativa dello stream
+          description: Camera unique key
         streamUrl:
           type: string
-          description: URL dello stream
+          description: URL of the stream
         isActive:
           type: boolean
-          description: Indica se lo stream è attivo
+          description: Indicates if the stream is active
         startTime:
           type: string
           format: date-time
-          description: Data e ora di inizio dello stream
+          description: Date and time of stream start
         endTime:
           type: string
           format: date-time
-          description: Data e ora di fine dello stream (se terminato)
+          description: Date and time of stream end (if ended)
         streamType:
           type: string
           enum: [rtsp, hls, webrtc]
-          description: Tipo di stream
+          description: Stream type
         viewCount:
           type: integer
-          description: Numero di visualizzazioni
+          description: Number of views
         lastAccessed:
           type: string
           format: date-time
-          description: Ultima volta che lo stream è stato visualizzato
+          description: Last time the stream was accessed
   
   responses:
     Unauthorized:

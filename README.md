@@ -11,6 +11,21 @@ statistiche e mappe interattive sia per operatori autorizzati che per cittadini 
 dati esterni sul traffico per offrire una visione completa della viabilità urbana, migliorando così
 la sicurezza stradale e la gestione delle emergenze.
 
+# How to run
+
+Per eseguire il progetto, è necessario avere installato `npm`. 
+
+Una volta installato, si deve creare il file `.env` in base alle proprie esigenze, seguendo le indicaioni nel file `.env.example`.
+
+Infine, eseguire i seguenti comandi:
+
+```bash
+npm install --save dotenv
+npm run buildall
+```
+per costruire la Frontend e la Backend e servire il progetto sul server locale.
+
+
 # Studenti - Gruppo 4
 
 * [Andrea Bissoli](https://github.com/AndreaBissoli)

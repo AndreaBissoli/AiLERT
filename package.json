@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "node -r dotenv/config index.js",
-    "start": "node index.js"
+    "start": "node -r dotenv/config index.js",
+    "buildall": "cd Frontend && npm install && npm run build && cd .. && npm run start"
   },
   "author": "Andrea Bissoli, Kuba Di Quattro, Bilal Soussane",
   "license": "MIT",
