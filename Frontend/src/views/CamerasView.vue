@@ -1,15 +1,19 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted, computed, onBeforeUnmount, onUnmounted } from 'vue';
 import DashboardNav from '../components/DashboardNav.vue';
+import NotificationToast from '../components/NotificationToast.vue';
+import WebSocketService from '../services/WebSocketService.js';
 
-const router = useRouter();
 const streams = ref([]);
 const error = ref(null);
 const loading = ref(true);
 const currentPage = ref(0);
 const streamsPerPage = 6;
 const eventsData = ref([]);
+const notifications = ref([]);
+const websocketConnected = ref(false);
+
+let wsUnsubscribe = null;
 
 // Calcola il numero di pagine in base agli stream totali
 const totalPages = computed(() => {
@@ -117,14 +121,66 @@ const viewStream = async (streamId) => {
   }
 };
 
+// Add notification when WebSocket event is received
+const addNotification = (notification) => {
+  const id = Date.now() + Math.random();
+  notifications.value.push({
+    id,
+    ...notification
+  });
+};
+
+// Remove notification
+const removeNotification = (id) => {
+  const index = notifications.value.findIndex(n => n.id === id);
+  if (index > -1) {
+    notifications.value.splice(index, 1);
+  }
+};
+
 onMounted(async () => {
-  await fetchEvents(); 
-  await fetchStreams();
+  refreshData();
+
+  const token = localStorage.getItem('token');
+  if (token) {
+    WebSocketService.connect(token);
+    websocketConnected.value = true;
+    
+    // Subscribe to notifications
+    wsUnsubscribe = WebSocketService.on('notification', (data) => {
+      console.log('Detection notification received in CamerasView:', data);
+      addNotification(data);
+    });
+  }
+});
+
+onBeforeUnmount(() => {
+  // Cleanup WebSocket subscription
+  if (wsUnsubscribe) {
+    wsUnsubscribe();
+    wsUnsubscribe = null;
+  }
+});
+
+onUnmounted(() => {
+  WebSocketService.disconnect();
+  websocketConnected.value = false;
 });
 </script>
 
 <template>
   <div>
+    <!-- Notifications -->
+    <div class="fixed top-20 right-4 z-[10000] space-y-2">
+      <NotificationToast
+        v-for="notification in notifications"
+        :key="notification.id"
+        :notification="notification"
+        :duration="5000"
+        @close="removeNotification(notification.id)"
+      />
+    </div>
+
     <!-- Header con Gradiente -->
     <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8 mb-8">
       <div class="max-w-7xl mx-auto relative">
@@ -132,6 +188,22 @@ onMounted(async () => {
         <div class="text-center">
           <h1 class="text-3xl font-bold mb-2">Telecamere di sorveglianza</h1>
           <p class="opacity-80">Monitora le telecamere installate nel territorio di Trento</p>
+          
+          <!-- WebSocket connection status indicator -->
+          <div class="mt-2 flex justify-center">
+            <div class="flex items-center text-sm">
+              <div 
+                class="w-2 h-2 rounded-full mr-2"
+                :class="{
+                  'bg-green-400': websocketConnected,
+                  'bg-red-400': !websocketConnected
+                }"
+              ></div>
+              <span class="opacity-75">
+                {{ websocketConnected ? 'Sistema di rilevamento attivo' : 'Sistema di rilevamento disconnesso' }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

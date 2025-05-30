@@ -41,4 +41,27 @@ const tokenChecker = async function(req, res, next) {
     });
 };
 
-module.exports = tokenChecker;
+const socketTokenChecker = async function(socket, next) {
+    // Extract token from socket handshake
+    const token = socket.handshake.auth.token;
+    
+    // If no token found, return error
+    if (!token) {
+        return next(new Error('Authentication token required'));
+    }
+    
+    // Verify token
+    await jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
+        if (err) {
+            return next(new Error('Invalid or expired token'));
+        } else {
+            socket.userId = decoded.id;
+            socket.userEmail = decoded.email;
+            socket.userRole = decoded.role;
+            next();
+        }
+    });
+}
+    
+
+module.exports = {tokenChecker, socketTokenChecker};
