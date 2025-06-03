@@ -58,6 +58,8 @@ io.use(socketTokenChecker);
 const detectionService = new DetectionService(io);
 detectionService.start();
 
+app.locals.detectionService = detectionService;
+
 
 app.use('/', express.static(process.env.FRONTEND_DIR))
 

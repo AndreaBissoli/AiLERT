@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node -r dotenv/config index.js",
     "start": "node -r dotenv/config index.js",
-    "buildall": "cd Frontend && npm install && npm run build && cd .. && npm run start"
+    "buildall": "cd Frontend && npm install && npm run build && cd .. && npm run start",
+    "test": "jest --setupFiles dotenv/config"
   },
   "author": "Andrea Bissoli, Kuba Di Quattro, Bilal Soussane",
   "license": "MIT",
@@ -18,5 +19,9 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.14.2",
     "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.1.1"
   }
 }
