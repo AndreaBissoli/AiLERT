@@ -6,5 +6,16 @@
   "trailingComma": "es5",
   "bracketSpacing": true,
   "arrowParens": "avoid",
+  "overrides": [
+    {
+      "files": "*.vue",
+      "options": {
+        "parser": "vue",
+        "vueIndentScriptAndStyle": false,
+        "htmlWhitespaceSensitivity": "strict",
+        "tabWidth": 2
+      }
+    }
+  ],
   "plugins": ["prettier-plugin-vue"]
 }
