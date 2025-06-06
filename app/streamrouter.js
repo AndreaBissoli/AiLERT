@@ -95,7 +95,7 @@ router.post("/", async (req, res) => {
             streamKey,
             streamUrl,
             streamType,
-            isActive: true,
+            isActive: false,
             startTime: new Date(),
             viewCount: 0,
         });
@@ -142,7 +142,7 @@ router.put("/:streamId", async (req, res) => {
         const updatedStream = await Stream.findByIdAndUpdate(
             streamId,
             { $set: updateData },
-            { new: true } // Restituisce il documento aggiornato
+            { new: true } 
         );
 
         if (!updatedStream) {
