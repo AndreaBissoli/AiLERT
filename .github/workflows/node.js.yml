@@ -36,8 +36,10 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci
-    - run: cd ${{ secrets.FRONTEND_DIR }} && npm ci
-    - run: cd ${{ secrets.FRONTEND_DIR }} && npm run build --if-present
+    - working-directory: ${{ secrets.FRONTEND_DIR }}
+      run: npm ci
+    - working-directory: ${{ secrets.FRONTEND_DIR }}
+      run: npm run build --if-present
     - run: npm test
   
   deploy:
