@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Stream = require('./models/stream'); // Assicurati che il percorso sia corretto
+const Stream = require('./models/stream');
 
 // Ottieni tutti gli stream attivi
 router.get('/list', async (req, res) => {
@@ -96,7 +96,7 @@ router.post('/', async (req, res) => {
             streamKey,
             streamUrl,
             streamType,
-            isActive: true,
+            isActive: false,
             startTime: new Date(),
             viewCount: 0
         });
@@ -143,7 +143,7 @@ router.put('/:streamId', async (req, res) => {
         const updatedStream = await Stream.findByIdAndUpdate(
             streamId,
             { $set: updateData },
-            { new: true } // Restituisce il documento aggiornato
+            { new: true } 
         );
 
         if (!updatedStream) {
