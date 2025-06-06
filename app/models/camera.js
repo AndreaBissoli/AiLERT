@@ -1,40 +1,40 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const cameraSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
     },
     location: {
         address: {
             type: String,
-            required: true
+            required: true,
         },
     },
     installationDate: {
         type: Date,
-        default: Date.now
+        default: Date.now,
     },
     lastMaintenance: {
-        type: Date
+        type: Date,
     },
     isActive: {
         type: Boolean,
-        default: true
+        default: true,
     },
     ipAddress: {
-        type: String
+        type: String,
     },
     streamUrl: {
-        type: String
+        type: String,
     },
     modelInfo: {
         brand: String,
-        model: String
+        model: String,
     },
 });
 
-const Camera = mongoose.model('Camera', cameraSchema);
+const Camera = mongoose.model("Camera", cameraSchema);
 
 module.exports = Camera;

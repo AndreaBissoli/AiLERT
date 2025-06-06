@@ -13,7 +13,7 @@ la sicurezza stradale e la gestione delle emergenze.
 
 # How to run
 
-Per eseguire il progetto, è necessario avere installato `npm`. 
+Per eseguire il progetto, è necessario avere installato `npm`.
 
 Una volta installato, si deve creare il file `.env` in base alle proprie esigenze, seguendo le indicaioni nel file `.env.example`.
 
@@ -23,19 +23,11 @@ Infine, eseguire i seguenti comandi:
 npm install --save dotenv
 npm run buildall
 ```
-per costruire la Frontend e la Backend e servire il progetto sul server locale.
 
+per costruire la Frontend e la Backend e servire il progetto sul server locale.
 
 # Studenti - Gruppo 4
 
-* [Andrea Bissoli](https://github.com/AndreaBissoli)
-* [Kuba Di Quattro](https://github.com/KubaD4)
-* [Bilal Soussane](https://github.com/sousbila)
-
-
-
-
-
-
-
-
+- [Andrea Bissoli](https://github.com/AndreaBissoli)
+- [Kuba Di Quattro](https://github.com/KubaD4)
+- [Bilal Soussane](https://github.com/sousbila)

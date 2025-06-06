@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
     email: {
@@ -16,11 +16,11 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['amministratore', 'sorvegliante', 'dipendentecomunale'],
+        enum: ["amministratore", "sorvegliante", "dipendentecomunale"],
         required: true,
-    }
+    },
 });
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model("User", userSchema);
 
 module.exports = User;

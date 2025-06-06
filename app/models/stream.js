@@ -1,45 +1,45 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const streamSchema = new mongoose.Schema({
     cameraId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Camera',  // Riferito al modello Camera
-        required: true
+        ref: "Camera", // Riferito al modello Camera
+        required: true,
     },
     streamKey: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
     },
     isActive: {
         type: Boolean,
-        default: true
+        default: true,
     },
     startTime: {
         type: Date,
-        default: Date.now
+        default: Date.now,
     },
     endTime: {
-        type: Date
+        type: Date,
     },
     streamUrl: {
         type: String,
-        required: true
+        required: true,
     },
     streamType: {
         type: String,
-        enum: ['rtsp', 'hls', 'webrtc'],
-        default: 'rtsp' //tipo usato per le telecamere a Trento
+        enum: ["rtsp", "hls", "webrtc"],
+        default: "rtsp", //tipo usato per le telecamere a Trento
     },
     viewCount: {
         type: Number,
-        default: 0
+        default: 0,
     },
     lastAccessed: {
-        type: Date
-    }
+        type: Date,
+    },
 });
 
-const Stream = mongoose.model('Stream', streamSchema);
+const Stream = mongoose.model("Stream", streamSchema);
 
 module.exports = Stream;

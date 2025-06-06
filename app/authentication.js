@@ -1,28 +1,25 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const SALT_ROUNDS = require('./config').SALT_ROUNDS;
-const User = require('./models/user');
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const SALT_ROUNDS = require("./config").SALT_ROUNDS;
+const User = require("./models/user");
 
-router.post('', async function(req, res) {
-
+router.post("", async function (req, res) {
     email = req.body.email;
     password = req.body.password;
 
-	var user = {
-    };
+    var user = {};
 
     // find the user in the local db
     user = await User.findOne({ email: email });
-    
-    
+
     // local user not found
     if (!user) {
         // wrong authentication
         return res.status(401).json({
-            error: 'Invalid email',
-            errorCode: 'INVALID_EMAIL'
+            error: "Invalid email",
+            errorCode: "INVALID_EMAIL",
         });
     }
 
@@ -31,34 +28,31 @@ router.post('', async function(req, res) {
     if (!match) {
         // password does not match
         return res.status(401).json({
-            error: 'Invalid password',
-            errorCode: 'INVALID_PASSWORD'
+            error: "Invalid password",
+            errorCode: "INVALID_PASSWORD",
         });
     }
-	
-	// if user is found or created create a token
-	var payload = {
-		email: user.email,
-		id: user._id,
-        role: user.role
-	}
-	var options = {
-		expiresIn: 86400 // expires in 24 hours
-	}
-	var token = await jwt.sign(payload, process.env.JWT_SECRET, options);
 
-	res.json({
-		success: true,
-		token: token,
+    // if user is found or created create a token
+    var payload = {
+        email: user.email,
+        id: user._id,
+        role: user.role,
+    };
+    var options = {
+        expiresIn: 86400, // expires in 24 hours
+    };
+    var token = await jwt.sign(payload, process.env.JWT_SECRET, options);
+
+    res.json({
+        success: true,
+        token: token,
         user: {
             name: user.name,
             email: user.email,
-            role: user.role
-        }
-	});
-
+            role: user.role,
+        },
+    });
 });
-
-
 
 module.exports = router;

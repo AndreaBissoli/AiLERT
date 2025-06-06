@@ -1,1186 +1,1196 @@
 openapi: 3.0.4
 info:
-  version: '1.0'
-  title: "AiLERT API"
-  description: API for the AiLERT application.
-  license:
-    name: MIT
+    version: "1.0"
+    title: "AiLERT API"
+    description: API for the AiLERT application.
+    license:
+        name: MIT
 
 servers:
-  - url: http://localhost:8080/api/v1
-    description: Local development server
-  - url: https://ailert.onrender.com/api/v1
-    description: Production server
+    - url: http://localhost:8080/api/v1
+      description: Local development server
+    - url: https://ailert.onrender.com/api/v1
+      description: Production server
 
 paths:
-  /auth/login:
-    post:
-      summary: User Login
-      description: Authenticate user and generate JWT token.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginRequest'
-            examples:
-              dipendentecomunale:
-                value:
-                  email: 'john.doe@example.com'
-                  password: 'securepassword123'
-              amministratore:
-                value:
-                  email: 'admin@comune.it'
-                  password: 'password123'
-      responses:
-        '200':
-          description: Successful authentication
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LoginResponse'
-        '401':
-          description: Invalid credentials
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  
-  /auth/changepass:
-    post:
-      summary: Change Password
-      description: Change the user's password. Requires authentication.
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                newpassword:
-                  type: string
-                  description: New password
-            examples:
-              example1:
-                value:
-                  newpassword: 'newSecurePassword456'
-                summary: Standard password change request
-      responses:
-        '200':
-          description: Password changed successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    description: Whether the password change was successful
-                  message:
-                    type: string
-                    description: Success message
-              examples:
-                success:
-                  value:
-                    success: true
-                    message: 'Password changed successfully'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                samePassword:
-                  value:
-                    error: 'New password cannot be the same as the old password'
-                    errorCode: 'SAME_PASSWORD'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  
-  /public/events:
-    get:
-      summary: Obtain public events
-      description: |
-        Returns the events of the last 2 hours, which are publicly available. No authentication required.
-        Only include events with status 'solved' or 'unsolved' for citizens.
-      tags:
-        - Public API
-      responses:
-        '200':
-          description: Successfully retrieved public events
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PublicEvent'
-              examples:
-                publicEvents:
-                  value:
-                    - _id: "60d21b4667d0d8992e610c85"
-                      type: "incidente"
-                      title: "Incidente su Via Roma"
-                      description: "Lieve tamponamento risolto"
-                      eventDate: "2025-05-16T14:30:00.000Z"
-                      location:
-                        address: "Via Roma 45, Trento"
-                      status: "solved"
-                      severity: "bassa"
-                    - _id: "60d21b4667d0d8992e610c86"
-                      type: "ingorgo"
-                      title: "Traffico intenso"
-                      description: "Blocco temporaneo in centro"
-                      eventDate: "2025-05-16T15:00:00.000Z"
-                      location:
-                        address: "Via Manci, Trento"
-                      status: "unsolved"
-                      severity: "media"
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  
-  /events:
-    get:
-      summary: Get all events
-      description: Returns a list of all events in the system. Requires authentication.
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: List of events retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Event'
-              examples:
-                exampleResponse:
-                  summary: Example response for GET /events
-                  value:
-                    - type: incidente
-                      title: "Auto contro semaforo"
-                      description: "Incidente lieve senza feriti"
-                      createdAt: "2025-05-15T09:42:01.646Z"
-                      updatedAt: "2025-05-15T09:42:01.646Z"
-                      eventDate: "2025-05-15T09:42:01.646Z"
-                      location:
-                        address: "Via Roma 1, Trento"
-                      status: pending
-                      cameraId: "665fe9b27d204f50ae7c8d4a"
-                      videoUrl: "https://video.com/sample1.mp4"
-                      confirmed: true
-                      confirmedBy: "665fe9b27d204f50ae7c8d4a"
-                      notifiedServices:
-                        - service: ambulanza
-                          notifiedAt: "2025-05-15T09:42:01.646Z"
-                          responseTime: 7
-                      severity: alta
-                    - type: ingorgo
-                      title: "Traffico in via Manci"
-                      description: "Blocco temporaneo causa lavori"
-                      createdAt: "2025-05-14T08:20:00.000Z"
-                      updatedAt: "2025-05-14T08:45:00.000Z"
-                      eventDate: "2025-05-14T08:00:00.000Z"
-                      location:
-                        address: "Via Manci, Trento"
-                      status: solved
-                      cameraId: "665fe9b27d204f50ae7c8d4a"
-                      videoUrl: "https://video.com/sample2.mp4"
-                      confirmed: false
-                      severity: media
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-    post:
-      summary: Create new event
-      description: Creates a new event in the system. Requires authentication.
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Event'
-            examples:
-              validEventExample:
-                summary: Example of a valid accident event creation request
-                value:
-                  type: incidente
-                  title: "Auto contro semaforo"
-                  description: "Incidente con danni leggeri"
-                  eventDate: "2025-05-15T09:42:01.646Z"
-                  location:
-                    address: "Via Verdi 10, Trento"
-                  status: pending
-                  cameraId: "665fe9b27d204f50ae7c8d4a"
-                  videoUrl: "https://video.com/sample.mp4"
-                  confirmed: true
-                  confirmedBy: "665fe9b27d204f50ae7c8d4a"
-                  notifiedServices:
-                    - service: polizia
-                      notifiedAt: "2025-05-15T09:42:01.646Z"
-                      responseTime: 5
-                  severity: media
-      responses:
-        '201':
-          description: Event created successfully
-        '400':
-          description: Error in request body
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-  
+    /auth/login:
+        post:
+            summary: User Login
+            description: Authenticate user and generate JWT token.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/LoginRequest"
+                        examples:
+                            dipendentecomunale:
+                                value:
+                                    email: "john.doe@example.com"
+                                    password: "securepassword123"
+                            amministratore:
+                                value:
+                                    email: "admin@comune.it"
+                                    password: "password123"
+            responses:
+                "200":
+                    description: Successful authentication
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/LoginResponse"
+                "401":
+                    description: Invalid credentials
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
 
-  # Admin endpoints
-  /admin:
-    get:
-      summary: Get all users
-      description: Retrieves a list of all users. Requires admin role authentication.
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: List of users retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
-              examples:
-                userList:
-                  value:
-                    - _id: "60d21b4667d0d8992e610c85"
-                      email: "admin@example.com"
-                      name: "Admin User"
-                      role: "amministratore"
-                      hash: "hashedpassword"
-                    - _id: "60d21b4667d0d8992e610c86"
-                      email: "user@example.com"
-                      name: "Regular User"
-                      role: "dipendentecomunale"
-                      hash: "hashedpassword"
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-                    
-    post:
-      summary: Create new user
-      description: Creates a new user in the system. Requires admin role authentication.
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateUserRequest'
-            examples:
-              createAdmin:
-                value:
-                  email: "newadmin@example.com"
-                  password: "securePassword123"
-                  name: "New Admin"
-                  role: "amministratore"
-              createUser:
-                value:
-                  email: "newuser@example.com"
-                  password: "userPassword456"
-                  name: "New Employee"
-                  role: "dipendentecomunale"
-      responses:
-        '201':
-          description: User created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  message:
-                    type: string
-                  user:
-                    $ref: '#/components/schemas/User'
-              examples:
-                userCreated:
-                  value:
-                    success: true
-                    message: "User created successfully"
-                    user: 
-                      _id: "60d21b4667d0d8992e610c85"
-                      email: "admin@example.com"
-                      name: "Admin User"
-                      role: "amministratore"
-                      hash: "hashedpassword"
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                missingFields:
-                  value:
-                    error: 'All fields are required'
-                    errorCode: 'MISSING_FIELDS'
-                userExists:
-                  value:
-                    error: 'User already exists'
-                    errorCode: 'USER_ALREADY_EXISTS'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-                    
-  /admin/{id}:
-    parameters:
-      - name: id
-        in: path
-        required: true
-        description: The user ID
-        schema:
-          type: string
-    get:
-      summary: Get user by ID
-      description: Retrieves a specific user by their ID. Requires admin role authentication.
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: User retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-              examples:
-                adminUser:
-                  value:
-                    _id: "60d21b4667d0d8992e610c85"
-                    email: "admin@example.com"
-                    name: "Admin User"
-                    role: "amministratore"
-                    hash: "hashedpassword"
-                regularUser:
-                  value:
-                    _id: "60d21b4667d0d8992e610c86"
-                    email: "user@example.com"
-                    name: "Regular User"
-                    role: "dipendentecomunale"
-                    hash: "hashedpassword"
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                userNotFound:
-                  value:
-                    error: 'User not found'
-                    errorCode: 'USER_NOT_FOUND'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-          
-    put:
-      summary: Update user
-      description: Updates an existing user's information. Requires admin role authentication.
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateUserRequest'
-            examples:
-              updateRole:
-                value:
-                  role: "amministratore"
-              updateEmail:
-                value:
-                  email: "updated@example.com"
-              updateName:
-                value:
-                  name: "Updated Name"
-      responses:
-        '200':
-          description: User updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-              examples:
-                updatedUser:
-                  value:
-                    _id: "60d21b4667d0d8992e610c85"
-                    email: "updated@example.com"
-                    name: "Updated Name"
-                    role: "amministratore"
-                    hash: "hashedpassword"
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                emailInUse:
-                  value:
-                    error: 'Email already in use'
-                    errorCode: 'EMAIL_ALREADY_IN_USE'
-                serverError:
-                  value:
-                    error: 'Internal server error'
-                    errorCode: 'INTERNAL_SERVER_ERROR'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                userNotFound:
-                  value:
-                    error: 'User not found'
-                    errorCode: 'USER_NOT_FOUND'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-                    
-    delete:
-      summary: Delete user
-      description: Deletes a user from the system. Requires admin role authentication.
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: User deleted successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              examples:
-                deletedSuccess:
-                  value:
-                    message: "User deleted successfully"
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                userNotFound:
-                  value:
-                    error: 'User not found'
-                    errorCode: 'USER_NOT_FOUND'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+    /auth/changepass:
+        post:
+            summary: Change Password
+            description: Change the user's password. Requires authentication.
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                newpassword:
+                                    type: string
+                                    description: New password
+                        examples:
+                            example1:
+                                value:
+                                    newpassword: "newSecurePassword456"
+                                summary: Standard password change request
+            responses:
+                "200":
+                    description: Password changed successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        description: Whether the password change was successful
+                                    message:
+                                        type: string
+                                        description: Success message
+                            examples:
+                                success:
+                                    value:
+                                        success: true
+                                        message: "Password changed successfully"
+                "400":
+                    description: Bad request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                samePassword:
+                                    value:
+                                        error: "New password cannot be the same as the old password"
+                                        errorCode: "SAME_PASSWORD"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
 
-  # Stream API endpoints
-  /stream/list:
-    get:
-      summary: Get active streams
-      description: Returns a list of active streams. Requires authentication.
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: Successfully retrieved active streams
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    description: Indicates if the request was successful
-                  streams:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/StreamResponse'
-              examples:
-                success:
-                  value:
-                    success: true
-                    streams: [
-                      {
-                        _id: "60d21b4667d0d8992e610c85",
-                        cameraId: "68266cd1683978f9108a7393",
-                        streamKey: "stream_test_manuale",
-                        streamUrl: "rtsp://example.com/stream1",
-                        isActive: true,
-                        startTime: "2025-05-14T10:00:00Z",
-                        viewCount: 5
-                      }
-                    ]
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+    /public/events:
+        get:
+            summary: Obtain public events
+            description: |
+                Returns the events of the last 2 hours, which are publicly available. No authentication required.
+                Only include events with status 'solved' or 'unsolved' for citizens.
+            tags:
+                - Public API
+            responses:
+                "200":
+                    description: Successfully retrieved public events
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/PublicEvent"
+                            examples:
+                                publicEvents:
+                                    value:
+                                        - _id: "60d21b4667d0d8992e610c85"
+                                          type: "incidente"
+                                          title: "Incidente su Via Roma"
+                                          description: "Lieve tamponamento risolto"
+                                          eventDate: "2025-05-16T14:30:00.000Z"
+                                          location:
+                                              address: "Via Roma 45, Trento"
+                                          status: "solved"
+                                          severity: "bassa"
+                                        - _id: "60d21b4667d0d8992e610c86"
+                                          type: "ingorgo"
+                                          title: "Traffico intenso"
+                                          description: "Blocco temporaneo in centro"
+                                          eventDate: "2025-05-16T15:00:00.000Z"
+                                          location:
+                                              address: "Via Manci, Trento"
+                                          status: "unsolved"
+                                          severity: "media"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
 
-  /stream:
-    post:
-      summary: Create a new stream
-      description: Creates a new stream in the system. Requires authentication.
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                cameraId:
-                  type: string
-                  description: ID of the associated camera
-                streamKey:
-                  type: string
-                  description: Unique key for the stream
-                streamUrl:
-                  type: string
-                  description: URL of the stream
-                streamType:
-                  type: string
-                  enum: [rtsp, hls, webrtc]
-                  description: Stream type
-              required:
-                - cameraId
-                - streamUrl
-                - streamType
-            examples:
-              example1:
-                value:
-                  cameraId: "68266cd1683978f9108a7393"
-                  streamKey: "stream_test_manuale"
-                  streamUrl: "rtsp://example.com/stream1"
-                  streamType: "rtsp"
-      responses:
-        '201':
-          description: Stream created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    description: Indicates if the request was successful
-                  stream:
-                    $ref: '#/components/schemas/StreamDetails'
-              examples:
-                created:
-                  value:
-                    success: true
-                    stream: {
-                      _id: "60d21b4667d0d8992e610c85",
-                      cameraId: "68266cd1683978f9108a7393",
-                      streamKey: "stream_test_manuale",
-                      streamUrl: "rtsp://example.com/stream1",
-                      isActive: true,
-                      startTime: "2025-05-14T10:00:00Z",
-                      streamType: "rtsp",
-                      viewCount: 0
-                    }
-        '400':
-          description: Missing or invalid fields
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                missingFields:
-                  value:
-                    error: 'Missing required fields'
-                    errorCode: 'MISSING_FIELDS'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+    /events:
+        get:
+            summary: Get all events
+            description: Returns a list of all events in the system. Requires authentication.
+            security:
+                - BearerAuth: []
+            responses:
+                "200":
+                    description: List of events retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/Event"
+                            examples:
+                                exampleResponse:
+                                    summary: Example response for GET /events
+                                    value:
+                                        - type: incidente
+                                          title: "Auto contro semaforo"
+                                          description: "Incidente lieve senza feriti"
+                                          createdAt: "2025-05-15T09:42:01.646Z"
+                                          updatedAt: "2025-05-15T09:42:01.646Z"
+                                          eventDate: "2025-05-15T09:42:01.646Z"
+                                          location:
+                                              address: "Via Roma 1, Trento"
+                                          status: pending
+                                          cameraId: "665fe9b27d204f50ae7c8d4a"
+                                          videoUrl: "https://video.com/sample1.mp4"
+                                          confirmed: true
+                                          confirmedBy: "665fe9b27d204f50ae7c8d4a"
+                                          notifiedServices:
+                                              - service: ambulanza
+                                                notifiedAt: "2025-05-15T09:42:01.646Z"
+                                                responseTime: 7
+                                          severity: alta
+                                        - type: ingorgo
+                                          title: "Traffico in via Manci"
+                                          description: "Blocco temporaneo causa lavori"
+                                          createdAt: "2025-05-14T08:20:00.000Z"
+                                          updatedAt: "2025-05-14T08:45:00.000Z"
+                                          eventDate: "2025-05-14T08:00:00.000Z"
+                                          location:
+                                              address: "Via Manci, Trento"
+                                          status: solved
+                                          cameraId: "665fe9b27d204f50ae7c8d4a"
+                                          videoUrl: "https://video.com/sample2.mp4"
+                                          confirmed: false
+                                          severity: media
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+        post:
+            summary: Create new event
+            description: Creates a new event in the system. Requires authentication.
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Event"
+                        examples:
+                            validEventExample:
+                                summary: Example of a valid accident event creation request
+                                value:
+                                    type: incidente
+                                    title: "Auto contro semaforo"
+                                    description: "Incidente con danni leggeri"
+                                    eventDate: "2025-05-15T09:42:01.646Z"
+                                    location:
+                                        address: "Via Verdi 10, Trento"
+                                    status: pending
+                                    cameraId: "665fe9b27d204f50ae7c8d4a"
+                                    videoUrl: "https://video.com/sample.mp4"
+                                    confirmed: true
+                                    confirmedBy: "665fe9b27d204f50ae7c8d4a"
+                                    notifiedServices:
+                                        - service: polizia
+                                          notifiedAt: "2025-05-15T09:42:01.646Z"
+                                          responseTime: 5
+                                    severity: media
+            responses:
+                "201":
+                    description: Event created successfully
+                "400":
+                    description: Error in request body
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
 
-  /stream/{streamId}:
-    get:
-      summary: Obtain stream details
-      description: Returns details of a specific stream. Requires authentication.
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: streamId
-          in: path
-          required: true
-          description: Stream ID
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successfully retrieved stream details
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    description: Indicates if the request was successful
-                  stream:
-                    $ref: '#/components/schemas/StreamDetails'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          description: Stream not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                notFound:
-                  value:
-                    error: 'Stream not found'
-                    errorCode: 'STREAM_NOT_FOUND'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    put:
-      summary: Update existing stream parameters
-      description: Modifies the parameters of an existing stream. Requires authentication.
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: streamId
-          in: path
-          required: true
-          description: ID of the stream to update
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                streamKey:
-                  type: string
-                  description: Unique key for the stream
-                streamUrl:
-                  type: string
-                  description: URL of the stream
-                isActive:
-                  type: boolean
-                  description: Indicates if the stream is active
-                streamType:
-                  type: string
-                  enum: [rtsp, hls, webrtc]
-                  description: Stream type
-            examples:
-              updateStream:
-                value:
-                  streamKey: "new_stream_key"
-                  isActive: true
-      responses:
-        '200':
-          description: Stream updated successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    description: Indicates if the request was successful
-                  stream:
-                    $ref: '#/components/schemas/StreamDetails'
-              examples:
-                success:
-                  value:
-                    success: true
-                    stream: {
-                      _id: "60d21b4667d0d8992e610c85",
-                      cameraId: "68266cd1683978f9108a7393",
-                      streamKey: "new_stream_key",
-                      streamUrl: "rtsp://example.com/stream1",
-                      isActive: true,
-                      startTime: "2025-05-14T10:00:00Z",
-                      streamType: "rtsp",
-                      viewCount: 5
-                    }
-        '400':
-          description: Missing or invalid fields
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          description: Stream not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                notFound:
-                  value:
-                    error: 'Stream not found'
-                    errorCode: 'STREAM_NOT_FOUND'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+    # Admin endpoints
+    /admin:
+        get:
+            summary: Get all users
+            description: Retrieves a list of all users. Requires admin role authentication.
+            security:
+                - BearerAuth: []
+            responses:
+                "200":
+                    description: List of users retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/User"
+                            examples:
+                                userList:
+                                    value:
+                                        - _id: "60d21b4667d0d8992e610c85"
+                                          email: "admin@example.com"
+                                          name: "Admin User"
+                                          role: "amministratore"
+                                          hash: "hashedpassword"
+                                        - _id: "60d21b4667d0d8992e610c86"
+                                          email: "user@example.com"
+                                          name: "Regular User"
+                                          role: "dipendentecomunale"
+                                          hash: "hashedpassword"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
 
-  /stream/{streamId}/end:
-    put:
-      summary: End a stream
-      description: Ends an active stream. Requires authentication.
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: streamId
-          in: path
-          required: true
-          description: ID of the stream to end
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Stream ended successfully
-          content:
-            application/json:
+        post:
+            summary: Create new user
+            description: Creates a new user in the system. Requires admin role authentication.
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/CreateUserRequest"
+                        examples:
+                            createAdmin:
+                                value:
+                                    email: "newadmin@example.com"
+                                    password: "securePassword123"
+                                    name: "New Admin"
+                                    role: "amministratore"
+                            createUser:
+                                value:
+                                    email: "newuser@example.com"
+                                    password: "userPassword456"
+                                    name: "New Employee"
+                                    role: "dipendentecomunale"
+            responses:
+                "201":
+                    description: User created successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                    message:
+                                        type: string
+                                    user:
+                                        $ref: "#/components/schemas/User"
+                            examples:
+                                userCreated:
+                                    value:
+                                        success: true
+                                        message: "User created successfully"
+                                        user:
+                                            _id: "60d21b4667d0d8992e610c85"
+                                            email: "admin@example.com"
+                                            name: "Admin User"
+                                            role: "amministratore"
+                                            hash: "hashedpassword"
+                "400":
+                    description: Bad request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                missingFields:
+                                    value:
+                                        error: "All fields are required"
+                                        errorCode: "MISSING_FIELDS"
+                                userExists:
+                                    value:
+                                        error: "User already exists"
+                                        errorCode: "USER_ALREADY_EXISTS"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
+
+    /admin/{id}:
+        parameters:
+            - name: id
+              in: path
+              required: true
+              description: The user ID
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    description: Indicates if the request was successful
-                  stream:
-                    $ref: '#/components/schemas/StreamDetails'
-              examples:
-                success:
-                  value:
-                    success: true
-                    stream: {
-                      _id: "60d21b4667d0d8992e610c85",
-                      cameraId: "68266cd1683978f9108a7393",
-                      streamKey: "stream_test_manuale",
-                      streamUrl: "rtsp://example.com/stream1",
-                      isActive: false,
-                      startTime: "2025-05-14T10:00:00Z",
-                      endTime: "2025-05-14T11:30:00Z",
-                      streamType: "rtsp",
-                      viewCount: 7
-                    }
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          description: Stream not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                notFound:
-                  value:
-                    error: 'Stream not found'
-                    errorCode: 'STREAM_NOT_FOUND'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                  type: string
+        get:
+            summary: Get user by ID
+            description: Retrieves a specific user by their ID. Requires admin role authentication.
+            security:
+                - BearerAuth: []
+            responses:
+                "200":
+                    description: User retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/User"
+                            examples:
+                                adminUser:
+                                    value:
+                                        _id: "60d21b4667d0d8992e610c85"
+                                        email: "admin@example.com"
+                                        name: "Admin User"
+                                        role: "amministratore"
+                                        hash: "hashedpassword"
+                                regularUser:
+                                    value:
+                                        _id: "60d21b4667d0d8992e610c86"
+                                        email: "user@example.com"
+                                        name: "Regular User"
+                                        role: "dipendentecomunale"
+                                        hash: "hashedpassword"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+                "404":
+                    description: User not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                userNotFound:
+                                    value:
+                                        error: "User not found"
+                                        errorCode: "USER_NOT_FOUND"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
+
+        put:
+            summary: Update user
+            description: Updates an existing user's information. Requires admin role authentication.
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/UpdateUserRequest"
+                        examples:
+                            updateRole:
+                                value:
+                                    role: "amministratore"
+                            updateEmail:
+                                value:
+                                    email: "updated@example.com"
+                            updateName:
+                                value:
+                                    name: "Updated Name"
+            responses:
+                "200":
+                    description: User updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/User"
+                            examples:
+                                updatedUser:
+                                    value:
+                                        _id: "60d21b4667d0d8992e610c85"
+                                        email: "updated@example.com"
+                                        name: "Updated Name"
+                                        role: "amministratore"
+                                        hash: "hashedpassword"
+                "400":
+                    description: Bad request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                emailInUse:
+                                    value:
+                                        error: "Email already in use"
+                                        errorCode: "EMAIL_ALREADY_IN_USE"
+                                serverError:
+                                    value:
+                                        error: "Internal server error"
+                                        errorCode: "INTERNAL_SERVER_ERROR"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+                "404":
+                    description: User not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                userNotFound:
+                                    value:
+                                        error: "User not found"
+                                        errorCode: "USER_NOT_FOUND"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
+
+        delete:
+            summary: Delete user
+            description: Deletes a user from the system. Requires admin role authentication.
+            security:
+                - BearerAuth: []
+            responses:
+                "200":
+                    description: User deleted successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+                            examples:
+                                deletedSuccess:
+                                    value:
+                                        message: "User deleted successfully"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+                "404":
+                    description: User not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                userNotFound:
+                                    value:
+                                        error: "User not found"
+                                        errorCode: "USER_NOT_FOUND"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
+
+    # Stream API endpoints
+    /stream/list:
+        get:
+            summary: Get active streams
+            description: Returns a list of active streams. Requires authentication.
+            security:
+                - BearerAuth: []
+            responses:
+                "200":
+                    description: Successfully retrieved active streams
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        description: Indicates if the request was successful
+                                    streams:
+                                        type: array
+                                        items:
+                                            $ref: "#/components/schemas/StreamResponse"
+                            examples:
+                                success:
+                                    value:
+                                        success: true
+                                        streams:
+                                            [
+                                                {
+                                                    _id: "60d21b4667d0d8992e610c85",
+                                                    cameraId: "68266cd1683978f9108a7393",
+                                                    streamKey: "stream_test_manuale",
+                                                    streamUrl: "rtsp://example.com/stream1",
+                                                    isActive: true,
+                                                    startTime: "2025-05-14T10:00:00Z",
+                                                    viewCount: 5,
+                                                },
+                                            ]
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
+
+    /stream:
+        post:
+            summary: Create a new stream
+            description: Creates a new stream in the system. Requires authentication.
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                cameraId:
+                                    type: string
+                                    description: ID of the associated camera
+                                streamKey:
+                                    type: string
+                                    description: Unique key for the stream
+                                streamUrl:
+                                    type: string
+                                    description: URL of the stream
+                                streamType:
+                                    type: string
+                                    enum: [rtsp, hls, webrtc]
+                                    description: Stream type
+                            required:
+                                - cameraId
+                                - streamUrl
+                                - streamType
+                        examples:
+                            example1:
+                                value:
+                                    cameraId: "68266cd1683978f9108a7393"
+                                    streamKey: "stream_test_manuale"
+                                    streamUrl: "rtsp://example.com/stream1"
+                                    streamType: "rtsp"
+            responses:
+                "201":
+                    description: Stream created successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        description: Indicates if the request was successful
+                                    stream:
+                                        $ref: "#/components/schemas/StreamDetails"
+                            examples:
+                                created:
+                                    value:
+                                        success: true
+                                        stream:
+                                            {
+                                                _id: "60d21b4667d0d8992e610c85",
+                                                cameraId: "68266cd1683978f9108a7393",
+                                                streamKey: "stream_test_manuale",
+                                                streamUrl: "rtsp://example.com/stream1",
+                                                isActive: true,
+                                                startTime: "2025-05-14T10:00:00Z",
+                                                streamType: "rtsp",
+                                                viewCount: 0,
+                                            }
+                "400":
+                    description: Missing or invalid fields
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                missingFields:
+                                    value:
+                                        error: "Missing required fields"
+                                        errorCode: "MISSING_FIELDS"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
+
+    /stream/{streamId}:
+        get:
+            summary: Obtain stream details
+            description: Returns details of a specific stream. Requires authentication.
+            security:
+                - BearerAuth: []
+            parameters:
+                - name: streamId
+                  in: path
+                  required: true
+                  description: Stream ID
+                  schema:
+                      type: string
+            responses:
+                "200":
+                    description: Successfully retrieved stream details
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        description: Indicates if the request was successful
+                                    stream:
+                                        $ref: "#/components/schemas/StreamDetails"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "404":
+                    description: Stream not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                notFound:
+                                    value:
+                                        error: "Stream not found"
+                                        errorCode: "STREAM_NOT_FOUND"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
+        put:
+            summary: Update existing stream parameters
+            description: Modifies the parameters of an existing stream. Requires authentication.
+            security:
+                - BearerAuth: []
+            parameters:
+                - name: streamId
+                  in: path
+                  required: true
+                  description: ID of the stream to update
+                  schema:
+                      type: string
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                streamKey:
+                                    type: string
+                                    description: Unique key for the stream
+                                streamUrl:
+                                    type: string
+                                    description: URL of the stream
+                                isActive:
+                                    type: boolean
+                                    description: Indicates if the stream is active
+                                streamType:
+                                    type: string
+                                    enum: [rtsp, hls, webrtc]
+                                    description: Stream type
+                        examples:
+                            updateStream:
+                                value:
+                                    streamKey: "new_stream_key"
+                                    isActive: true
+            responses:
+                "200":
+                    description: Stream updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        description: Indicates if the request was successful
+                                    stream:
+                                        $ref: "#/components/schemas/StreamDetails"
+                            examples:
+                                success:
+                                    value:
+                                        success: true
+                                        stream:
+                                            {
+                                                _id: "60d21b4667d0d8992e610c85",
+                                                cameraId: "68266cd1683978f9108a7393",
+                                                streamKey: "new_stream_key",
+                                                streamUrl: "rtsp://example.com/stream1",
+                                                isActive: true,
+                                                startTime: "2025-05-14T10:00:00Z",
+                                                streamType: "rtsp",
+                                                viewCount: 5,
+                                            }
+                "400":
+                    description: Missing or invalid fields
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "404":
+                    description: Stream not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                notFound:
+                                    value:
+                                        error: "Stream not found"
+                                        errorCode: "STREAM_NOT_FOUND"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
+
+    /stream/{streamId}/end:
+        put:
+            summary: End a stream
+            description: Ends an active stream. Requires authentication.
+            security:
+                - BearerAuth: []
+            parameters:
+                - name: streamId
+                  in: path
+                  required: true
+                  description: ID of the stream to end
+                  schema:
+                      type: string
+            responses:
+                "200":
+                    description: Stream ended successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        description: Indicates if the request was successful
+                                    stream:
+                                        $ref: "#/components/schemas/StreamDetails"
+                            examples:
+                                success:
+                                    value:
+                                        success: true
+                                        stream:
+                                            {
+                                                _id: "60d21b4667d0d8992e610c85",
+                                                cameraId: "68266cd1683978f9108a7393",
+                                                streamKey: "stream_test_manuale",
+                                                streamUrl: "rtsp://example.com/stream1",
+                                                isActive: false,
+                                                startTime: "2025-05-14T10:00:00Z",
+                                                endTime: "2025-05-14T11:30:00Z",
+                                                streamType: "rtsp",
+                                                viewCount: 7,
+                                            }
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "404":
+                    description: Stream not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                notFound:
+                                    value:
+                                        error: "Stream not found"
+                                        errorCode: "STREAM_NOT_FOUND"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
 
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    securitySchemes:
+        BearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
 
-  schemas:
-    LoginRequest:
-      type: object
-      required:
-        - email
-        - password
-      properties:
-        email:
-          type: string
-          description: User's email address
-        password:
-          type: string
-          description: User's password
-          format: password
+    schemas:
+        LoginRequest:
+            type: object
+            required:
+                - email
+                - password
+            properties:
+                email:
+                    type: string
+                    description: User's email address
+                password:
+                    type: string
+                    description: User's password
+                    format: password
 
-    LoginResponse:
-      type: object
-      properties:
-        token:
-          type: string
-          description: JWT access token
-        success:
-          type: boolean
-          description: Whether the login was successful
-        user:
-          type: object
-          properties:
-            email:
-              type: string
-              description: User's email address
-            name:
-              type: string
-              description: User's full name
-            role:
-              type: string
-              description: User's role
-              enum: [amministratore, sorvegliante, dipendentecomunale]
-
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Error message
-        errorCode:
-          type: string
-          description: Specific error code for the failure
-    
-    Event:
-      type: object
-      properties:
-        type:
-          type: string
-          enum: [incidente, ingorgo]
-        title:
-          type: string
-        description:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-        eventDate:
-          type: string
-          format: date-time
-        location:
-          type: object
-          properties:
-            address:
-              type: string
-        status:
-          type: string
-          enum: [pending, solved, unsolved, false_alarm]
-        cameraId:
-          type: string
-        videoUrl:
-          type: string
-        confirmed:
-          type: boolean
-        confirmedBy:
-          type: string
-        notifiedServices:
-          type: array
-          items:
+        LoginResponse:
             type: object
             properties:
-              service:
-                type: string
-                enum: [polizia, carabinieri, vigili_del_fuoco, ambulanza, protezione_civile]
-              notifiedAt:
-                type: string
-                format: date-time
-              responseTime:
-                type: number
-        severity:
-          type: string
-          enum: [bassa, media, alta]
-    
-    PublicEvent:
-      description: "Public version of the Event schema, used for public access"
-      type: object
-      properties:
-        _id:
-          type: string
-          description: Event unique identifier
-        type:
-          type: string
-          enum: [incidente, ingorgo]
-          description: Event type
-        title:
-          type: string
-          description: Event title
-        description:
-          type: string
-          description: Event description
-        eventDate:
-          type: string
-          format: date-time
-          description: Event date and time
-        location:
-          type: object
-          properties:
-            address:
-              type: string
-              description: Event location address
-        status:
-          type: string
-          enum: [solved, unsolved]
-          description: Event status
-        severity:
-          type: string
-          enum: [bassa, media, alta]
-          description: Event severity
+                token:
+                    type: string
+                    description: JWT access token
+                success:
+                    type: boolean
+                    description: Whether the login was successful
+                user:
+                    type: object
+                    properties:
+                        email:
+                            type: string
+                            description: User's email address
+                        name:
+                            type: string
+                            description: User's full name
+                        role:
+                            type: string
+                            description: User's role
+                            enum: [amministratore, sorvegliante, dipendentecomunale]
 
-    User:
-      type: object
-      properties:
-        _id:
-          type: string
-          description: User unique identifier
-        email:
-          type: string
-          description: User's email address
-        name:
-          type: string
-          description: User's full name
-        role:
-          type: string
-          description: User's role
-          enum: [amministratore, sorvegliante, dipendentecomunale]
-        hash:
-          type: string
-          description: User's hashed password
-          
-    CreateUserRequest:
-      type: object
-      required:
-        - email
-        - password
-        - name
-        - role
-      properties:
-        email:
-          type: string
-          description: User's email address
-        password:
-          type: string
-          description: User's password
-          format: password
-        name:
-          type: string
-          description: User's full name
-        role:
-          type: string
-          description: User's role
-          enum: [amministratore, sorvegliante, dipendentecomunale]
-          
-    UpdateUserRequest:
-      type: object
-      properties:
-        email:
-          type: string
-          description: User's email address
-        name:
-          type: string
-          description: User's full name
-        role:
-          type: string
-          description: User's role
-          enum: [amministratore, sorvegliante, dipendentecomunale]
-    
-    Camera:
-      description: "Represents a camera in the system"
-      type: object
-      properties:
-        id:
-          type: string
-          description: Camera unique identifier
-        name:
-          type: string
-          description: Camera name
-        location:
-          type: object
-          properties:
-            address:
-              type: string
-              description: Address of the camera location
-        installationDate:
-          type: string
-          format: date-time
-          description: Installation date of the camera
-        lastMaintenance:
-          type: string
-          format: date-time
-          description: Last maintenance date of the camera
-        isActive:
-          type: boolean
-          description: Indicates if the camera is active
-        ipAddress:
-          type: string
-          description: IP address of the camera
-        streamUrl:
-          type: string
-          description: URL of the camera stream
-        modelInfo:
-          type: object
-          properties:
-            brand:
-              type: string
-              description: Camera brand name
-            model:
-              type: string
-              description: Camera model name
+        ErrorResponse:
+            type: object
+            properties:
+                error:
+                    type: string
+                    description: Error message
+                errorCode:
+                    type: string
+                    description: Specific error code for the failure
 
-    StreamResponse:
-      description: "Represents a stream in the system"
-      type: object
-      properties:
-        _id:
-          type: string
-          description: Stream unique identifier
-        cameraId:
-          type: string
-          description: ID of the associated camera
-        streamKey:
-          type: string
-          description: Unique key for the stream
-        streamUrl:
-          type: string
-          description: Stream URL
-        isActive:
-          type: boolean
-          description: Indicates if the stream is active
-        startTime:
-          type: string
-          format: date-time
-          description: Date and time of stream start
-        endTime:
-          type: string
-          format: date-time
-          description: Date and time of stream end (if ended)
-        streamType:
-          type: string
-          enum: [rtsp, hls, webrtc]
-          description: Stream type
-        viewCount:
-          type: integer
-          description: Number of views
-        lastAccessed:
-          type: string
-          format: date-time
-          description: Last time the stream was accessed
+        Event:
+            type: object
+            properties:
+                type:
+                    type: string
+                    enum: [incidente, ingorgo]
+                title:
+                    type: string
+                description:
+                    type: string
+                createdAt:
+                    type: string
+                    format: date-time
+                updatedAt:
+                    type: string
+                    format: date-time
+                eventDate:
+                    type: string
+                    format: date-time
+                location:
+                    type: object
+                    properties:
+                        address:
+                            type: string
+                status:
+                    type: string
+                    enum: [pending, solved, unsolved, false_alarm]
+                cameraId:
+                    type: string
+                videoUrl:
+                    type: string
+                confirmed:
+                    type: boolean
+                confirmedBy:
+                    type: string
+                notifiedServices:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            service:
+                                type: string
+                                enum:
+                                    [
+                                        polizia,
+                                        carabinieri,
+                                        vigili_del_fuoco,
+                                        ambulanza,
+                                        protezione_civile,
+                                    ]
+                            notifiedAt:
+                                type: string
+                                format: date-time
+                            responseTime:
+                                type: number
+                severity:
+                    type: string
+                    enum: [bassa, media, alta]
 
-    StreamDetails:
-      description: "Complete details of a stream"
-      type: object
-      properties:
-        _id:
-          type: string
-          description: Stream unique identifier
-        cameraId:
-          type: string
-          description: ID of the associated camera
-        streamKey:
-          type: string
-          description: Camera unique key
-        streamUrl:
-          type: string
-          description: URL of the stream
-        isActive:
-          type: boolean
-          description: Indicates if the stream is active
-        startTime:
-          type: string
-          format: date-time
-          description: Date and time of stream start
-        endTime:
-          type: string
-          format: date-time
-          description: Date and time of stream end (if ended)
-        streamType:
-          type: string
-          enum: [rtsp, hls, webrtc]
-          description: Stream type
-        viewCount:
-          type: integer
-          description: Number of views
-        lastAccessed:
-          type: string
-          format: date-time
-          description: Last time the stream was accessed
-  
-  responses:
-    Unauthorized:
-      description: Unauthorized access (invalid token)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            tokenRequired:
-              value:
-                error: 'Authentication token required'
-                errorCode: 'TOKEN_REQUIRED'
-            invalidToken:
-              value:
-                error: 'Invalid or expired token'
-                errorCode: 'INVALID_TOKEN'
-    
-    Forbidden:
-      description: Forbidden access (user is not an admin or attempting unauthorized action)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            unauthorizedRole:
-              value:
-                error: 'Unauthorized role'
-                errorCode: 'UNAUTHORIZED_ROLE'
-            selfModification:
-              value:
-                error: 'Cannot modify your own account'
-                errorCode: 'SELF_MODIFICATION_FORBIDDEN'
-            selfDeletion:
-              value:
-                error: 'Cannot delete your own account'
-                errorCode: 'SELF_DELETION_FORBIDDEN'
-    
-    InternalServerError:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            serverError:
-              value:
-                error: 'Internal server error'
-                errorCode: 'INTERNAL_SERVER_ERROR'
+        PublicEvent:
+            description: "Public version of the Event schema, used for public access"
+            type: object
+            properties:
+                _id:
+                    type: string
+                    description: Event unique identifier
+                type:
+                    type: string
+                    enum: [incidente, ingorgo]
+                    description: Event type
+                title:
+                    type: string
+                    description: Event title
+                description:
+                    type: string
+                    description: Event description
+                eventDate:
+                    type: string
+                    format: date-time
+                    description: Event date and time
+                location:
+                    type: object
+                    properties:
+                        address:
+                            type: string
+                            description: Event location address
+                status:
+                    type: string
+                    enum: [solved, unsolved]
+                    description: Event status
+                severity:
+                    type: string
+                    enum: [bassa, media, alta]
+                    description: Event severity
+
+        User:
+            type: object
+            properties:
+                _id:
+                    type: string
+                    description: User unique identifier
+                email:
+                    type: string
+                    description: User's email address
+                name:
+                    type: string
+                    description: User's full name
+                role:
+                    type: string
+                    description: User's role
+                    enum: [amministratore, sorvegliante, dipendentecomunale]
+                hash:
+                    type: string
+                    description: User's hashed password
+
+        CreateUserRequest:
+            type: object
+            required:
+                - email
+                - password
+                - name
+                - role
+            properties:
+                email:
+                    type: string
+                    description: User's email address
+                password:
+                    type: string
+                    description: User's password
+                    format: password
+                name:
+                    type: string
+                    description: User's full name
+                role:
+                    type: string
+                    description: User's role
+                    enum: [amministratore, sorvegliante, dipendentecomunale]
+
+        UpdateUserRequest:
+            type: object
+            properties:
+                email:
+                    type: string
+                    description: User's email address
+                name:
+                    type: string
+                    description: User's full name
+                role:
+                    type: string
+                    description: User's role
+                    enum: [amministratore, sorvegliante, dipendentecomunale]
+
+        Camera:
+            description: "Represents a camera in the system"
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: Camera unique identifier
+                name:
+                    type: string
+                    description: Camera name
+                location:
+                    type: object
+                    properties:
+                        address:
+                            type: string
+                            description: Address of the camera location
+                installationDate:
+                    type: string
+                    format: date-time
+                    description: Installation date of the camera
+                lastMaintenance:
+                    type: string
+                    format: date-time
+                    description: Last maintenance date of the camera
+                isActive:
+                    type: boolean
+                    description: Indicates if the camera is active
+                ipAddress:
+                    type: string
+                    description: IP address of the camera
+                streamUrl:
+                    type: string
+                    description: URL of the camera stream
+                modelInfo:
+                    type: object
+                    properties:
+                        brand:
+                            type: string
+                            description: Camera brand name
+                        model:
+                            type: string
+                            description: Camera model name
+
+        StreamResponse:
+            description: "Represents a stream in the system"
+            type: object
+            properties:
+                _id:
+                    type: string
+                    description: Stream unique identifier
+                cameraId:
+                    type: string
+                    description: ID of the associated camera
+                streamKey:
+                    type: string
+                    description: Unique key for the stream
+                streamUrl:
+                    type: string
+                    description: Stream URL
+                isActive:
+                    type: boolean
+                    description: Indicates if the stream is active
+                startTime:
+                    type: string
+                    format: date-time
+                    description: Date and time of stream start
+                endTime:
+                    type: string
+                    format: date-time
+                    description: Date and time of stream end (if ended)
+                streamType:
+                    type: string
+                    enum: [rtsp, hls, webrtc]
+                    description: Stream type
+                viewCount:
+                    type: integer
+                    description: Number of views
+                lastAccessed:
+                    type: string
+                    format: date-time
+                    description: Last time the stream was accessed
+
+        StreamDetails:
+            description: "Complete details of a stream"
+            type: object
+            properties:
+                _id:
+                    type: string
+                    description: Stream unique identifier
+                cameraId:
+                    type: string
+                    description: ID of the associated camera
+                streamKey:
+                    type: string
+                    description: Camera unique key
+                streamUrl:
+                    type: string
+                    description: URL of the stream
+                isActive:
+                    type: boolean
+                    description: Indicates if the stream is active
+                startTime:
+                    type: string
+                    format: date-time
+                    description: Date and time of stream start
+                endTime:
+                    type: string
+                    format: date-time
+                    description: Date and time of stream end (if ended)
+                streamType:
+                    type: string
+                    enum: [rtsp, hls, webrtc]
+                    description: Stream type
+                viewCount:
+                    type: integer
+                    description: Number of views
+                lastAccessed:
+                    type: string
+                    format: date-time
+                    description: Last time the stream was accessed
+
+    responses:
+        Unauthorized:
+            description: Unauthorized access (invalid token)
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/ErrorResponse"
+                    examples:
+                        tokenRequired:
+                            value:
+                                error: "Authentication token required"
+                                errorCode: "TOKEN_REQUIRED"
+                        invalidToken:
+                            value:
+                                error: "Invalid or expired token"
+                                errorCode: "INVALID_TOKEN"
+
+        Forbidden:
+            description: Forbidden access (user is not an admin or attempting unauthorized action)
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/ErrorResponse"
+                    examples:
+                        unauthorizedRole:
+                            value:
+                                error: "Unauthorized role"
+                                errorCode: "UNAUTHORIZED_ROLE"
+                        selfModification:
+                            value:
+                                error: "Cannot modify your own account"
+                                errorCode: "SELF_MODIFICATION_FORBIDDEN"
+                        selfDeletion:
+                            value:
+                                error: "Cannot delete your own account"
+                                errorCode: "SELF_DELETION_FORBIDDEN"
+
+        InternalServerError:
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/ErrorResponse"
+                    examples:
+                        serverError:
+                            value:
+                                error: "Internal server error"
+                                errorCode: "INTERNAL_SERVER_ERROR"

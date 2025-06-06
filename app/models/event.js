@@ -1,9 +1,9 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const eventSchema = new mongoose.Schema({
     type: {
         type: String,
-        enum: ['incidente', 'ingorgo'], 
+        enum: ["incidente", "ingorgo"],
         required: true,
     },
     title: {
@@ -35,15 +35,14 @@ const eventSchema = new mongoose.Schema({
             required: true,
         },
     },
-    status:  {
+    status: {
         type: String,
-        enum: ['pending', 'solved', 'unsolved', 'false_alarm'],
-        //default: 'pending',
+        enum: ["pending", "solved", "unsolved", "false_alarm"],
         required: true,
     },
     cameraId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Camera', // Questo ID fa riferimento a un documento nella collection chiamata Camera, non definitivo
+        ref: "Camera", // Questo ID fa riferimento a un documento nella collection chiamata Camera, non definitivo
         required: false,
     },
     videoUrl: {
@@ -56,32 +55,42 @@ const eventSchema = new mongoose.Schema({
     },
     confirmedBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Sorvegliante', // non definitivo
-        required: function() { return this.confirmed; } // solo se è stato confermato
+        ref: "Sorvegliante", // non definitivo
+        required: function () {
+            return this.confirmed;
+        }, // solo se è stato confermato
     },
-    notifiedServices: [{
-        service: {
-            type: String,
-            enum: ['polizia', 'carabinieri', 'vigili_del_fuoco', 'ambulanza', 'protezione_civile'],
+    notifiedServices: [
+        {
+            service: {
+                type: String,
+                enum: [
+                    "polizia",
+                    "carabinieri",
+                    "vigili_del_fuoco",
+                    "ambulanza",
+                    "protezione_civile",
+                ],
+            },
+            notifiedAt: {
+                type: Date,
+                default: Date.now,
+            },
+            responseTime: {
+                type: Number, // in minuti
+                required: false,
+            },
         },
-        notifiedAt: {
-            type: Date,
-            default: Date.now
-        },
-        responseTime: {
-            type: Number, // in minuti
-            required: false
-        }
-    }],
+    ],
     severity: {
         type: String,
-        enum: ['bassa', 'media', 'alta'],
+        enum: ["bassa", "media", "alta"],
         required: false,
     },
 });
 
 // Metodo per ottenere la versione pubblica
-eventSchema.methods.toPublicJSON = function() {
+eventSchema.methods.toPublicJSON = function () {
     return {
         _id: this._id,
         type: this.type,
@@ -90,23 +99,23 @@ eventSchema.methods.toPublicJSON = function() {
         eventDate: this.eventDate,
         location: this.location,
         status: this.status,
-        severity: this.severity
+        severity: this.severity,
     };
 };
 
 // Metodo statico per query pubbliche
-eventSchema.statics.findPublic = function(filters = {}) {
+eventSchema.statics.findPublic = function (filters = {}) {
     const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
-    
+
     return this.find({
         eventDate: { $gte: twoHoursAgo },
-        status: { $in: ['solved', 'unsolved'] },
-        ...filters
+        status: { $in: ["solved", "unsolved"] },
+        ...filters,
     })
-    .select('title type eventDate location status severity description')
-    .sort({ eventDate: -1 });
+        .select("title type eventDate location status severity description")
+        .sort({ eventDate: -1 });
 };
 
-const Event = mongoose.model('Event', eventSchema);
+const Event = mongoose.model("Event", eventSchema);
 
 module.exports = Event;
