@@ -34,6 +34,16 @@ const eventSchema = new mongoose.Schema({
             type: String,
             required: true,
         },
+        coordinates: {
+            lat: {
+                type: Number,
+                required: false, 
+            },
+            lng: {
+                type: Number,
+                required: false,
+            },
+        },
     },
     status: {
         type: String,
@@ -42,7 +52,7 @@ const eventSchema = new mongoose.Schema({
     },
     cameraId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Camera", // Questo ID fa riferimento a un documento nella collection chiamata Camera, non definitivo
+        ref: "Camera",
         required: false,
     },
     videoUrl: {
@@ -55,7 +65,7 @@ const eventSchema = new mongoose.Schema({
     },
     confirmedBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Sorvegliante", // non definitivo
+        ref: "Sorvegliante", 
         required: function () {
             return this.confirmed;
         }, // solo se è stato confermato
@@ -89,7 +99,7 @@ const eventSchema = new mongoose.Schema({
     },
 });
 
-// Metodo per ottenere la versione pubblica
+// Metodo per ottenere la versione pubblica 
 eventSchema.methods.toPublicJSON = function () {
     return {
         _id: this._id,
@@ -97,9 +107,10 @@ eventSchema.methods.toPublicJSON = function () {
         title: this.title,
         description: this.description,
         eventDate: this.eventDate,
-        location: this.location,
+        location: this.location, 
         status: this.status,
         severity: this.severity,
+        cameraId: this.cameraId,
     };
 };
 
@@ -112,7 +123,7 @@ eventSchema.statics.findPublic = function (filters = {}) {
         status: { $in: ["solved", "unsolved"] },
         ...filters,
     })
-        .select("title type eventDate location status severity description")
+        .select("title type eventDate location status severity description cameraId")
         .sort({ eventDate: -1 });
 };
 
