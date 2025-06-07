@@ -189,7 +189,7 @@ const getSeverityStyle = severity => {
 </script>
 
 <template>
-   <div class="py-8"
+   <div class="py-4"
     > <div class="mb-8 flex justify-center"
       > <div
         class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-md p-5 inline-block text-center border border-gray-100 min-w-[260px]"

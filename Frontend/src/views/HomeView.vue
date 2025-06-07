@@ -91,14 +91,7 @@ const closeGuide = () => {
            </svg
         > </div
       > </section
-    > <section class="py-10 bg-white"
-      > <div class="text-center mb-12"
-        > <h2 class="text-4xl font-bold text-gray-900 mb-4"> Situazione Traffico </h2> <p
-          class="text-lg text-gray-600"
-          >Eventi degli ultimi 120 minuti a Trento</p
-        > </div
-      > </section
-    > <section class="py-10 bg-gray-50"
+    > <section class="py-1 bg-gray-50"
       > <div class="max-w-7xl mx-auto px-4"> <PublicEventsList /> </div> </section
     > <section class="py-20 bg-white"
       > <div class="max-w-7xl mx-auto px-4"
