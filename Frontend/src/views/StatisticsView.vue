@@ -137,7 +137,7 @@ const fetchCameras = async () => {
       return;
     }
 
-    const res = await fetch("/api/v1/stream/list", {
+    const res = await fetch("/api/v1/streams", {
       headers: {
         Authorization: `Bearer ${token}`,
       },

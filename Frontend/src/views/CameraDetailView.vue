@@ -77,7 +77,7 @@ const fetchStream = async () => {
   loading.value = true;
 
   try {
-    const res = await fetch(`/api/v1/stream/${streamId}`, {
+    const res = await fetch(`/api/v1/streams/${streamId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -89,7 +89,7 @@ const fetchStream = async () => {
     stream.value = data.stream;
 
     // Registra la visualizzazione
-    await fetch(`/api/v1/stream/view/${streamId}`, {
+    await fetch(`/api/v1/streams/view/${streamId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -3,7 +3,7 @@ const router = express.Router();
 const Stream = require("./models/stream");
 
 // Ottieni tutti gli stream attivi
-router.get("/list", async (req, res) => {
+router.get("/", async (req, res) => {
     try {
         const streams = await Stream.find({ isActive: true });
 

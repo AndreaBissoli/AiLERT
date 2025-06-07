@@ -19,7 +19,7 @@ afterAll(async () => {
     await mongoose.connection.close(true);
 });
 
-describe('GET /api/v1/stream/', () => {
+describe('GET /api/v1/streams/', () => {
 
 
     var token = jwt.sign({
@@ -32,7 +32,7 @@ describe('GET /api/v1/stream/', () => {
 
     test('Recupera tutti gli stream attivi', async () => {
         const response = await request(app)
-            .get('/api/v1/stream/list')
+            .get('/api/v1/streams')
             .set('Authorization', `Bearer ${token}`);
 
         expect(response.status).toBe(200);
@@ -45,14 +45,14 @@ describe('GET /api/v1/stream/', () => {
         // Prima otteniamo la lista per avere un ID valido. 
         // Assumiamo che esista almeno una stream con _id valido
         const listResponse = await request(app)
-            .get('/api/v1/stream/list')
+            .get('/api/v1/streams')
             .set('Authorization', `Bearer ${token}`);
 
         if (listResponse.body.streams && listResponse.body.streams.length > 0) {
             const streamId = listResponse.body.streams[0]._id;
 
             const response = await request(app)
-                .get(`/api/v1/stream/${streamId}`)
+                .get(`/api/v1/streams/${streamId}`)
                 .set('Authorization', `Bearer ${token}`);
 
 
@@ -69,7 +69,7 @@ describe('GET /api/v1/stream/', () => {
         const response = await request(app)
             // Nel template è specificato come stremID inesistente 99999 ma non è possile usarlo 
             // per via delle regole di mongoose 
-            .get('/api/v1/stream/9999974d0bf87ea6613cfd24')
+            .get('/api/v1/streams/9999974d0bf87ea6613cfd24')
             .set('Authorization', `Bearer ${token}`);
 
         expect(response.status).toBe(404);
@@ -88,7 +88,7 @@ describe('GET /api/v1/stream/', () => {
         });
 
         const response = await request(app)
-            .get('/api/v1/stream/list')
+            .get('/api/v1/streams')
             .set('Authorization', `Bearer ${adminToken}`);
 
         expect(response.status).toBe(403);
@@ -101,7 +101,7 @@ describe('GET /api/v1/stream/', () => {
     // Non incluso nel deliverable ma utile per testare errori di accesso
     test('Tentativo di accesso senza autenticazione', async () => {
         const response = await request(app)
-            .get('/api/v1/stream/list');
+            .get('/api/v1/streams');
 
         expect(response.status).toBe(401);
         expect(response.body).toHaveProperty('error', 'Authentication token required');
@@ -111,7 +111,7 @@ describe('GET /api/v1/stream/', () => {
     // Non incluso nel deliverable ma utile per testare errori di accesso
     test('Tentativo di accesso con token non valido', async () => {
         const response = await request(app)
-            .get('/api/v1/stream/list')
+            .get('/api/v1/streams')
             .set('Authorization', 'Bearer invalid_token');
 
         expect(response.status).toBe(401);
@@ -120,7 +120,7 @@ describe('GET /api/v1/stream/', () => {
     });
 });
 
-describe('POST /api/v1/stream/', () => {
+describe('POST /api/v1/streams/', () => {
 
     var token = jwt.sign({
         name: 'John Doe',
@@ -132,7 +132,7 @@ describe('POST /api/v1/stream/', () => {
 
     test('Crea un nuovo stream', async () => {
         const response = await request(app)
-            .post('/api/v1/stream/')
+            .post('/api/v1/streams/')
             .set('Authorization', `Bearer ${token}`)
             .send({
                 cameraId: '60c72b2f9b1e8c001c8e4d5a',
@@ -149,7 +149,7 @@ describe('POST /api/v1/stream/', () => {
 
     test('Crea un nuovo stream con dati mancanti', async () => {
         const response = await request(app)
-            .post('/api/v1/stream/')
+            .post('/api/v1/streams/')
             .set('Authorization', `Bearer ${token}`)
             .send({
                 cameraId: '60c72b2f9b1e8c001c8e4d5a',
@@ -164,7 +164,7 @@ describe('POST /api/v1/stream/', () => {
     });
 })
 
-describe('PUT /api/v1/stream/:streamId/end', () => {
+describe('PUT /api/v1/streams/:streamId/end', () => {
     let token;
     let streamId;
 
@@ -182,7 +182,7 @@ describe('PUT /api/v1/stream/:streamId/end', () => {
         streamId = '6842a74d0af87da6613cfd24'
 
         const response = await request(app)
-            .post('/api/v1/stream/')
+            .post('/api/v1/streams/')
             .set('Authorization', `Bearer ${token}`)
             .send({
                 cameraId: '60c72b2f9b1e8c001c8e4d5a',
@@ -194,7 +194,7 @@ describe('PUT /api/v1/stream/:streamId/end', () => {
 
     test('Termina uno stream attivo con successo', async () => {
         const response = await request(app)
-            .put(`/api/v1/stream/${streamId}/end`)
+            .put(`/api/v1/streams/${streamId}/end`)
             .set('Authorization', `Bearer ${token}`);
 
         expect(response.status).toBe(200);
@@ -204,7 +204,7 @@ describe('PUT /api/v1/stream/:streamId/end', () => {
     });
 });
 
-describe('PUT /api/v1/stream/:streamId', () => {
+describe('PUT /api/v1/streams/:streamId', () => {
     let token;
     let streamId;
 
@@ -219,7 +219,7 @@ describe('PUT /api/v1/stream/:streamId', () => {
 
         // Stream per i test di aggiornamento
         const response = await request(app)
-            .post('/api/v1/stream/')
+            .post('/api/v1/streams/')
             .set('Authorization', `Bearer ${token}`)
             .send({
                 cameraId: '60c72b2f9b1e8c001c8e4d5a',
@@ -239,7 +239,7 @@ describe('PUT /api/v1/stream/:streamId', () => {
         };
 
         const response = await request(app)
-            .put(`/api/v1/stream/${streamId}`)
+            .put(`/api/v1/streams/${streamId}`)
             .set('Authorization', `Bearer ${token}`)
             .send(updatedData);
 
@@ -258,7 +258,7 @@ describe('PUT /api/v1/stream/:streamId', () => {
         };
 
         const response = await request(app)
-            .put(`/api/v1/stream/${streamId}`)
+            .put(`/api/v1/streams/${streamId}`)
             .set('Authorization', `Bearer ${token}`)
             .send(partialUpdate);
 

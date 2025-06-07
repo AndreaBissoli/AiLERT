@@ -59,7 +59,7 @@ app.locals.detectionService = detectionService;
 app.use("/", express.static(process.env.FRONTEND_DIR));
 
 app.use("/api/v1/auth/login", authentication);
-app.use("/api/v1/stream/view", express.static(process.env.STREAM_OUTPUT_DIR || "./streams"));
+//app.use("/api/v1/stream/view", express.static(process.env.STREAM_OUTPUT_DIR || "./streams"));
 
 app.use("/api/v1/public", publicRouter);
 
@@ -71,7 +71,7 @@ app.use(
 );
 app.use("/api/v1/users", [tokenChecker, checkrole("amministratore")], admin);
 app.use(
-    "/api/v1/stream",
+    "/api/v1/streams",
     [tokenChecker, checkrole(["dipendentecomunale", "sorvegliante"])],
     streamRouter
 );

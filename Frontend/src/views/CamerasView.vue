@@ -66,7 +66,7 @@ const fetchStreams = async () => {
   loading.value = true;
 
   try {
-    const res = await fetch("/api/v1/stream/list", {
+    const res = await fetch("/api/v1/streams", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -105,7 +105,7 @@ const viewStream = async streamId => {
   const token = localStorage.getItem("token");
 
   try {
-    await fetch(`/api/v1/stream/view/${streamId}`, {
+    await fetch(`/api/v1/streams/view/${streamId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
