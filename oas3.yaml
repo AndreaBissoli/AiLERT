@@ -187,6 +187,194 @@ paths:
                 "403":
                     $ref: "#/components/responses/Forbidden"
 
+    /events/{id}:
+        parameters:
+            - name: id
+              in: path
+              required: true
+              description: The event ID
+              schema:
+                  type: string
+        get:
+            summary: Get event by ID
+            description: Retrieves a specific event by its ID. Requires authentication.
+            security:
+                - BearerAuth: []
+            responses:
+                "200":
+                    description: Event retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Event"
+                            examples:
+                                eventExample:
+                                    value:
+                                        type: incidente
+                                        title: "Auto contro semaforo"
+                                        description: "Incidente lieve senza feriti"
+                                        createdAt: "2025-05-15T09:42:01.646Z"
+                                        updatedAt: "2025-05-15T09:42:01.646Z"
+                                        eventDate: "2025-05-15T09:42:01.646Z"
+                                        location:
+                                            address: "Via Roma 1, Trento"
+                                        status: pending
+                                        cameraId: "665fe9b27d204f50ae7c8d4a"
+                                        videoUrl: "https://video.com/sample1.mp4"
+                                        confirmed: true
+                                        confirmedBy: "665fe9b27d204f50ae7c8d4a"
+                                        notifiedServices:
+                                            - service: ambulanza
+                                              notifiedAt: "2025-05-15T09:42:01.646Z"
+                                              responseTime: 7
+                                        severity: alta
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+                "404":
+                    description: Event not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                eventNotFound:
+                                    value:
+                                        error: "Event not found"
+                                        errorCode: "EVENT_NOT_FOUND"
+                "500":
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                serverError:
+                                    value:
+                                        error: "Internal server errror"
+                                        errorCode: "INTERNAL_SERVER_ERROR"
+
+        put:
+            summary: Update event by ID
+            description: Updates an existing event by its ID. Requires authentication.
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Event"
+                        examples:
+                            updateEventExample:
+                                summary: Example of updating an event status
+                                value:
+                                    status: solved
+                                    description: "Incidente risolto, traffico ripristinato"
+                                    severity: bassa
+            responses:
+                "200":
+                    description: Event updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Event"
+                            examples:
+                                updatedEvent:
+                                    value:
+                                        type: incidente
+                                        title: "Auto contro semaforo"
+                                        description: "Incidente risolto, traffico ripristinato"
+                                        createdAt: "2025-05-15T09:42:01.646Z"
+                                        updatedAt: "2025-05-15T10:15:00.000Z"
+                                        eventDate: "2025-05-15T09:42:01.646Z"
+                                        location:
+                                            address: "Via Roma 1, Trento"
+                                        status: solved
+                                        cameraId: "665fe9b27d204f50ae7c8d4a"
+                                        videoUrl: "https://video.com/sample1.mp4"
+                                        confirmed: true
+                                        confirmedBy: "665fe9b27d204f50ae7c8d4a"
+                                        severity: bassa
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+                "404":
+                    description: Event not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                eventNotFound:
+                                    value:
+                                        error: "Event not found"
+                                        errorCode: "EVENT_NOT_FOUND"
+                "500":
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                serverError:
+                                    value:
+                                        error: "Internal server error"
+                                        errorCode: "INTERNAL_SERVER_ERROR"
+
+        delete:
+            summary: Delete event by ID
+            description: Deletes an event from the system by its ID. Requires authentication.
+            security:
+                - BearerAuth: []
+            responses:
+                "200":
+                    description: Event deleted successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        description: Whether the deletion was successful
+                                    message:
+                                        type: string
+                                        description: Success message
+                            examples:
+                                deletedSuccess:
+                                    value:
+                                        success: true
+                                        message: "Event deleted successfully"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+                "404":
+                    description: Event not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                eventNotFound:
+                                    value:
+                                        error: "Event not found"
+                                        errorCode: "EVENT_NOT_FOUND"
+                "500":
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                serverError:
+                                    value:
+                                        error: "Internal server error"
+                                        errorCode: "INTERNAL_SERVER_ERROR"
+
     # Admin endpoints
     /users:
         get:
