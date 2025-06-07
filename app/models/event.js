@@ -34,6 +34,16 @@ const eventSchema = new mongoose.Schema({
             type: String,
             required: true,
         },
+        coordinates: {
+            lat: {
+                type: Number,
+                required: false, 
+            },
+            lng: {
+                type: Number,
+                required: false,
+            },
+        },
     },
     status: {
         type: String,
@@ -42,7 +52,7 @@ const eventSchema = new mongoose.Schema({
     },
     cameraId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Camera", // Questo ID fa riferimento a un documento nella collection chiamata Camera, non definitivo
+        ref: "Camera",
         required: false,
     },
     videoUrl: {
@@ -55,7 +65,7 @@ const eventSchema = new mongoose.Schema({
     },
     confirmedBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Sorvegliante", // non definitivo
+        ref: "Sorvegliante", 
         required: function () {
             return this.confirmed;
         }, // solo se è stato confermato
@@ -89,7 +99,29 @@ const eventSchema = new mongoose.Schema({
     },
 });
 
-// Metodo per ottenere la versione pubblica
+// Middleware per aggiornare updatedAt prima di salvare
+eventSchema.pre('save', async function(next) {
+    // Solo per incidenti con cameraId ma senza coordinates
+    if (this.type === 'incidente' && this.cameraId && !this.location.coordinates?.lat) {
+        try {
+            const Camera = mongoose.model('Camera');
+            const camera = await Camera.findById(this.cameraId).select('location.coordinates');
+            
+            if (camera && camera.location && camera.location.coordinates) {
+                this.location.coordinates = {
+                    lat: camera.location.coordinates.lat,
+                    lng: camera.location.coordinates.lng
+                };
+                // console.log(`Auto-populated coordinates for event ${this._id} from camera ${this.cameraId}`);
+            }
+        } catch (error) {
+            console.error('Error auto-populating coordinates:', error);
+        }
+    }
+    next();
+});
+
+// Metodo per ottenere la versione pubblica 
 eventSchema.methods.toPublicJSON = function () {
     return {
         _id: this._id,
@@ -97,9 +129,10 @@ eventSchema.methods.toPublicJSON = function () {
         title: this.title,
         description: this.description,
         eventDate: this.eventDate,
-        location: this.location,
+        location: this.location, 
         status: this.status,
         severity: this.severity,
+        cameraId: this.cameraId,
     };
 };
 
@@ -112,7 +145,7 @@ eventSchema.statics.findPublic = function (filters = {}) {
         status: { $in: ["solved", "unsolved"] },
         ...filters,
     })
-        .select("title type eventDate location status severity description")
+        .select("title type eventDate location status severity description cameraId")
         .sort({ eventDate: -1 });
 };
 
