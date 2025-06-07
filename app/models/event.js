@@ -99,6 +99,28 @@ const eventSchema = new mongoose.Schema({
     },
 });
 
+// Middleware per aggiornare updatedAt prima di salvare
+eventSchema.pre('save', async function(next) {
+    // Solo per incidenti con cameraId ma senza coordinates
+    if (this.type === 'incidente' && this.cameraId && !this.location.coordinates?.lat) {
+        try {
+            const Camera = mongoose.model('Camera');
+            const camera = await Camera.findById(this.cameraId).select('location.coordinates');
+            
+            if (camera && camera.location && camera.location.coordinates) {
+                this.location.coordinates = {
+                    lat: camera.location.coordinates.lat,
+                    lng: camera.location.coordinates.lng
+                };
+                // console.log(`Auto-populated coordinates for event ${this._id} from camera ${this.cameraId}`);
+            }
+        } catch (error) {
+            console.error('Error auto-populating coordinates:', error);
+        }
+    }
+    next();
+});
+
 // Metodo per ottenere la versione pubblica 
 eventSchema.methods.toPublicJSON = function () {
     return {
