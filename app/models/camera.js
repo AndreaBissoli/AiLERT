@@ -11,6 +11,16 @@ const cameraSchema = new mongoose.Schema({
             type: String,
             required: true,
         },
+        coordinates: {
+            lat: {
+                type: Number,
+                required: true,
+            },
+            lng: {
+                type: Number,
+                required: true,
+            }
+        }
     },
     installationDate: {
         type: Date,
