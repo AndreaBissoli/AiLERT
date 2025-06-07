@@ -10,15 +10,22 @@ const Event = require('../app/models/event');
 
 // ID del DetectionService da verificare
 const DETECTION_SERVICE_IDS = [
-    '68266cd1683978f9108a7393', '68266da2683978f9108a7395',
-    '68266da2683978f9108a7396', '68266da2683978f9108a7397',
-    '682880cf683978f9108a739b', '682880cf683978f9108a739c',
-    '682880cf683978f9108a739d', '682880cf683978f9108a739e',
-    '682880cf683978f9108a739f', '682880cf683978f9108a73a0',
-    '682880cf683978f9108a73a1', '682880cf683978f9108a73a2',
-    '682880cf683978f9108a73a3', '682880cf683978f9108a73a4',
-    '60c72b2f9b1e8c001c8e4d5a', '60c72b2f9b1e8c001c8e4d5a',
-    '60c72b2f9b1e8c001c8e4d5a'
+    '68443c5d2d56f26e2678b173', // CAM-001 Piazza Duomo - Piazza Duomo
+    '68443c5d2d56f26e2678b175', // CAM-002 Via San Marco - Via San Marco
+    '68443c5e2d56f26e2678b178', // CAM-003 Via Roma Centro - Via Roma
+    '68443c5e2d56f26e2678b17a', // CAM-004 Corso 3 Novembre - Corso 3 Novembre
+    '68443c5e2d56f26e2678b17c', // CAM-005 Via Belenzani - Via Belenzani
+    '68443c5e2d56f26e2678b17e', // CAM-006 Ponte San Lorenzo - Ponte San Lorenzo
+    '68443c5e2d56f26e2678b180', // CAM-007 Via Verdi - Via Verdi
+    '68443c5e2d56f26e2678b182', // CAM-008 Via Calepina Università - Via Calepina
+    '68443c5e2d56f26e2678b184', // CAM-009 Via Oss Mazzurana - Via Oss Mazzurana
+    '68443c5e2d56f26e2678b186', // CAM-010 Piazza Fiera - Piazza Fiera
+    '68443c5e2d56f26e2678b188', // CAM-011 Via Brennero Nord - Via Brennero
+    '68443c5e2d56f26e2678b18a', // CAM-012 Via Milano Sud - Via Milano
+    '68443c5e2d56f26e2678b18c', // CAM-013 Via Venezia Industriale - Via Venezia
+    '68443c5e2d56f26e2678b18e', // CAM-014 Rotatoria Spini Gardolo - Rotatoria Spini di Gardolo
+    '68443c5e2d56f26e2678b190', // CAM-015 Via del Ponte - Via del Ponte
+    '68443c5e2d56f26e2678b192' // CAM-016 Via Segantini Ospedale - Via Segantini
 ];
 
 async function analyzeDatabase() {
