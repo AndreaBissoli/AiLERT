@@ -46,61 +46,6 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/ErrorResponse"
 
-    /auth/changepass:
-        post:
-            summary: Change Password
-            description: Change the user's password. Requires authentication.
-            security:
-                - BearerAuth: []
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            properties:
-                                newpassword:
-                                    type: string
-                                    description: New password
-                        examples:
-                            example1:
-                                value:
-                                    newpassword: "newSecurePassword456"
-                                summary: Standard password change request
-            responses:
-                "200":
-                    description: Password changed successfully
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    success:
-                                        type: boolean
-                                        description: Whether the password change was successful
-                                    message:
-                                        type: string
-                                        description: Success message
-                            examples:
-                                success:
-                                    value:
-                                        success: true
-                                        message: "Password changed successfully"
-                "400":
-                    description: Bad request
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/ErrorResponse"
-                            examples:
-                                samePassword:
-                                    value:
-                                        error: "New password cannot be the same as the old password"
-                                        errorCode: "SAME_PASSWORD"
-                "401":
-                    $ref: "#/components/responses/Unauthorized"
-                "500":
-                    $ref: "#/components/responses/InternalServerError"
 
     /public/events:
         get:
@@ -451,8 +396,8 @@ paths:
                                         errorCode: "EMAIL_ALREADY_IN_USE"
                                 serverError:
                                     value:
-                                        error: "Internal server error"
-                                        errorCode: "INTERNAL_SERVER_ERROR"
+                                        error: "Email already in use"
+                                        errorCode: "EMAIL_ALREADY_IN_USE"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
                 "403":
@@ -507,7 +452,61 @@ paths:
                                         errorCode: "USER_NOT_FOUND"
                 "500":
                     $ref: "#/components/responses/InternalServerError"
-
+    /users/me:
+        put:
+            summary: Change Password
+            description: Change the user's password. Requires authentication.
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                newpassword:
+                                    type: string
+                                    description: New password
+                        examples:
+                            example1:
+                                value:
+                                    newpassword: "newSecurePassword456"
+                                summary: Standard password change request
+            responses:
+                "200":
+                    description: Password changed successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        description: Whether the password change was successful
+                                    message:
+                                        type: string
+                                        description: Success message
+                            examples:
+                                success:
+                                    value:
+                                        success: true
+                                        message: "Password changed successfully"
+                "400":
+                    description: Bad request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                samePassword:
+                                    value:
+                                        error: "New password cannot be the same as the old password"
+                                        errorCode: "SAME_PASSWORD"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
     # Stream API endpoints
     /streams:
         get:

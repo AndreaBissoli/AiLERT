@@ -79,14 +79,27 @@ router.put("/:id", async (req, res) => {
                     .json({ error: "Email already in use", errorCode: "EMAIL_ALREADY_IN_USE" });
             }
         }
+        newemail = req.body.email;
+        newname = req.body.name;
+        newrole = req.body.role;
+        
+        if (!newemail || !newname || !newrole) {
+            return res
+                .status(400)
+                .json({ error: "All fields are required", errorCode: "MISSING_FIELDS" });
+        }
 
-        const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const user = await User.findByIdAndUpdate(req.params.id, {
+            email: newemail,
+            name: newname,
+            role: newrole,
+        }, { new: true });
         if (!user) {
             return res.status(404).json({ error: "User not found", errorCode: "USER_NOT_FOUND" });
         }
         res.json(user);
     } catch (err) {
-        res.status(400).json({
+        res.status(500).json({
             error: "Internal server error",
             errorCode: "INTERNAL_SERVER_ERROR",
         });

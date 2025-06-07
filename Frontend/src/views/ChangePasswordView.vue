@@ -54,8 +54,8 @@ async function changePassword() {
 
   try {
     const token = localStorage.getItem("token");
-    const response = await fetch("/api/v1/auth/changepass", {
-      method: "POST",
+    const response = await fetch("/api/v1/users/me", {
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,

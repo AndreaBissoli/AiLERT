@@ -63,12 +63,12 @@ app.use("/api/v1/auth/login", authentication);
 
 app.use("/api/v1/public", publicRouter);
 
-app.use("/api/v1/auth/changepass", tokenChecker, changepass);
 app.use(
     "/api/v1/events",
     [tokenChecker, checkrole(["dipendentecomunale", "sorvegliante"])],
     events
 );
+app.use("/api/v1/users/me", tokenChecker, changepass);
 app.use("/api/v1/users", [tokenChecker, checkrole("amministratore")], admin);
 app.use(
     "/api/v1/streams",

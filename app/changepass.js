@@ -1,14 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const SALT_ROUNDS = require("./config").SALT_ROUNDS;
 const User = require("./models/user");
 
-router.post("", async function (req, res) {
+router.put("", async function (req, res) {
     email = req.loggedUser.email;
     id = req.loggedUser.id;
     newpassword = req.body.newpassword;
+    if (!newpassword) {
+        return res.status(400).json({
+            error: "New password is required",
+            errorCode: "MISSING_NEW_PASSWORD",
+        });
+    }
 
     // find the user in the local db
     user = await User.findById(id);
@@ -20,14 +25,15 @@ router.post("", async function (req, res) {
             errorCode: "INVALID_EMAIL",
         });
     }
-    // change the password in the local db
-    const hash = await bcrypt.hash(newpassword, SALT_ROUNDS);
-    if (user.hash === hash) {
+    const match = await bcrypt.compare(newpassword, user.hash);
+    if (match) {
         return res.status(400).json({
             error: "New password cannot be the same as the old password",
             errorCode: "SAME_PASSWORD",
         });
     }
+    // change the password in the local db
+    const hash = await bcrypt.hash(newpassword, SALT_ROUNDS);
     user.hash = hash;
     user.save()
         .then(() => {
