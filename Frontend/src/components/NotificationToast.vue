@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 
 const props = defineProps({
   notification: {
@@ -16,6 +17,7 @@ const emit = defineEmits(["close"]);
 
 const visible = ref(false);
 const progressWidth = ref(100);
+const router = useRouter();
 
 onMounted(() => {
   // Show notification with animation
@@ -37,6 +39,18 @@ const hideNotification = () => {
   setTimeout(() => {
     emit("close");
   }, 300);
+};
+
+const handleCloseClick = (event) => {
+  event.stopPropagation();
+  hideNotification();
+};
+
+const handleToastClick = () => {
+  if (props.notification.streamId) {
+    router.push(`/cameras/${props.notification.streamId}`);
+    hideNotification();
+  }
 };
 
 const getSeverityStyle = severity => {
@@ -76,7 +90,8 @@ const getSeverityIcon = severity => {
     leave-to-class="transform translate-x-full opacity-0 scale-95"
     > <div
       v-if="visible"
-      class="fixed top-4 right-4 z-[10000] max-w-sm w-full bg-white rounded-lg shadow-lg border"
+      @click="handleToastClick"
+      class="fixed top-4 right-4 z-[10000] max-w-sm w-full bg-white rounded-lg shadow-lg border cursor-pointer"
       > <div class="p-4"
         > <div class="flex items-start"
           > <div
@@ -86,7 +101,7 @@ const getSeverityIcon = severity => {
           > <div class="flex-1 min-w-0"
             > <div class="flex items-center justify-between"
               > <p class="text-sm font-semibold text-gray-900"> Rilevamento AI </p> <button
-                @click="hideNotification"
+                @click="handleCloseClick"
                 class="ml-2 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors duration-200"
                 > <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 
