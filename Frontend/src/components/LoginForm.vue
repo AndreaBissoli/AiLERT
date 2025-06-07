@@ -59,7 +59,7 @@ async function login() {
     // Small delay to ensure token is processed
     setTimeout(() => {
       if (isAdmin()) {
-        router.push("/admin");
+        router.push("/users");
       } else {
         router.push("/dashboard");
       }

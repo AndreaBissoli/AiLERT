@@ -69,7 +69,7 @@ app.use(
     [tokenChecker, checkrole(["dipendentecomunale", "sorvegliante"])],
     events
 );
-app.use("/api/v1/admin", [tokenChecker, checkrole("amministratore")], admin);
+app.use("/api/v1/users", [tokenChecker, checkrole("amministratore")], admin);
 app.use(
     "/api/v1/stream",
     [tokenChecker, checkrole(["dipendentecomunale", "sorvegliante"])],

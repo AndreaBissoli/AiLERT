@@ -33,7 +33,7 @@ const fetchUsers = async () => {
       throw new Error("Token non trovato. Effettua nuovamente il login.");
     }
 
-    const response = await fetch("/api/v1/admin", {
+    const response = await fetch("/api/v1/users", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -78,7 +78,7 @@ const refreshData = () => {
 watch(
   () => route.path,
   () => {
-    if (route.path === "/admin") {
+    if (route.path === "/users") {
       refreshData();
     }
   }

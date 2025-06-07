@@ -41,7 +41,7 @@ const fetchUserData = async () => {
   errorMessage.value = "";
 
   try {
-    const response = await fetch(`/api/v1/admin/${userId.value}`, {
+    const response = await fetch(`/api/v1/users/${userId.value}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -104,7 +104,7 @@ const handleSubmit = async () => {
     }
 
     // Determine the API endpoint and method
-    const url = props.isEditing ? `/api/v1/admin/${userId.value}` : "/api/v1/admin";
+    const url = props.isEditing ? `/api/v1/users/${userId.value}` : "/api/v1/users";
 
     const method = props.isEditing ? "PUT" : "POST";
 

@@ -37,7 +37,7 @@ const fetchUserDetails = async () => {
 
     console.log(`Fetching user details for ID: ${userId}`);
 
-    const response = await fetch(`/api/v1/admin/${userId}`, {
+    const response = await fetch(`/api/v1/users/${userId}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -75,7 +75,7 @@ const deleteUser = async () => {
   try {
     const token = localStorage.getItem("token");
 
-    const response = await fetch(`/api/v1/admin/${userId}`, {
+    const response = await fetch(`/api/v1/users/${userId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,

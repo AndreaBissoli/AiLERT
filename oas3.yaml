@@ -243,7 +243,7 @@ paths:
                     $ref: "#/components/responses/Forbidden"
 
     # Admin endpoints
-    /admin:
+    /users:
         get:
             summary: Get all users
             description: Retrieves a list of all users. Requires admin role authentication.
@@ -349,7 +349,7 @@ paths:
                 "500":
                     $ref: "#/components/responses/InternalServerError"
 
-    /admin/{id}:
+    /users/{id}:
         parameters:
             - name: id
               in: path
