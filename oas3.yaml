@@ -46,7 +46,6 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/ErrorResponse"
 
-
     /public/events:
         get:
             summary: Obtain public events

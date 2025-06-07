@@ -41,7 +41,7 @@ const hideNotification = () => {
   }, 300);
 };
 
-const handleCloseClick = (event) => {
+const handleCloseClick = event => {
   event.stopPropagation();
   hideNotification();
 };

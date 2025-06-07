@@ -82,18 +82,22 @@ router.put("/:id", async (req, res) => {
         newemail = req.body.email;
         newname = req.body.name;
         newrole = req.body.role;
-        
+
         if (!newemail || !newname || !newrole) {
             return res
                 .status(400)
                 .json({ error: "All fields are required", errorCode: "MISSING_FIELDS" });
         }
 
-        const user = await User.findByIdAndUpdate(req.params.id, {
-            email: newemail,
-            name: newname,
-            role: newrole,
-        }, { new: true });
+        const user = await User.findByIdAndUpdate(
+            req.params.id,
+            {
+                email: newemail,
+                name: newname,
+                role: newrole,
+            },
+            { new: true }
+        );
         if (!user) {
             return res.status(404).json({ error: "User not found", errorCode: "USER_NOT_FOUND" });
         }

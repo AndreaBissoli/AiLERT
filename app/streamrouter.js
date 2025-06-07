@@ -142,7 +142,7 @@ router.put("/:streamId", async (req, res) => {
         const updatedStream = await Stream.findByIdAndUpdate(
             streamId,
             { $set: updateData },
-            { new: true } 
+            { new: true }
         );
 
         if (!updatedStream) {
