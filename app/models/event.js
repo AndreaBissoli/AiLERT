@@ -139,9 +139,13 @@ eventSchema.methods.toPublicJSON = function () {
 // Metodo statico per query pubbliche
 eventSchema.statics.findPublic = function (filters = {}) {
     const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+    const now = new Date(); // Momento attuale
 
     return this.find({
-        eventDate: { $gte: twoHoursAgo },
+        eventDate: { 
+            $gte: twoHoursAgo,  // Eventi non più vecchi di 2 ore
+            $lte: now           // Eventi non futuri (massimo ora)
+        },
         status: { $in: ["solved", "unsolved"] },
         ...filters,
     })

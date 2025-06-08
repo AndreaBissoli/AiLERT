@@ -19,17 +19,23 @@ const mapContainer = ref(null);
 let map = null;
 const markers = [];
 
+// Auto-refresh state
+const isAutoRefreshEnabled = ref(true);
+const refreshCountdown = ref(30);
+const lastRefreshTime = ref(null);
+let refreshInterval = null;
+let countdownInterval = null;
+
 const TRENTO_CENTER = [46.0667, 11.1167];
 const DEFAULT_ZOOM = 13;
+const REFRESH_INTERVAL = 30000; // 30 secondi
 
-// Funzione per ottenere coordinate evento - USA COORDINATE DAL BACKEND
+// Funzione per ottenere coordinate evento
 const getEventCoordinates = (event) => {
-  // PRIORITA 1: Usa coordinate precise dal backend
   if (event.location?.coordinates?.lat && event.location?.coordinates?.lng) {
     return [event.location.coordinates.lat, event.location.coordinates.lng];
   }
   
-  // PRIORITA 2: Fallback solo se mancano coordinate (non dovrebbe succedere)
   console.warn('Evento senza coordinate dal backend:', event.title);
   return TRENTO_CENTER;
 };
@@ -39,19 +45,9 @@ const initMap = async () => {
   try {
     const L = await import("leaflet");
 
-    // Fix per le icone di Leaflet
-    delete L.Icon.Default.prototype._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
-      iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
-      shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
-    });
-
-    // Inizializza mappa
     if (mapContainer.value && !map) {
       map = L.map(mapContainer.value).setView(TRENTO_CENTER, DEFAULT_ZOOM);
 
-      // Aggiungi layer OpenStreetMap
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution:
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -66,12 +62,12 @@ const initMap = async () => {
   }
 };
 
-// Aggiungi marker sulla mappa per ogni evento
+// Aggiorna marker sulla mappa
 const updateMarkers = async () => {
   if (!map) return;
 
   try {
-    // Rimuovi i marker esistenti
+    // Rimuovi marker esistenti
     markers.forEach(marker => marker.remove());
     markers.length = 0;
 
@@ -82,26 +78,13 @@ const updateMarkers = async () => {
       event.location?.coordinates?.lat && event.location?.coordinates?.lng
     );
 
-    const invalidEvents = props.events.filter(event => 
-      !event.location?.coordinates?.lat || !event.location?.coordinates?.lng
-    );
-
-    console.log(`Mappa: ${validEvents.length}/${props.events.length} eventi con coordinate valide`);
-    
-    if (invalidEvents.length > 0) {
-      console.warn('Eventi senza coordinate:', invalidEvents.map(e => e.title));
-    }
+    console.log(`Auto-refresh: ${validEvents.length}/${props.events.length} eventi con coordinate`);
 
     // Crea marker per ogni evento valido
     validEvents.forEach(event => {
       const coords = getEventCoordinates(event);
 
-      // Debug: verifica che le coordinate siano sensate per Trento
-      if (coords[0] < 46.0 || coords[0] > 46.2 || coords[1] < 11.0 || coords[1] > 11.3) {
-        console.warn('Coordinate fuori da Trento:', event.title, coords);
-      }
-
-      // Crea icona personalizzata in base al tipo di evento
+      // Icona personalizzata - USA I TUOI MARKER
       const iconUrl = event.type === "incidente" 
         ? "/markers/accident-marker.png" 
         : "/markers/traffic-marker.png";
@@ -115,14 +98,13 @@ const updateMarkers = async () => {
           popupAnchor: [0, -32],
         });
       } catch (e) {
-        // Fallback all'icona predefinita
         icon = undefined;
       }
 
       // Crea marker
       const marker = L.marker(coords, { icon }).addTo(map);
 
-      // Aggiungi popup con informazioni sull'evento
+      // Popup con informazioni
       marker.bindPopup(`
         <div class="event-popup">
           <h3>${event.title}</h3>
@@ -137,19 +119,91 @@ const updateMarkers = async () => {
             : event.status === "unsolved" ? "Non risolto"
             : event.status
           }</p>
+          <p><strong>Severità:</strong> ${event.severity || "N/A"}</p>
           ${event.cameraId ? `<p><strong>Camera ID:</strong> ${event.cameraId}</p>` : ''}
         </div>
       `);
 
-      // Salva riferimento per pulizia futura
       markers.push(marker);
     });
 
   } catch (error) {
-    console.error("Errore nell'aggiornamento dei marker:", error);
+    console.error("Errore aggiornamento marker:", error);
   }
 };
 
+// Gestione countdown
+const startCountdown = () => {
+  refreshCountdown.value = 30;
+  
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+  }
+  
+  countdownInterval = setInterval(() => {
+    refreshCountdown.value--;
+    
+    if (refreshCountdown.value <= 0) {
+      clearInterval(countdownInterval);
+    }
+  }, 1000);
+};
+
+// Avvia auto-refresh
+const startAutoRefresh = () => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+  }
+  
+  // Primo refresh immediato
+  refreshData();
+  startCountdown();
+  lastRefreshTime.value = new Date();
+  
+  // Poi ogni 30 secondi
+  refreshInterval = setInterval(() => {
+    if (isAutoRefreshEnabled.value) {
+      refreshData();
+      startCountdown();
+      lastRefreshTime.value = new Date();
+    }
+  }, REFRESH_INTERVAL);
+  
+  console.log('Auto-refresh attivato ogni 30 secondi');
+};
+
+// Ferma auto-refresh
+const stopAutoRefresh = () => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+    refreshInterval = null;
+  }
+  
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
+  
+  console.log('Auto-refresh fermato');
+};
+
+// Toggle auto-refresh
+const toggleAutoRefresh = () => {
+  isAutoRefreshEnabled.value = !isAutoRefreshEnabled.value;
+  
+  if (isAutoRefreshEnabled.value) {
+    startAutoRefresh();
+  } else {
+    stopAutoRefresh();
+  }
+};
+
+// Refresh manuale
+const refreshData = () => {
+  emit("refresh");
+};
+
+// Watch per aggiornamenti eventi
 watch(
   () => props.events,
   () => {
@@ -161,30 +215,78 @@ watch(
 );
 
 onMounted(async () => {
-  // Piccolo ritardo per assicurarsi che il container sia renderizzato
   setTimeout(async () => {
     const initialized = await initMap();
-    if (initialized && props.events.length > 0) {
-      updateMarkers();
+    if (initialized) {
+      if (props.events.length > 0) {
+        updateMarkers();
+      }
+      // Avvia auto-refresh dopo inizializzazione mappa
+      startAutoRefresh();
     }
   }, 100);
 });
 
 onUnmounted(() => {
+  stopAutoRefresh();
+  
   if (map) {
     map.remove();
     map = null;
   }
 });
-
-const refreshData = () => {
-  emit("refresh");
-};
 </script>
 
 <template>
   <div class="map-wrapper relative z-0">
     <div ref="mapContainer" class="h-[600px] w-full rounded-xl shadow-md overflow-hidden"></div>
+    
+    <!-- Controlli Auto-refresh -->
+    <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm p-3 rounded-lg shadow-md z-[1000] min-w-[200px]">
+      <div class="flex flex-col gap-2">
+        <!-- Toggle auto-refresh -->
+        <button 
+          @click="toggleAutoRefresh"
+          :class="{ 
+            'bg-green-500 text-white': isAutoRefreshEnabled, 
+            'bg-gray-500 text-white': !isAutoRefreshEnabled 
+          }"
+          class="px-3 py-1 rounded text-sm font-medium transition-colors"
+        >
+          {{ isAutoRefreshEnabled ? 'Stop Auto-refresh' : 'Start Auto-refresh' }}
+        </button>
+        
+        <!-- Refresh manuale -->
+        <button 
+          @click="refreshData"
+          :disabled="props.isLoading"
+          class="px-3 py-1 bg-blue-500 text-white rounded text-sm font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
+        >
+          {{ props.isLoading ? 'Caricamento...' : 'Refresh Now' }}
+        </button>
+        
+        <!-- Status auto-refresh -->
+        <div class="text-xs text-gray-600 mt-1">
+          <div v-if="isAutoRefreshEnabled" class="text-green-600">
+            Prossimo refresh: {{ refreshCountdown }}s
+          </div>
+          <div v-else class="text-gray-500">
+            Auto-refresh disattivato
+          </div>
+          
+          <div v-if="lastRefreshTime" class="mt-1">
+            Ultimo: {{ lastRefreshTime.toLocaleTimeString() }}
+          </div>
+        </div>
+        
+        <!-- Contatore eventi -->
+        <div class="text-xs text-gray-600 border-t pt-2">
+          Eventi: {{ props.events.length }}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Legenda -->
     <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm p-3 rounded-lg shadow-md z-10">
       <p class="text-sm font-semibold mb-2">Legenda:</p>
       <div class="flex items-center mb-1">
@@ -196,28 +298,8 @@ const refreshData = () => {
         <span class="text-sm">Ingorgo</span>
       </div>
     </div>
-    <button
-      @click="refreshData"
-      class="absolute bottom-4 right-4 bg-white shadow-md rounded-full p-3 hover:bg-gray-50 transition-colors z-10"
-      :disabled="props.isLoading"
-      title="Aggiorna dati"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 text-blue-600"
-        :class="{ 'animate-spin': props.isLoading }"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-        />
-      </svg>
-    </button>
+    
+    <!-- Messaggio nessun evento -->
     <div
       v-if="props.events.length === 0 && !props.isLoading"
       class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-md text-center"
