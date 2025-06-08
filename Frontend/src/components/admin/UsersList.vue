@@ -10,6 +10,7 @@ const isLoading = ref(true);
 const errorMessage = ref("");
 const fetchAttempts = ref(0);
 const maxAttempts = 3;
+const selectedRole = ref(""); // Add role filter state
 
 const roleBadgeClasses = {
   amministratore: "bg-purple-100 text-purple-800 border-purple-200",
@@ -23,6 +24,14 @@ const roleNames = {
   dipendentecomunale: "Dipendente Comunale",
 };
 
+// Add role filter options
+const roleFilterOptions = [
+  { value: "", label: "Tutti i ruoli" },
+  { value: "amministratore", label: "Amministratori" },
+  { value: "sorvegliante", label: "Sorveglianti" },
+  { value: "dipendentecomunale", label: "Dipendenti Comunali" },
+];
+
 const fetchUsers = async () => {
   isLoading.value = true;
   errorMessage.value = "";
@@ -33,7 +42,13 @@ const fetchUsers = async () => {
       throw new Error("Token non trovato. Effettua nuovamente il login.");
     }
 
-    const response = await fetch("/api/v1/users", {
+    // Build URL with role filter if selected
+    let url = "/api/v1/users";
+    if (selectedRole.value) {
+      url += `?role=${selectedRole.value}`;
+    }
+
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -62,6 +77,11 @@ const fetchUsers = async () => {
     isLoading.value = false;
   }
 };
+
+// Watch for role filter changes
+watch(selectedRole, () => {
+  fetchUsers();
+});
 
 const createUser = () => {
   router.push({ name: "admin-user-create" });
@@ -113,7 +133,30 @@ onMounted(() => {
            </svg
         > Nuovo Utente </button
       > </div
-    > <AlertMessage v-if="errorMessage" :message="errorMessage" type="error" class="mb-4" /> <div
+    > 
+    <!-- Add role filter dropdown -->
+    <div class="bg-white rounded-2xl shadow-md p-4 mb-6 border border-gray-100">
+      <div class="flex items-center space-x-4">
+        <label class="text-sm font-medium text-gray-700">Filtra per ruolo:</label>
+        <select
+          v-model="selectedRole"
+          class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+        >
+          <option
+            v-for="option in roleFilterOptions"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.label }}
+          </option>
+        </select>
+        <span v-if="selectedRole" class="text-sm text-gray-500">
+          ({{ users.length }} {{ users.length === 1 ? 'utente trovato' : 'utenti trovati' }})
+        </span>
+      </div>
+    </div>
+
+    <AlertMessage v-if="errorMessage" :message="errorMessage" type="error" class="mb-4" /> <div
       v-if="isLoading"
       class="flex justify-center py-12"
       > <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div> </div

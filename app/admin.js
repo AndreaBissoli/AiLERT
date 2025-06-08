@@ -4,9 +4,20 @@ const bcrypt = require("bcrypt");
 const User = require("./models/user");
 const SALT_ROUNDS = require("./config").SALT_ROUNDS;
 
-// GET all users
+// GET all users, with optional query parameters for filtering between roles
 router.get("/", async (req, res) => {
     try {
+        if (req.query.role) {
+            const role = req.query.role;
+            if (!["amministratore", "dipendentecomunale", "sorvegliante"].includes(role)) {
+                return res.status(400).json({
+                    error: "Invalid role specified",
+                    errorCode: "INVALID_ROLE",
+                });
+            }
+            const users = await User.find({ role: role });
+            return res.json(users);
+        }
         const users = await User.find();
         res.json(users);
     } catch (err) {

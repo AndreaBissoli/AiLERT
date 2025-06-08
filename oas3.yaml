@@ -378,9 +378,27 @@ paths:
     /users:
         get:
             summary: Get all users
-            description: Retrieves a list of all users. Requires admin role authentication.
+            description: Retrieves a list of all users. Requires admin role authentication. Optionally filter by role using the 'role' query parameter.
             security:
                 - BearerAuth: []
+            parameters:
+                - name: role
+                  in: query
+                  required: false
+                  description: Filter users by role
+                  schema:
+                      type: string
+                      enum: [amministratore, dipendentecomunale, sorvegliante]
+                  examples:
+                      amministratore:
+                          value: amministratore
+                          summary: Filter for admin users
+                      dipendentecomunale:
+                          value: dipendentecomunale
+                          summary: Filter for municipal employees
+                      sorvegliante:
+                          value: sorvegliante
+                          summary: Filter for surveillance users
             responses:
                 "200":
                     description: List of users retrieved successfully
@@ -391,18 +409,43 @@ paths:
                                 items:
                                     $ref: "#/components/schemas/User"
                             examples:
-                                userList:
+                                allUsers:
+                                    summary: All users (no role filter)
                                     value:
                                         - _id: "60d21b4667d0d8992e610c85"
                                           email: "admin@example.com"
                                           name: "Admin User"
-                                          role: "amministratore"
+                                          role: "admin"
                                           hash: "hashedpassword"
                                         - _id: "60d21b4667d0d8992e610c86"
                                           email: "user@example.com"
                                           name: "Regular User"
                                           role: "dipendentecomunale"
                                           hash: "hashedpassword"
+                                        - _id: "60d21b4667d0d8992e610c87"
+                                          email: "guard@example.com"
+                                          name: "Guard User"
+                                          role: "sorvegliante"
+                                          hash: "hashedpassword"
+                                filteredAdmins:
+                                    summary: Filtered admin users only
+                                    value:
+                                        - _id: "60d21b4667d0d8992e610c85"
+                                          email: "admin@example.com"
+                                          name: "Admin User"
+                                          role: "admin"
+                                          hash: "hashedpassword"
+                "400":
+                    description: Bad request - Invalid role specified
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                invalidRole:
+                                    value:
+                                        error: "Invalid role specified"
+                                        errorCode: "INVALID_ROLE"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
                 "403":
