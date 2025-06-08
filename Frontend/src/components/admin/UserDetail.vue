@@ -18,6 +18,9 @@ const isDeleting = ref(false);
 const errorMessage = ref("");
 const confirmDeleteModal = ref(false);
 const successMessage = ref("");
+const userEvents = ref([]);
+const isLoadingEvents = ref(false);
+const eventsErrorMessage = ref("");
 
 const roleNames = {
   amministratore: "Amministratore",
@@ -57,12 +60,99 @@ const fetchUserDetails = async () => {
       name: data.name || "",
       role: data.role || "dipendentecomunale",
     };
+
+    // Fetch events if user is sorvegliante
+    if (data.role === "sorvegliante") {
+      fetchUserEvents();
+    }
   } catch (error) {
     console.error("Error fetching user details:", error);
     errorMessage.value = error.message;
   } finally {
     isLoading.value = false;
   }
+};
+
+const fetchUserEvents = async () => {
+  isLoadingEvents.value = true;
+  eventsErrorMessage.value = "";
+
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("Token non trovato");
+    }
+
+    const response = await fetch(`/api/v1/users/${userId}/events`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      if (response.status === 404 && errorData.errorCode === "NO_EVENTS_FOUND") {
+        userEvents.value = [];
+        return;
+      }
+      throw new Error(errorData.error || "Errore nel caricamento degli eventi");
+    }
+
+    userEvents.value = await response.json();
+  } catch (error) {
+    console.error("Error fetching user events:", error);
+    eventsErrorMessage.value = error.message;
+  } finally {
+    isLoadingEvents.value = false;
+  }
+};
+
+const formatDate = dateString => {
+  return new Date(dateString).toLocaleString("it-IT", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const translateEventType = type => {
+  if (type === "incidente") return "Incidente";
+  if (type === "ingorgo") return "Ingorgo";
+  return type.charAt(0).toUpperCase() + type.slice(1);
+};
+
+const translateStatus = status => {
+  if (status === "solved") return "Risolto";
+  if (status === "pending") return "In corso";
+  if (status === "unsolved") return "Non risolto";
+  if (status === "false_alarm") return "Falso allarme";
+  return status;
+};
+
+const getEventTypeStyle = type => {
+  if (type === "incidente") {
+    return "bg-red-100 text-red-800 border-red-200";
+  }
+  if (type === "ingorgo") {
+    return "bg-orange-100 text-orange-800 border-orange-200";
+  }
+  return "bg-gray-100 text-gray-800 border-gray-200";
+};
+
+const getStatusStyle = status => {
+  if (status === "solved") {
+    return "bg-green-100 text-green-800 border-green-200";
+  }
+  if (status === "pending") {
+    return "bg-yellow-100 text-yellow-800 border-yellow-200";
+  }
+  if (status === "unsolved") {
+    return "bg-red-100 text-red-800 border-red-200";
+  }
+  return "bg-gray-100 text-gray-800 border-gray-200";
 };
 
 const deleteUser = async () => {
@@ -146,7 +236,7 @@ onMounted(() => {
           >Caricamento dettagli utente...</p
         > </div
       > </div
-    > <div v-else class="bg-white rounded-2xl shadow-md overflow-hidden"
+    > <div v-else class="bg-white rounded-2xl shadow-md overflow-hidden mb-6"
       > <div class="p-6 border-b border-gray-200"
         > <h2 class="text-2xl font-bold text-gray-800">Dettagli Utente</h2> </div
       > <div class="p-6"
@@ -203,7 +293,96 @@ onMounted(() => {
           > </div
         > </div
       > </div
-    > <div
+    >
+    <div v-if="userData.role === 'sorvegliante'" class="bg-white rounded-2xl shadow-md overflow-hidden">
+      <div class="p-6 border-b border-gray-200">
+        <h3 class="text-xl font-bold text-gray-800">Eventi Confermati</h3>
+        <p class="text-sm text-gray-600 mt-1">
+          Eventi confermati da questo sorvegliante
+        </p>
+      </div>
+      
+      <div v-if="isLoadingEvents" class="p-6 flex justify-center">
+        <div class="flex flex-col items-center">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+          <p class="text-gray-500 text-sm">Caricamento eventi...</p>
+        </div>
+      </div>
+
+      <div v-else-if="eventsErrorMessage" class="p-6">
+        <AlertMessage :message="eventsErrorMessage" type="error" />
+      </div>
+
+      <div v-else-if="userEvents.length === 0" class="p-6 text-center">
+        <div class="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+        </div>
+        <h4 class="text-lg font-medium text-gray-900 mb-1">Nessun evento confermato</h4>
+        <p class="text-gray-600">Questo sorvegliante non ha ancora confermato alcun evento.</p>
+      </div>
+
+      <div v-else class="divide-y divide-gray-200">
+        <div
+          v-for="event in userEvents"
+          :key="event._id"
+          class="p-6 hover:bg-gray-50 transition-colors"
+        >
+          <div class="flex items-start justify-between mb-3">
+            <h4 class="text-lg font-semibold text-gray-900">{{ event.title }}</h4>
+            <div class="flex space-x-2">
+              <span
+                class="px-2 py-1 text-xs font-medium border rounded-full"
+                :class="getEventTypeStyle(event.type)"
+              >
+                {{ translateEventType(event.type) }}
+              </span>
+              <span
+                class="px-2 py-1 text-xs font-medium border rounded-full"
+                :class="getStatusStyle(event.status)"
+              >
+                {{ translateStatus(event.status) }}
+              </span>
+            </div>
+          </div>
+          
+          <p v-if="event.description" class="text-gray-600 mb-3">
+            {{ event.description }}
+          </p>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+            <div class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{{ formatDate(event.eventDate) }}</span>
+            </div>
+            
+            <div v-if="event.location?.address" class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>{{ event.location.address }}</span>
+            </div>
+          </div>
+          
+          <div v-if="event.severity" class="mt-3">
+            <span class="text-xs text-gray-500">Gravità: </span>
+            <span class="text-xs font-medium" :class="{
+              'text-red-600': event.severity === 'alta',
+              'text-orange-600': event.severity === 'media',
+              'text-green-600': event.severity === 'bassa'
+            }">
+              {{ event.severity === 'alta' ? 'Alta' : event.severity === 'media' ? 'Media' : 'Bassa' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
       v-if="confirmDeleteModal"
       class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
       > <div class="bg-white rounded-xl shadow-xl p-6 max-w-md w-full"

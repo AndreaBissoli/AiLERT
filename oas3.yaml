@@ -682,6 +682,95 @@ paths:
                                         errorCode: "USER_NOT_FOUND"
                 "500":
                     $ref: "#/components/responses/InternalServerError"
+
+    /users/{id}/events:
+        parameters:
+            - name: id
+              in: path
+              required: true
+              description: The user ID
+              schema:
+                  type: string
+        get:
+            summary: Get events confirmed by user
+            description: Retrieves events confirmed by a specific user. Only works for users with 'sorvegliante' role. Requires admin role authentication.
+            security:
+                - BearerAuth: []
+            responses:
+                "200":
+                    description: Events confirmed by user retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/Event"
+                            examples:
+                                confirmedEvents:
+                                    value:
+                                        - _id: "60d21b4667d0d8992e610c85"
+                                          type: "incidente"
+                                          title: "Auto contro semaforo"
+                                          description: "Incidente lieve senza feriti"
+                                          createdAt: "2025-05-15T09:42:01.646Z"
+                                          updatedAt: "2025-05-15T09:42:01.646Z"
+                                          eventDate: "2025-05-15T09:42:01.646Z"
+                                          location:
+                                              address: "Via Roma 1, Trento"
+                                          status: "solved"
+                                          cameraId: "665fe9b27d204f50ae7c8d4a"
+                                          videoUrl: "https://video.com/sample1.mp4"
+                                          confirmed: true
+                                          confirmedBy: "60d21b4667d0d8992e610c87"
+                                          severity: "alta"
+                                        - _id: "60d21b4667d0d8992e610c86"
+                                          type: "ingorgo"
+                                          title: "Traffico in via Manci"
+                                          description: "Blocco temporaneo causa lavori"
+                                          createdAt: "2025-05-14T08:20:00.000Z"
+                                          updatedAt: "2025-05-14T08:45:00.000Z"
+                                          eventDate: "2025-05-14T08:00:00.000Z"
+                                          location:
+                                              address: "Via Manci, Trento"
+                                          status: "pending"
+                                          cameraId: "665fe9b27d204f50ae7c8d4a"
+                                          videoUrl: "https://video.com/sample2.mp4"
+                                          confirmed: true
+                                          confirmedBy: "60d21b4667d0d8992e610c87"
+                                          severity: "media"
+                "400":
+                    description: Bad request - Invalid user role
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                invalidUser:
+                                    value:
+                                        error: "Only users with 'sorvegliante' role can confirm events"
+                                        errorCode: "INVALID_USER"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+                "404":
+                    description: User or events not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                userNotFound:
+                                    value:
+                                        error: "User not found"
+                                        errorCode: "USER_NOT_FOUND"
+                                noEvents:
+                                    value:
+                                        error: "No events found for this user"
+                                        errorCode: "NO_EVENTS_FOUND"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
+
     /users/me:
         put:
             summary: Change Password
