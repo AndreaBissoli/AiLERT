@@ -1,6 +1,8 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import LiteYouTubeEmbed from 'vue-lite-youtube-embed'
+import 'vue-lite-youtube-embed/style.css'
 
 const route = useRoute();
 const router = useRouter();
@@ -210,24 +212,21 @@ onMounted(async () => {
         > <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8"
           > <div class="lg:col-span-2"
             > <div class="bg-white rounded-2xl shadow-md overflow-hidden"
-              > <div class="relative bg-black h-96 flex items-center justify-center"
+              > <div class="relative aspect-video"
                 > <div
                   v-if="hasActiveIncident"
-                  class="absolute top-6 right-6 bg-red-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center animate-pulse"
+                  class="absolute top-6 right-6 bg-red-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center animate-pulse z-10"
                   > <span class="mr-2">⚠️</span> Incidente attivo su questa telecamera </div
-                > <div class="text-center text-white"
-                  > <div
-                    class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-xl inline-block mb-4"
-                    > Stream RTSP </div
-                  > <div class="text-sm text-gray-400 mb-4">{{ stream.streamUrl }}</div
-                  > <p class="max-w-md mx-auto text-gray-400 text-sm bg-gray-800/50 p-4 rounded-xl"
-                    > In un'implementazione reale, qui ci sarebbe il lettore video che mostra il
-                    flusso RTSP dalla telecamera selezionata. </p
-                  > </div
+                > <LiteYouTubeEmbed
+                    id="UGBfH55InbQ"
+                    title="Trento live cam - centro città (Piazza Duomo)"
+                    class="w-full h-full rounded-t-2xl"
+                    autoplay="true"
+                  />
+                  </div
                 > </div
               > </div
-            > </div
-          > <div class="bg-white rounded-2xl shadow-md p-6"
+            > <div class="bg-white rounded-2xl shadow-md p-6"
             > <h2 class="text-xl font-bold text-gray-900 mb-6 pb-3 border-b border-gray-100"
               > Dettagli Stream </h2
             > <div class="space-y-4"
