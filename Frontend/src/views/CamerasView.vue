@@ -3,6 +3,8 @@ import { ref, onMounted, computed, onBeforeUnmount, onUnmounted } from "vue";
 import DashboardNav from "../components/DashboardNav.vue";
 import NotificationToast from "../components/NotificationToast.vue";
 import WebSocketService from "../services/WebSocketService.js";
+import LiteYouTubeEmbed from 'vue-lite-youtube-embed'
+import 'vue-lite-youtube-embed/style.css'
 
 const streams = ref([]);
 const error = ref(null);
@@ -286,24 +288,31 @@ onUnmounted(() => {
               'border-red-400': stream.hasIncident,
               'border-gray-100': !stream.hasIncident,
             }"
-            > <router-link :to="`/cameras/${stream._id}`"
-              > <div
-                class="relative bg-gray-800 h-48 flex items-center justify-center hover:bg-gray-700 transition-colors"
-                @click="viewStream(stream._id)"
+            > <div
+                class="relative bg-gray-800 aspect-video flex items-center justify-center"
                 > <div
                   v-if="stream.hasIncident"
-                  class="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center animate-pulse"
+                  class="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center animate-pulse z-10"
                   > <span class="mr-1">⚠️</span> Incidente attivo </div
-                > <div class="text-center"
+                > <div v-if="stream.streamKey === 'stream_piazza_duomo'" class="w-full h-full">
+                  <LiteYouTubeEmbed
+                    id="UGBfH55InbQ"
+                    title="Trento live cam - centro città (Piazza Duomo)"
+                    class="w-full h-full"
+                    autoplay="true"
+                  />
+                </div>
+                <div v-else class="text-center"
                   > <div class="text-gray-300 mb-2">Stream RTSP</div> <div
                     class="text-sm text-gray-400"
                     >{{ stream.streamUrl }}</div
                   > </div
                 > </div
-              > </router-link
             > <div class="p-6"
-              > <h3 class="font-bold text-xl text-gray-900 mb-3">{{ stream.streamKey }}</h3
-              > <div class="space-y-2 text-sm"
+              > <router-link :to="`/cameras/${stream._id}`" class="block hover:text-blue-600 transition-colors" @click="viewStream(stream._id)">
+                <h3 class="font-bold text-xl text-gray-900 mb-3 hover:text-blue-600 transition-colors">{{ stream.streamKey }}</h3>
+              </router-link>
+              <div class="space-y-2 text-sm"
                 > <div class="flex items-center text-gray-600"
                   > <div class="w-6 h-6 bg-blue-50 rounded-lg flex items-center justify-center mr-2"
                     > <svg
