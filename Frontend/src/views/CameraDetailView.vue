@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import LiteYouTubeEmbed from 'vue-lite-youtube-embed'
+import EventActionControls from '../components/stream/EventActionControls.vue'
 import 'vue-lite-youtube-embed/style.css'
 
 const route = useRoute();
@@ -90,7 +91,6 @@ const fetchStream = async () => {
     const data = await res.json();
     stream.value = data.stream;
 
-    // Registra la visualizzazione
     await fetch(`/api/v1/streams/view/${streamId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -106,6 +106,13 @@ const fetchStream = async () => {
 
 const refreshData = async () => {
   await fetchEvents();
+};
+
+const handleEventUpdated = (updatedEvent) => {
+  const index = events.value.findIndex(e => e._id === updatedEvent._id);
+  if (index !== -1) {
+    events.value[index] = updatedEvent;
+  }
 };
 
 const goBack = () => {
@@ -485,7 +492,7 @@ onMounted(async () => {
                  </svg
               > </div
             > <p class="text-lg text-gray-500">Nessun evento recente per questa telecamera</p> </div
-          > <div v-else class="space-y-4"
+          > <div v-else class="space-y-6"
             > <div
               v-for="event in cameraEvents"
               :key="event._id"
@@ -498,22 +505,28 @@ onMounted(async () => {
                 'border-green-200 bg-green-50': event.status === 'solved',
                 'border-gray-200': event.status === 'false_alarm',
               }"
-              > <div class="flex items-start justify-between mb-2"
-                > <h3 class="font-bold text-gray-900">{{ event.title }}</h3
-                > <div
+              > 
+              <div class="flex items-start justify-between mb-2">
+                <h3 class="font-bold text-gray-900">{{ event.title }}</h3>
+                <div
                   class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold"
                   :class="{
                     'bg-red-100 text-red-800 border border-red-200': event.type === 'incidente',
                     'bg-orange-100 text-orange-800 border border-orange-200':
                       event.type === 'ingorgo',
                   }"
-                  > {{ translateEventType(event.type) }} </div
-                > </div
-              > <p v-if="event.description" class="text-gray-600 mb-3 text-sm">{{
+                > 
+                  {{ translateEventType(event.type) }} 
+                </div>
+              </div>
+              
+              <p v-if="event.description" class="text-gray-600 mb-3 text-sm">{{
                 event.description
-              }}</p
-              > <div class="flex items-center justify-between text-sm"
-                > <div class="text-gray-500"> {{ formatDate(event.eventDate) }} </div> <div
+              }}</p>
+              
+              <div class="flex items-center justify-between text-sm mb-3">
+                <div class="text-gray-500"> {{ formatDate(event.eventDate) }} </div> 
+                <div
                   class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold"
                   :class="{
                     'bg-green-100 text-green-800 border border-green-200':
@@ -524,14 +537,32 @@ onMounted(async () => {
                     'bg-gray-100 text-gray-800 border border-gray-200':
                       event.status === 'false_alarm',
                   }"
-                  > {{ translateStatus(event.status) }} </div
-                > </div
-              > </div
-            > </div
-          > </div
-        > </div
-      > </div
-    > </div
-  >
-</template>
+                > 
+                  {{ translateStatus(event.status) }} 
+                </div>
+              </div>
 
+              <div v-if="event.notifiedServices && event.notifiedServices.length > 0" class="mb-3">
+                <div class="text-sm font-medium text-gray-600 mb-1">Servizi allertati:</div>
+                <div class="flex flex-wrap gap-1">
+                  <span
+                    v-for="service in event.notifiedServices"
+                    :key="service.service"
+                    class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                  >
+                    {{ service.service }}
+                  </span>
+                </div>
+              </div>
+
+              <EventActionControls 
+                :event="event" 
+                :onEventUpdated="handleEventUpdated"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
