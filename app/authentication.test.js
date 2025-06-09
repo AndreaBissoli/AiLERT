@@ -124,7 +124,6 @@ describe("POST /api/v1/auth/login", () => {
             .send(userData);
 
         expect(createResponse.status).toBe(201);
-        const userId = createResponse.body.user._id;
 
         const loginResponse = await request(app).post("/api/v1/auth/login").send({
             email: userData.email,
@@ -135,16 +134,18 @@ describe("POST /api/v1/auth/login", () => {
         const token = loginResponse.body.token;
         
         const response = await request(app)
-            .put("/api/v1/users/me")
+            .patch("/api/v1/users/me")  
             .set("Authorization", `Bearer ${token}`)
             .send({
                 newpassword: "nuovapassword123",
             });
 
-        expect(response.status).toBe(403);
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty("success", true);
+        expect(response.body).toHaveProperty("message", "Password changed successfully");
 
         await request(app)
-            .delete(`/api/v1/users/${userId}`)
+            .delete(`/api/v1/users/${createResponse.body.user._id}`)
             .set("Authorization", `Bearer ${adminToken}`);
     });
 
