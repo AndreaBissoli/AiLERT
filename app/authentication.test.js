@@ -104,9 +104,31 @@ describe("POST /api/v1/auth/login", () => {
 
     // TEST ID 6: Cambio password per utente autenticato
     test("Cambio password per utente autenticato", async () => {
-        const loginResponse = await request(app).post("/api/v1/auth/login").send({
-            email: "sorvegliante@comune.it",
+        const adminToken = jwt.sign(
+            { name: "Admin", email: "admin@comune.it", role: "amministratore" },
+            process.env.JWT_SECRET,
+            { expiresIn: 86400 }
+        );
+
+        const timestamp = Date.now();
+        const userData = {
+            email: `testchangepass${timestamp}@comune.it`,
             password: "password123",
+            role: "sorvegliante",
+            name: "Test Cambio Password"
+        };
+
+        const createResponse = await request(app)
+            .post("/api/v1/users")
+            .set("Authorization", `Bearer ${adminToken}`)
+            .send(userData);
+
+        expect(createResponse.status).toBe(201);
+        const userId = createResponse.body.user._id;
+
+        const loginResponse = await request(app).post("/api/v1/auth/login").send({
+            email: userData.email,
+            password: userData.password,
         });
         
         expect(loginResponse.status).toBe(200);
@@ -120,6 +142,10 @@ describe("POST /api/v1/auth/login", () => {
             });
 
         expect(response.status).toBe(403);
+
+        await request(app)
+            .delete(`/api/v1/users/${userId}`)
+            .set("Authorization", `Bearer ${adminToken}`);
     });
 
     // TEST ID 7: Cambio password con token JWT non valido
