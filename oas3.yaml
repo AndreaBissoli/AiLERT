@@ -70,6 +70,64 @@ paths:
                                     value:
                                         error: "Invalid password"
                                         errorCode: "INVALID_PASSWORD"
+    /auth/passwordresets:
+        post:
+            summary: Request Password Reset
+            description: Request a password reset for a user by email. No authentication required.
+            tags:
+                - Authentication
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                email:
+                                    type: string
+                                    format: email
+                                    description: Email address of the user requesting password reset
+                            required:
+                                - email
+                        examples:
+                            validRequest:
+                                value:
+                                    email: "john.doe@example.com"
+            responses:
+                "200":
+                    description: Password reset request processed (always returns success for security)
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                    message:
+                                        type: string
+                            examples:
+                                success:
+                                    value:
+                                        success: true
+                                        message: "If the email exists in our system, you will receive password reset instructions"
+                "400":
+                    description: Bad request - Invalid email format
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                invalidEmail:
+                                    value:
+                                        error: "Invalid email format"
+                                        errorCode: "INVALID_EMAIL_FORMAT"
+                                missingEmail:
+                                    value:
+                                        error: "Email is required"
+                                        errorCode: "MISSING_EMAIL"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
+                
 
     /public/events:
         get:

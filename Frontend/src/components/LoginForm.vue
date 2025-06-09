@@ -146,8 +146,14 @@ async function login() {
         ></div
         > </button
       > </form
-    > <div class="mt-6 text-center"
-      > <router-link to="/" class="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+    > <div class="mt-6 text-center space-y-3"
+      > <router-link 
+          to="/forgot-password" 
+          class="block text-sm text-blue-600 hover:text-blue-800 transition-colors font-medium"
+        > 
+          Hai dimenticato la password? 
+        </router-link>
+        <router-link to="/" class="block text-sm text-gray-600 hover:text-blue-600 transition-colors"
         > ← Torna alla homepage </router-link
       > </div
     > </div

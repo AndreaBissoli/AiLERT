@@ -55,6 +55,11 @@ const router = createRouter({
             component: ChangePasswordView,
             meta: { requiresAuth: true },
         },
+        {
+            path: "/forgot-password",
+            name: "forgot-password",
+            component: () => import("../views/ForgotPasswordView.vue"),
+        },
         // Admin Routes
         {
             path: "/users",

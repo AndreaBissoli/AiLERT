@@ -6,6 +6,7 @@ const http = require("http");
 
 const authentication = require("./authentication");
 const changepass = require("./changepass");
+const resetpassword = require("./resetpassword");
 const streamRouter = require("./streamrouter");
 const { tokenChecker, socketTokenChecker } = require("./tokenchecker");
 const checkrole = require("./rolechecker");
@@ -59,6 +60,7 @@ app.locals.detectionService = detectionService;
 app.use("/", express.static(process.env.FRONTEND_DIR));
 
 app.use("/api/v1/auth/login", authentication);
+app.use("/api/v1/auth/passwordresets", resetpassword);
 //app.use("/api/v1/stream/view", express.static(process.env.STREAM_OUTPUT_DIR || "./streams"));
 
 app.use("/api/v1/public", publicRouter);
