@@ -30,12 +30,12 @@ router.get("/", async (req, res) => {
 });
 
 // Ottieni dettagli di uno stream specifico per ID
-router.get("/:streamId", async (req, res) => {
+router.get("/:id", async (req, res) => {
     try {
-        const { streamId } = req.params;
+        const { id } = req.params;
 
         // Cerca lo stream per ID
-        const stream = await Stream.findById(streamId);
+        const stream = await Stream.findById(id);
 
         if (!stream) {
             return res.status(404).json({
@@ -64,7 +64,7 @@ router.get("/:streamId", async (req, res) => {
         // Verifica se l'errore è dovuto a un ID non valido
         if (error.name === "CastError" && error.kind === "ObjectId") {
             return res.status(400).json({
-                error: "ID dello stream non valido",
+                error: "Specified ID is not valid format",
                 errorCode: "INVALID_ID",
             });
         }
@@ -126,9 +126,9 @@ router.post("/", async (req, res) => {
 });
 
 // Aggiorna un stream esistente
-router.put("/:streamId", async (req, res) => {
+router.put("/:id", async (req, res) => {
     try {
-        const { streamId } = req.params;
+        const { id } = req.params;
         const updateData = req.body;
 
         if (Object.keys(updateData).length === 0) {
@@ -140,7 +140,7 @@ router.put("/:streamId", async (req, res) => {
 
         // Cerca e aggiorna lo stream
         const updatedStream = await Stream.findByIdAndUpdate(
-            streamId,
+            id,
             { $set: updateData },
             { new: true }
         );
@@ -162,7 +162,7 @@ router.put("/:streamId", async (req, res) => {
         // Verifica se l'errore è dovuto a un ID non valido
         if (error.name === "CastError" && error.kind === "ObjectId") {
             return res.status(400).json({
-                error: "ID dello stream non valido",
+                error: "Specified ID is not valid format",
                 errorCode: "INVALID_ID",
             });
         }
@@ -184,13 +184,13 @@ router.put("/:streamId", async (req, res) => {
 });
 
 // Termina uno stream (imposta isActive = false e aggiunge endTime)
-router.patch("/:streamId/end", async (req, res) => {
+router.patch("/:id/end", async (req, res) => {
     try {
-        const { streamId } = req.params;
+        const { id } = req.params;
 
         // Cerca e aggiorna lo stream per terminarlo
         const endedStream = await Stream.findByIdAndUpdate(
-            streamId,
+            id,
             {
                 $set: {
                     isActive: false,
@@ -217,7 +217,7 @@ router.patch("/:streamId/end", async (req, res) => {
         // Verifica se l'errore è dovuto a un ID non valido
         if (error.name === "CastError" && error.kind === "ObjectId") {
             return res.status(400).json({
-                error: "ID dello stream non valido",
+                error: "Specified ID is not valid format",
                 errorCode: "INVALID_ID",
             });
         }

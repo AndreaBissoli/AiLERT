@@ -260,6 +260,17 @@ paths:
                                               notifiedAt: "2025-05-15T09:42:01.646Z"
                                               responseTime: 7
                                         severity: alta
+                "400":
+                    description: Bad request - Invalid ID format
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                invalidId:
+                                    value:
+                                        error: "Specified ID is not valid format"
+                                        errorCode: "INVALID_ID"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
                 "403":
@@ -322,6 +333,17 @@ paths:
                                         confirmed: true
                                         confirmedBy: "665fe9b27d204f50ae7c8d4a"
                                         severity: bassa
+                "400":
+                    description: Bad request - Invalid ID format
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                invalidId:
+                                    value:
+                                        error: "Specified ID is not valid format"
+                                        errorCode: "INVALID_ID"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
                 "403":
@@ -366,6 +388,17 @@ paths:
                                     value:
                                         success: true
                                         message: "Event deleted successfully"
+                "400":
+                    description: Bad request - Invalid ID format
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                invalidId:
+                                    value:
+                                        error: "Specified ID is not valid format"
+                                        errorCode: "INVALID_ID"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
                 "403":
@@ -575,6 +608,17 @@ paths:
                                         name: "Regular User"
                                         role: "dipendentecomunale"
                                         hash: "hashedpassword"
+                "400":
+                    description: Bad request - Invalid ID format
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                invalidId:
+                                    value:
+                                        error: "Specified ID is not valid format"
+                                        errorCode: "INVALID_ID"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
                 "403":
@@ -642,10 +686,14 @@ paths:
                                     value:
                                         error: "Email already in use"
                                         errorCode: "EMAIL_ALREADY_IN_USE"
-                                serverError:
+                                missingFields:
                                     value:
-                                        error: "Email already in use"
-                                        errorCode: "EMAIL_ALREADY_IN_USE"
+                                        error: "All fields are required"
+                                        errorCode: "MISSING_FIELDS"
+                                invalidId:
+                                    value:
+                                        error: "Specified ID is not valid format"
+                                        errorCode: "INVALID_ID"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
                 "403":
@@ -685,6 +733,17 @@ paths:
                                 deletedSuccess:
                                     value:
                                         message: "User deleted successfully"
+                "400":
+                    description: Bad request - Invalid ID format
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                invalidId:
+                                    value:
+                                        error: "Specified ID is not valid format"
+                                        errorCode: "INVALID_ID"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
                 "403":
@@ -761,7 +820,7 @@ paths:
                                           confirmedBy: "60d21b4667d0d8992e610c87"
                                           severity: "media"
                 "400":
-                    description: Bad request - Invalid user role
+                    description: Bad request
                     content:
                         application/json:
                             schema:
@@ -771,6 +830,10 @@ paths:
                                     value:
                                         error: "Only users with 'sorvegliante' role can confirm events"
                                         errorCode: "INVALID_USER"
+                                invalidId:
+                                    value:
+                                        error: "Specified ID is not valid format"
+                                        errorCode: "INVALID_ID"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
                 "403":
@@ -984,7 +1047,7 @@ paths:
                 "500":
                     $ref: "#/components/responses/InternalServerError"
 
-    /streams/{streamId}:
+    /streams/{id}:
         get:
             summary: Obtain stream details
             description: Returns details of a specific stream. Requires authentication.
@@ -993,7 +1056,7 @@ paths:
             security:
                 - BearerAuth: []
             parameters:
-                - name: streamId
+                - name: id
                   in: path
                   required: true
                   description: Stream ID
@@ -1012,6 +1075,17 @@ paths:
                                         description: Indicates if the request was successful
                                     stream:
                                         $ref: "#/components/schemas/StreamDetails"
+                "400":
+                    description: Bad request - Invalid ID format
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                invalidId:
+                                    value:
+                                        error: "Specified ID is not valid format"
+                                        errorCode: "INVALID_ID"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
                 "403":
@@ -1037,7 +1111,7 @@ paths:
             security:
                 - BearerAuth: []
             parameters:
-                - name: streamId
+                - name: id
                   in: path
                   required: true
                   description: ID of the stream to update
@@ -1097,7 +1171,7 @@ paths:
                                                 viewCount: 5,
                                             }
                 "400":
-                    description: Missing or invalid fields
+                    description: Bad request
                     content:
                         application/json:
                             schema:
@@ -1109,7 +1183,7 @@ paths:
                                         errorCode: "INVALID_UPDATE_DATA"
                                 invalidId:
                                     value:
-                                        error: "ID dello stream non valido"
+                                        error: "Specified ID is not valid format"
                                         errorCode: "INVALID_ID"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
@@ -1129,7 +1203,7 @@ paths:
                 "500":
                     $ref: "#/components/responses/InternalServerError"
 
-    /streams/{streamId}/end:
+    /streams/{id}/end:
         patch:
             summary: End a stream
             description: Ends an active stream. Requires authentication.
@@ -1138,7 +1212,7 @@ paths:
             security:
                 - BearerAuth: []
             parameters:
-                - name: streamId
+                - name: id
                   in: path
                   required: true
                   description: ID of the stream to end
@@ -1174,7 +1248,7 @@ paths:
                                                 viewCount: 7,
                                             }
                 "400":
-                    description: Invalid stream ID format
+                    description: Bad request - Invalid ID format
                     content:
                         application/json:
                             schema:
@@ -1182,7 +1256,7 @@ paths:
                             examples:
                                 invalidId:
                                     value:
-                                        error: "ID dello stream non valido"
+                                        error: "Specified ID is not valid format"
                                         errorCode: "INVALID_ID"
                 "401":
                     $ref: "#/components/responses/Unauthorized"

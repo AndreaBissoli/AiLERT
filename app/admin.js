@@ -115,6 +115,14 @@ router.put("/:id", async (req, res) => {
         }
         res.json(user);
     } catch (err) {
+
+        if (error.name === "CastError" && error.kind === "ObjectId") {
+            return res.status(400).json({
+                error: "Specified ID is not valid format",
+                errorCode: "INVALID_ID",
+            });
+        }
+
         res.status(500).json({
             error: "Internal server error",
             errorCode: "INTERNAL_SERVER_ERROR",
@@ -139,6 +147,14 @@ router.delete("/:id", async (req, res) => {
         }
         res.json({ message: "User deleted successfully" });
     } catch (err) {
+        
+        if (error.name === "CastError" && error.kind === "ObjectId") {
+            return res.status(400).json({
+                error: "Specified ID is not valid format",
+                errorCode: "INVALID_ID",
+            });
+        }
+        
         res.status(500).json({
             error: "Internal server error",
             errorCode: "INTERNAL_SERVER_ERROR",
@@ -155,6 +171,14 @@ router.get("/:id", async (req, res) => {
         }
         res.json(user);
     } catch (err) {
+
+        if (error.name === "CastError" && error.kind === "ObjectId") {
+            return res.status(400).json({
+                error: "Specified ID is not valid format",
+                errorCode: "INVALID_ID",
+            });
+        }
+
         res.status(500).json({
             error: "Internal server error",
             errorCode: "INTERNAL_SERVER_ERROR",
@@ -182,7 +206,13 @@ router.get("/:id/events", async (req, res) => {
         }
         res.json(events);
     } catch (err) {
-        console.error(err);
+
+        if (error.name === "CastError" && error.kind === "ObjectId") {
+            return res.status(400).json({
+                error: "Specified ID is not valid format",
+                errorCode: "INVALID_ID",
+            });
+        }
         res.status(500).json({
             error: "Internal server error",
             errorCode: "INTERNAL_SERVER_ERROR",
