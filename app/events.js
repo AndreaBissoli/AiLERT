@@ -43,8 +43,8 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-// PUT aggiorna evento per ID
-router.put("/:id", async (req, res) => {
+// PATCH aggiorna evento per ID
+router.patch("/:id", async (req, res) => {
     try {
         const eventoAggiornato = await Event.findByIdAndUpdate(
             req.params.id,

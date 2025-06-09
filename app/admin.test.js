@@ -184,7 +184,7 @@ describe("Admin API Tests", () => {
         };
 
         const response = await request(app)
-            .put(`/api/v1/users/${fakeId}`)
+            .patch(`/api/v1/users/${fakeId}`)
             .set("Authorization", `Bearer ${adminToken}`)
             .send(updateData);
 
@@ -216,7 +216,7 @@ describe("Admin API Tests", () => {
         };
 
         const response = await request(app)
-            .put(`/api/v1/users/${adminUser._id}`)
+            .patch(`/api/v1/users/${adminUser._id}`)
             .set("Authorization", `Bearer ${adminToken}`)
             .send(updateData);
 
@@ -311,7 +311,7 @@ describe("Admin API Tests", () => {
         };
 
         const response = await request(app)
-            .put(`/api/v1/users/${userId}`)
+            .patch(`/api/v1/users/${userId}`)
             .set("Authorization", `Bearer ${adminToken}`)
             .send(updateData);
 

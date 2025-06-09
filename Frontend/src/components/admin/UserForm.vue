@@ -106,7 +106,7 @@ const handleSubmit = async () => {
     // Determine the API endpoint and method
     const url = props.isEditing ? `/api/v1/users/${userId.value}` : "/api/v1/users";
 
-    const method = props.isEditing ? "PUT" : "POST";
+    const method = props.isEditing ? "PATCH" : "POST";
 
     // Send the request
     const response = await fetch(url, {

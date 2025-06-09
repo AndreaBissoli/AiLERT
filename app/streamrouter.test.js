@@ -212,7 +212,7 @@ describe("PATCH /api/v1/streams/:streamId/end", () => {
     });
 });
 
-describe("PUT /api/v1/streams/:streamId", () => {
+describe("PATCH /api/v1/streams/:streamId", () => {
     let token;
     let streamId;
 
@@ -251,7 +251,7 @@ describe("PUT /api/v1/streams/:streamId", () => {
         };
 
         const response = await request(app)
-            .put(`/api/v1/streams/${streamId}`)
+            .patch(`/api/v1/streams/${streamId}`)
             .set("Authorization", `Bearer ${token}`)
             .send(updatedData);
 
@@ -270,7 +270,7 @@ describe("PUT /api/v1/streams/:streamId", () => {
         };
 
         const response = await request(app)
-            .put(`/api/v1/streams/${streamId}`)
+            .patch(`/api/v1/streams/${streamId}`)
             .set("Authorization", `Bearer ${token}`)
             .send(partialUpdate);
 

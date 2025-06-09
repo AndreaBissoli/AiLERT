@@ -152,7 +152,7 @@ describe("POST /api/v1/auth/login", () => {
     // TEST ID 7: Cambio password con token JWT non valido
     test("Cambio password con token JWT non valido", async () => {
         const response = await request(app)
-            .put("/api/v1/users/me")
+            .patch("/api/v1/users/me")
             .set("Authorization", "Bearer invalid_token_here")
             .send({
                 newpassword: "qualsiasi",
@@ -166,7 +166,7 @@ describe("POST /api/v1/auth/login", () => {
     // TEST ID 8: Cambio password senza token
     test("Cambio password senza token", async () => {
         const response = await request(app)
-            .put("/api/v1/users/me")
+            .patch("/api/v1/users/me")
             .send({
                 newpassword: "qualsiasi",
             });

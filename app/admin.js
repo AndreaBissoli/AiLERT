@@ -64,7 +64,7 @@ router.post("/", async (req, res) => {
     }
 });
 // UPDATE user
-router.put("/:id", async (req, res) => {
+router.patch("/:id", async (req, res) => {
     try {
         // Prevent admin from modifying their own account
         const loggedUserId = req.loggedUser.id;

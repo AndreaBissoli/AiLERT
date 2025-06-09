@@ -2,7 +2,15 @@ openapi: 3.0.4
 info:
     version: "1.0"
     title: "AiLERT API"
-    description: API for the AiLERT application.
+    description: |
+      API for the AiLERT application.
+      
+      This API provides endpoints for managing emergency events, user authentication, 
+      surveillance streams, and administrative functions. It facilitates real-time 
+      monitoring and response to urban incidents like traffic accidents and congestion.
+      
+      Proper authentication is required for most endpoints, with different access levels
+      based on user roles (administrator, municipal employee, or surveillance officer).
     license:
         name: MIT
 
@@ -14,23 +22,27 @@ servers:
 
 tags:
     - name: Authentication
-      description: User authentication endpoints
+      description: User authentication endpoints for login, password resets, and token management
     - name: Public API
-      description: Publicly accessible endpoints (no authentication required)
+      description: Publicly accessible endpoints that require no authentication, providing limited access to event data for citizens
     - name: Events
-      description: Event management endpoints
+      description: Complete event management including creation, retrieval, updates, and deletion of urban incidents and traffic events
     - name: Users
-      description: User management endpoints (admin only)
+      description: Administrative endpoints for user account management - create, update, retrieve, and delete users (admin access only)
     - name: User Profile
-      description: User profile management endpoints
+      description: Endpoints for users to manage their own profile information and credentials
     - name: Streams
-      description: Stream management endpoints
+      description: Video stream management for surveillance cameras, including creation, monitoring, and control
 
 paths:
     /auth/login:
         post:
             summary: User Login
-            description: Authenticate user and generate JWT token.
+            description: |
+              Authenticates a user with email and password credentials and generates a JWT token for subsequent API requests.
+              This token must be included in the Authorization header for authenticated endpoints.
+              Different user roles (amministratore, dipendentecomunale, sorvegliante) receive different access permissions.
+              The token includes user information and expires after a defined period.
             tags:
                 - Authentication
             requestBody:
@@ -50,13 +62,17 @@ paths:
                                     password: "password123"
             responses:
                 "200":
-                    description: Successful authentication
+                    description: |
+                      Authentication successful. Returns a JWT token that should be included in subsequent API requests
+                      as a Bearer token in the Authorization header. Also returns basic user information.
                     content:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/LoginResponse"
                 "401":
-                    description: Invalid credentials
+                    description: |
+                      Authentication failed due to invalid credentials. Could be because the email doesn't exist
+                      in the system or the password doesn't match the stored credentials.
                     content:
                         application/json:
                             schema:
@@ -73,7 +89,13 @@ paths:
     /auth/passwordresets:
         post:
             summary: Request Password Reset
-            description: Request a password reset for a user by email. No authentication required.
+            description: |
+              Initiates the password reset flow for a user who has forgotten their password.
+              For security reasons, the endpoint always returns a success response regardless of whether the email exists
+              in the system. If the email exists, the system will send a password reset link to the user's email address.
+              The link will contain a temporary token that expires after a short period.
+              
+              No authentication is required for this endpoint.
             tags:
                 - Authentication
             requestBody:
@@ -133,13 +155,25 @@ paths:
         get:
             summary: Obtain public events
             description: |
-                Returns the events of the last 2 hours, which are publicly available. No authentication required.
-                Only include events with status 'solved' or 'unsolved' for citizens.
+                Returns a list of events from the last 2 hours that are suitable for public viewing.
+                This endpoint is designed for citizen-facing interfaces.
+                
+                Important filtering applied:
+                - Only includes events from the past 2 hours
+                - Only includes events with status 'solved' or 'unsolved'
+                - Sensitive information is removed from the response
+                - No authentication is required
+                
+                This endpoint helps keep citizens informed about current traffic conditions and incidents
+                while protecting sensitive operational details.
             tags:
                 - Public API
             responses:
                 "200":
-                    description: Successfully retrieved public events
+                    description: |
+                      Successfully retrieved the list of public events. The response is an array of events
+                      with limited information suitable for public viewing. Each event includes basic details
+                      like location, type, status, and severity, but excludes sensitive operational information.
                     content:
                         application/json:
                             schema:
@@ -152,7 +186,7 @@ paths:
                                         - _id: "60d21b4667d0d8992e610c85"
                                           type: "incidente"
                                           title: "Incidente su Via Roma"
-                                          description: "Lieve tamponamento risolto"
+                                          description: "Tamponamento tra due veicoli, corsia parzialmente bloccata"
                                           eventDate: "2025-05-16T14:30:00.000Z"
                                           location:
                                               address: "Via Roma 45, Trento"
@@ -160,8 +194,8 @@ paths:
                                           severity: "bassa"
                                         - _id: "60d21b4667d0d8992e610c86"
                                           type: "ingorgo"
-                                          title: "Traffico intenso"
-                                          description: "Blocco temporaneo in centro"
+                                          title: "Traffico intenso in centro"
+                                          description: "Rallentamenti significativi causa lavori stradali"
                                           eventDate: "2025-05-16T15:00:00.000Z"
                                           location:
                                               address: "Via Manci, Trento"
@@ -173,14 +207,33 @@ paths:
     /events:
         get:
             summary: Get all events
-            description: Returns a list of all events in the system. Requires authentication.
+            description: |
+                Retrieves a comprehensive list of all events in the system with complete details.
+                This endpoint is intended for municipal employees and administrators to monitor
+                and manage all urban incidents and traffic situations.
+                
+                The response includes full event information including:
+                - Event identification and classification
+                - Timestamps for creation and updates
+                - Location details
+                - Status and severity information
+                - Camera and video evidence links
+                - Confirmation status and authority
+                - Emergency services notification history
+                
+                Results are typically ordered by creation date (newest first).
+                Requires valid authentication token with appropriate permissions.
             tags:
                 - Events
             security:
                 - BearerAuth: []
             responses:
                 "200":
-                    description: List of events retrieved successfully
+                    description: |
+                      Successfully retrieved the list of all events with complete details.
+                      Municipal employees can use this data to track, manage, and respond to
+                      urban incidents. Each event contains comprehensive information about
+                      its status, location, confirmation, and emergency response history.
                     content:
                         application/json:
                             schema:
@@ -191,37 +244,41 @@ paths:
                                 exampleResponse:
                                     summary: Example response for GET /events
                                     value:
-                                        - type: incidente
-                                          title: "Auto contro semaforo"
-                                          description: "Incidente lieve senza feriti"
+                                        - _id: "60d21b4667d0d8992e610c85" 
+                                          type: "incidente"
+                                          title: "Auto contro semaforo su Via Roma"
+                                          description: "Incidente lieve senza feriti, danneggiamento del semaforo all'incrocio principale"
                                           createdAt: "2025-05-15T09:42:01.646Z"
                                           updatedAt: "2025-05-15T09:42:01.646Z"
                                           eventDate: "2025-05-15T09:42:01.646Z"
                                           location:
                                               address: "Via Roma 1, Trento"
-                                          status: pending
+                                              coordinates: [11.1207, 46.0678]
+                                          status: "pending"
                                           cameraId: "665fe9b27d204f50ae7c8d4a"
                                           videoUrl: "https://video.com/sample1.mp4"
                                           confirmed: true
                                           confirmedBy: "665fe9b27d204f50ae7c8d4a"
                                           notifiedServices:
-                                              - service: ambulanza
+                                              - service: "ambulanza"
                                                 notifiedAt: "2025-05-15T09:42:01.646Z"
                                                 responseTime: 7
-                                          severity: alta
-                                        - type: ingorgo
-                                          title: "Traffico in via Manci"
-                                          description: "Blocco temporaneo causa lavori"
+                                          severity: "alta"
+                                        - _id: "60d21b4667d0d8992e610c86"
+                                          type: "ingorgo"
+                                          title: "Traffico intenso in Via Manci"
+                                          description: "Blocco temporaneo causa lavori di manutenzione stradale, durata prevista 2 ore"
                                           createdAt: "2025-05-14T08:20:00.000Z"
                                           updatedAt: "2025-05-14T08:45:00.000Z"
                                           eventDate: "2025-05-14T08:00:00.000Z"
                                           location:
                                               address: "Via Manci, Trento"
-                                          status: solved
+                                              coordinates: [11.1252, 46.0693]
+                                          status: "solved"
                                           cameraId: "665fe9b27d204f50ae7c8d4a"
                                           videoUrl: "https://video.com/sample2.mp4"
                                           confirmed: false
-                                          severity: media
+                                          severity: "media"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
                 "403":
@@ -230,7 +287,27 @@ paths:
                     $ref: "#/components/responses/InternalServerError"
         post:
             summary: Create new event
-            description: Creates a new event in the system. Requires authentication.
+            description: |
+                Creates a new urban event or incident in the system. This endpoint is used when a new
+                incident is detected, either automatically by AI systems or manually by surveillance officers.
+                
+                Required information includes:
+                - Event type (accident or traffic jam)
+                - Title and description
+                - Event date and time
+                - Location details
+                - Status (typically starts as 'pending')
+                - Associated camera ID (if applicable)
+                - Video evidence URL (if available)
+                - Confirmation status and authority
+                - Severity assessment
+                
+                Optional information:
+                - Emergency services that have been notified
+                - Response times
+                
+                The created event will automatically have creation and update timestamps added.
+                Requires valid authentication with appropriate permissions.
             tags:
                 - Events
             security:
@@ -245,22 +322,23 @@ paths:
                             validEventExample:
                                 summary: Example of a valid accident event creation request
                                 value:
-                                    type: incidente
-                                    title: "Auto contro semaforo"
-                                    description: "Incidente con danni leggeri"
+                                    type: "incidente"
+                                    title: "Auto contro semaforo all'incrocio centrale"
+                                    description: "Collisione di una Fiat Panda contro il semaforo pedonale. Danni visibili al veicolo e all'infrastruttura. Nessun ferito apparente."
                                     eventDate: "2025-05-15T09:42:01.646Z"
                                     location:
                                         address: "Via Verdi 10, Trento"
-                                    status: pending
+                                        coordinates: [11.1230, 46.0665]
+                                    status: "pending"
                                     cameraId: "665fe9b27d204f50ae7c8d4a"
                                     videoUrl: "https://video.com/sample.mp4"
                                     confirmed: true
                                     confirmedBy: "665fe9b27d204f50ae7c8d4a"
                                     notifiedServices:
-                                        - service: polizia
+                                        - service: "polizia"
                                           notifiedAt: "2025-05-15T09:42:01.646Z"
                                           responseTime: 5
-                                    severity: media
+                                    severity: "media"
             responses:
                 "201":
                     description: Event created successfully
@@ -285,14 +363,29 @@ paths:
                   type: string
         get:
             summary: Get event by ID
-            description: Retrieves a specific event by its ID. Requires authentication.
+            description: |
+                Retrieves detailed information about a specific event identified by its unique ID.
+                This endpoint provides the complete event record with all available information,
+                including creation metadata, status updates, confirmation details, and notification history.
+                
+                Used for:
+                - Viewing detailed information about a specific incident
+                - Checking the current status of an emergency response
+                - Verifying what services have been notified
+                - Accessing evidence like video footage
+                
+                The event ID is typically obtained from the list of events or from notification systems.
+                Requires valid authentication with appropriate permissions.
             tags:
                 - Events
             security:
                 - BearerAuth: []
             responses:
                 "200":
-                    description: Event retrieved successfully
+                    description: |
+                      Successfully retrieved the specified event with all available details.
+                      This comprehensive record includes all metadata, status information,
+                      location data, confirmation details, and response tracking.
                     content:
                         application/json:
                             schema:
@@ -300,24 +393,29 @@ paths:
                             examples:
                                 eventExample:
                                     value:
-                                        type: incidente
-                                        title: "Auto contro semaforo"
-                                        description: "Incidente lieve senza feriti"
+                                        _id: "60d21b4667d0d8992e610c85"
+                                        type: "incidente"
+                                        title: "Auto contro semaforo all'incrocio principale"
+                                        description: "Veicolo Fiat Punto ha urtato il semaforo causando danni alla segnaletica. Conducente illeso, ma necessaria riparazione dell'impianto semaforico."
                                         createdAt: "2025-05-15T09:42:01.646Z"
                                         updatedAt: "2025-05-15T09:42:01.646Z"
                                         eventDate: "2025-05-15T09:42:01.646Z"
                                         location:
                                             address: "Via Roma 1, Trento"
-                                        status: pending
+                                            coordinates: [11.1207, 46.0678]
+                                        status: "pending"
                                         cameraId: "665fe9b27d204f50ae7c8d4a"
                                         videoUrl: "https://video.com/sample1.mp4"
                                         confirmed: true
                                         confirmedBy: "665fe9b27d204f50ae7c8d4a"
                                         notifiedServices:
-                                            - service: ambulanza
+                                            - service: "ambulanza"
                                               notifiedAt: "2025-05-15T09:42:01.646Z"
                                               responseTime: 7
-                                        severity: alta
+                                            - service: "polizia"
+                                              notifiedAt: "2025-05-15T09:45:23.000Z"
+                                              responseTime: 12
+                                        severity: "alta"
                 "400":
                     description: Bad request - Invalid ID format
                     content:
@@ -347,9 +445,21 @@ paths:
                 "500":
                     $ref: "#/components/responses/InternalServerError"
 
-        put:
+        patch:
             summary: Update event by ID
-            description: Updates an existing event by its ID. Requires authentication.
+            description: |
+                Updates an existing event's information. This endpoint allows partial updates,
+                meaning you can send only the fields that need to be changed.
+                
+                Common update scenarios include:
+                - Changing the event status (e.g., from 'pending' to 'solved')
+                - Updating the description with new information
+                - Adding notification records for emergency services
+                - Marking an event as confirmed after verification
+                
+                The system automatically updates the 'updatedAt' timestamp when changes are made.
+                Only authorized personnel can update events, and the original creation data is preserved.
+                Requires valid authentication with appropriate permissions.
             tags:
                 - Events
             security:
@@ -362,11 +472,15 @@ paths:
                             $ref: "#/components/schemas/Event"
                         examples:
                             updateEventExample:
-                                summary: Example of updating an event status
+                                summary: Example of updating an event status and details
                                 value:
-                                    status: solved
-                                    description: "Incidente risolto, traffico ripristinato"
-                                    severity: bassa
+                                    status: "solved"
+                                    description: "Incidente risolto. Veicolo rimosso e semaforo temporaneamente sostituito con segnaletica. Squadra tecnica programmata per riparazione definitiva domani mattina."
+                                    severity: "bassa"
+                                    notifiedServices:
+                                        - service: "polizia"
+                                          notifiedAt: "2025-05-15T09:45:00.000Z"
+                                          responseTime: 8
             responses:
                 "200":
                     description: Event updated successfully
@@ -377,20 +491,26 @@ paths:
                             examples:
                                 updatedEvent:
                                     value:
-                                        type: incidente
-                                        title: "Auto contro semaforo"
-                                        description: "Incidente risolto, traffico ripristinato"
+                                        _id: "60d21b4667d0d8992e610c85"
+                                        type: "incidente"
+                                        title: "Auto contro semaforo all'incrocio principale"
+                                        description: "Incidente risolto. Veicolo rimosso e semaforo temporaneamente sostituito con segnaletica. Squadra tecnica programmata per riparazione definitiva domani mattina."
                                         createdAt: "2025-05-15T09:42:01.646Z"
                                         updatedAt: "2025-05-15T10:15:00.000Z"
                                         eventDate: "2025-05-15T09:42:01.646Z"
                                         location:
                                             address: "Via Roma 1, Trento"
-                                        status: solved
+                                            coordinates: [11.1207, 46.0678]
+                                        status: "solved"
                                         cameraId: "665fe9b27d204f50ae7c8d4a"
                                         videoUrl: "https://video.com/sample1.mp4"
                                         confirmed: true
                                         confirmedBy: "665fe9b27d204f50ae7c8d4a"
-                                        severity: bassa
+                                        notifiedServices:
+                                            - service: "polizia"
+                                              notifiedAt: "2025-05-15T09:45:00.000Z"
+                                              responseTime: 8
+                                        severity: "bassa"
                 "400":
                     description: Bad request - Invalid ID format
                     content:
@@ -422,7 +542,18 @@ paths:
 
         delete:
             summary: Delete event by ID
-            description: Deletes an event from the system by its ID. Requires authentication.
+            description: |
+                Permanently removes an event from the system. This operation cannot be undone.
+                
+                Deletion should be used carefully, typically in these situations:
+                - False alarms that were incorrectly entered
+                - Test data that needs to be removed
+                - Events that were duplicated in error
+                
+                For most situations where an event is no longer active, it's better to update its
+                status to 'solved' or 'false_alarm' rather than deleting it, to maintain a historical record.
+                
+                Requires valid authentication with appropriate permissions.
             tags:
                 - Events
             security:
@@ -479,7 +610,22 @@ paths:
     /users:
         get:
             summary: Get all users
-            description: Retrieves a list of all users. Requires admin role authentication. Optionally filter by role using the 'role' query parameter.
+            description: |
+                Retrieves a list of all users registered in the system. This administrative endpoint
+                allows for user management and auditing of system access.
+                
+                The response includes details about each user, including:
+                - User ID
+                - Email address
+                - Full name
+                - Role assignment
+                - Password hash (for verification purposes)
+                
+                Results can be optionally filtered by role using the query parameter.
+                This allows administrators to view specific user categories like all administrators,
+                all municipal employees, or all surveillance officers.
+                
+                This endpoint is restricted to administrators only.
             tags:
                 - Users
             security:
@@ -516,27 +662,32 @@ paths:
                                     summary: All users (no role filter)
                                     value:
                                         - _id: "60d21b4667d0d8992e610c85"
-                                          email: "admin@example.com"
-                                          name: "Admin User"
-                                          role: "admin"
+                                          email: "admin@comune.it"
+                                          name: "Mario Rossi"
+                                          role: "amministratore"
                                           hash: "hashedpassword"
                                         - _id: "60d21b4667d0d8992e610c86"
-                                          email: "user@example.com"
-                                          name: "Regular User"
+                                          email: "dipendente@comune.it"
+                                          name: "Laura Bianchi"
                                           role: "dipendentecomunale"
                                           hash: "hashedpassword"
                                         - _id: "60d21b4667d0d8992e610c87"
-                                          email: "guard@example.com"
-                                          name: "Guard User"
+                                          email: "sorvegliante@comune.it"
+                                          name: "Giuseppe Verdi"
                                           role: "sorvegliante"
                                           hash: "hashedpassword"
                                 filteredAdmins:
                                     summary: Filtered admin users only
                                     value:
                                         - _id: "60d21b4667d0d8992e610c85"
-                                          email: "admin@example.com"
-                                          name: "Admin User"
-                                          role: "admin"
+                                          email: "admin@comune.it"
+                                          name: "Mario Rossi"
+                                          role: "amministratore"
+                                          hash: "hashedpassword"
+                                        - _id: "60d21b4667d0d8992e610c88"
+                                          email: "admin2@comune.it"
+                                          name: "Anna Neri"
+                                          role: "amministratore"
                                           hash: "hashedpassword"
                 "400":
                     description: Bad request - Invalid role specified
@@ -558,7 +709,23 @@ paths:
 
         post:
             summary: Create new user
-            description: Creates a new user in the system. Requires admin role authentication.
+            description: |
+                Creates a new user account in the system. This administrative endpoint allows 
+                for the creation of users with different role levels.
+                
+                Required information includes:
+                - Email address (must be unique in the system)
+                - Initial password (will be hashed before storage)
+                - Full name
+                - Role assignment (amministratore, dipendentecomunale, or sorvegliante)
+                
+                User roles determine access permissions:
+                - amministratore: Full system access including user management
+                - dipendentecomunale: Access to view and manage events
+                - sorvegliante: Access to confirm events and manage surveillance streams
+                
+                Newly created users can immediately log in with their credentials.
+                This endpoint is restricted to administrators only.
             tags:
                 - Users
             security:
@@ -572,15 +739,15 @@ paths:
                         examples:
                             createAdmin:
                                 value:
-                                    email: "newadmin@example.com"
-                                    password: "securePassword123"
-                                    name: "New Admin"
+                                    email: "nuovo.admin@comune.it"
+                                    password: "Password!Sicura123"
+                                    name: "Paolo Verdi"
                                     role: "amministratore"
                             createUser:
                                 value:
-                                    email: "newuser@example.com"
-                                    password: "userPassword456"
-                                    name: "New Employee"
+                                    email: "nuovo.dipendente@comune.it"
+                                    password: "Password!Dipendente456"
+                                    name: "Giulia Bianchi"
                                     role: "dipendentecomunale"
             responses:
                 "201":
@@ -602,9 +769,9 @@ paths:
                                         success: true
                                         message: "User created successfully"
                                         user:
-                                            _id: "60d21b4667d0d8992e610c85"
-                                            email: "admin@example.com"
-                                            name: "Admin User"
+                                            _id: "60d21b4667d0d8992e610c89"
+                                            email: "nuovo.admin@comune.it"
+                                            name: "Paolo Verdi"
                                             role: "amministratore"
                                             hash: "hashedpassword"
                 "400":
@@ -639,7 +806,21 @@ paths:
                   type: string
         get:
             summary: Get user by ID
-            description: Retrieves a specific user by their ID. Requires admin role authentication.
+            description: |
+                Retrieves detailed information about a specific user identified by their unique ID.
+                This administrative endpoint provides complete user account details.
+                
+                The response includes:
+                - User ID
+                - Email address
+                - Full name
+                - Role assignment
+                - Password hash (for verification purposes)
+                
+                This information is used for user account management, auditing, and troubleshooting.
+                The user ID is typically obtained from the list of users or from system logs.
+                
+                This endpoint is restricted to administrators only.
             tags:
                 - Users
             security:
@@ -655,15 +836,15 @@ paths:
                                 adminUser:
                                     value:
                                         _id: "60d21b4667d0d8992e610c85"
-                                        email: "admin@example.com"
-                                        name: "Admin User"
+                                        email: "admin@comune.it"
+                                        name: "Mario Rossi"
                                         role: "amministratore"
                                         hash: "hashedpassword"
                                 regularUser:
                                     value:
                                         _id: "60d21b4667d0d8992e610c86"
-                                        email: "user@example.com"
-                                        name: "Regular User"
+                                        email: "dipendente@comune.it"
+                                        name: "Laura Bianchi"
                                         role: "dipendentecomunale"
                                         hash: "hashedpassword"
                 "400":
@@ -695,9 +876,27 @@ paths:
                 "500":
                     $ref: "#/components/responses/InternalServerError"
 
-        put:
+        patch:
             summary: Update user
-            description: Updates an existing user's information. Requires admin role authentication.
+            description: |
+                Updates an existing user's account information. This administrative endpoint
+                allows partial updates, meaning you can send only the fields that need to be changed.
+                
+                Modifiable fields include:
+                - Email address (must remain unique in the system)
+                - Full name
+                - Role assignment
+                
+                Note that this endpoint does not update passwords. Password changes should be
+                handled through the dedicated password change endpoint or password reset flow.
+                
+                Common update scenarios include:
+                - Changing a user's role (promotion or responsibility change)
+                - Updating contact information
+                - Correcting name spelling
+                
+                This endpoint is restricted to administrators only, and administrators cannot
+                modify their own accounts using this endpoint.
             tags:
                 - Users
             security:
@@ -714,10 +913,10 @@ paths:
                                     role: "amministratore"
                             updateEmail:
                                 value:
-                                    email: "updated@example.com"
+                                    email: "laura.bianchi.updated@comune.it"
                             updateName:
                                 value:
-                                    name: "Updated Name"
+                                    name: "Laura Bianchi-Rossi"
             responses:
                 "200":
                     description: User updated successfully
@@ -728,9 +927,9 @@ paths:
                             examples:
                                 updatedUser:
                                     value:
-                                        _id: "60d21b4667d0d8992e610c85"
-                                        email: "updated@example.com"
-                                        name: "Updated Name"
+                                        _id: "60d21b4667d0d8992e610c86"
+                                        email: "laura.bianchi.updated@comune.it"
+                                        name: "Laura Bianchi-Rossi"
                                         role: "amministratore"
                                         hash: "hashedpassword"
                 "400":
@@ -772,7 +971,20 @@ paths:
 
         delete:
             summary: Delete user
-            description: Deletes a user from the system. Requires admin role authentication.
+            description: |
+                Permanently removes a user account from the system. This operation cannot be undone.
+                
+                Deletion should be used carefully, typically in these situations:
+                - Employees who no longer work for the organization
+                - Test accounts that are no longer needed
+                - Accounts created in error
+                
+                When a user is deleted:
+                - They can no longer log in to the system
+                - Their account information is permanently removed
+                
+                This endpoint is restricted to administrators only, and administrators cannot
+                delete their own accounts using this endpoint.
             tags:
                 - Users
             security:
@@ -830,7 +1042,22 @@ paths:
                   type: string
         get:
             summary: Get events confirmed by user
-            description: Retrieves events confirmed by a specific user. Only works for users with 'sorvegliante' role. Requires admin role authentication.
+            description: |
+                Retrieves a list of all events that have been confirmed by a specific surveillance officer.
+                This administrative endpoint provides accountability and audit tracking for event confirmations.
+                
+                The endpoint only works for users with the 'sorvegliante' (surveillance officer) role,
+                as only they have the authority to confirm events in the system.
+                
+                The response includes complete details of each confirmed event, including:
+                - Event identification and classification
+                - Timestamps for creation and confirmation
+                - Location details
+                - Status and severity information
+                - Camera and video evidence links
+                
+                This information is used for performance monitoring, accountability, and audit purposes.
+                This endpoint is restricted to administrators only.
             tags:
                 - Users
             security:
@@ -849,13 +1076,14 @@ paths:
                                     value:
                                         - _id: "60d21b4667d0d8992e610c85"
                                           type: "incidente"
-                                          title: "Auto contro semaforo"
-                                          description: "Incidente lieve senza feriti"
+                                          title: "Auto contro semaforo in Via Roma"
+                                          description: "Incidente con danni alla segnaletica. Intervento tecnico richiesto."
                                           createdAt: "2025-05-15T09:42:01.646Z"
                                           updatedAt: "2025-05-15T09:42:01.646Z"
                                           eventDate: "2025-05-15T09:42:01.646Z"
                                           location:
                                               address: "Via Roma 1, Trento"
+                                              coordinates: [11.1207, 46.0678]
                                           status: "solved"
                                           cameraId: "665fe9b27d204f50ae7c8d4a"
                                           videoUrl: "https://video.com/sample1.mp4"
@@ -864,13 +1092,14 @@ paths:
                                           severity: "alta"
                                         - _id: "60d21b4667d0d8992e610c86"
                                           type: "ingorgo"
-                                          title: "Traffico in via Manci"
-                                          description: "Blocco temporaneo causa lavori"
+                                          title: "Traffico intenso in Via Manci"
+                                          description: "Blocco temporaneo causa lavori stradali. Deviazioni consigliate su Via Belenzani."
                                           createdAt: "2025-05-14T08:20:00.000Z"
                                           updatedAt: "2025-05-14T08:45:00.000Z"
                                           eventDate: "2025-05-14T08:00:00.000Z"
                                           location:
                                               address: "Via Manci, Trento"
+                                              coordinates: [11.1252, 46.0693]
                                           status: "pending"
                                           cameraId: "665fe9b27d204f50ae7c8d4a"
                                           videoUrl: "https://video.com/sample2.mp4"
@@ -917,7 +1146,20 @@ paths:
     /users/me:
         patch:
             summary: Change Password
-            description: Change the user's password. Requires authentication.
+            description: |
+                Allows a logged-in user to change their own password. This endpoint is available to all
+                authenticated users regardless of role.
+                
+                Security features:
+                - Requires valid authentication
+                - Cannot reuse the current password
+                - Password is hashed before storage
+                
+                This endpoint is a self-service feature that allows users to proactively manage their
+                account security without administrator intervention.
+                
+                After a successful password change, existing sessions remain valid, but new logins
+                will require the new password.
             tags:
                 - User Profile
             security:
@@ -935,7 +1177,7 @@ paths:
                         examples:
                             example1:
                                 value:
-                                    newpassword: "newSecurePassword456"
+                                    newpassword: "Nuova!Password#Sicura456"
                                 summary: Standard password change request
             responses:
                 "200":
@@ -979,14 +1221,31 @@ paths:
     /streams:
         get:
             summary: Get active streams
-            description: Returns a list of active streams. Requires authentication.
+            description: |
+                Retrieves a list of all currently active surveillance camera streams in the system.
+                This endpoint provides information about live video feeds that can be monitored.
+                
+                The response includes:
+                - Stream identification
+                - Associated camera information
+                - Stream connection details (URL, key)
+                - Stream status and statistics
+                - Start time and duration
+                
+                This information is used by the surveillance interface to display available
+                camera feeds and their status. Streams that are not currently active are not included
+                in the response.
+                
+                Requires valid authentication with appropriate permissions.
             tags:
                 - Streams
             security:
                 - BearerAuth: []
             responses:
                 "200":
-                    description: Successfully retrieved active streams
+                    description: |
+                      Successfully retrieved the list of active streams. The response includes an array of stream
+                      objects with details like stream ID, camera ID, stream URL, and status.
                     content:
                         application/json:
                             schema:
@@ -1008,12 +1267,25 @@ paths:
                                                 {
                                                     _id: "60d21b4667d0d8992e610c85",
                                                     cameraId: "68266cd1683978f9108a7393",
-                                                    streamKey: "stream_test_manuale",
-                                                    streamUrl: "rtsp://example.com/stream1",
+                                                    streamKey: "stream_piazza_duomo_cam1",
+                                                    streamUrl: "rtsp://cameras.comune.trento.it/piazza_duomo_cam1",
                                                     isActive: true,
                                                     startTime: "2025-05-14T10:00:00Z",
+                                                    endTime: null,
+                                                    streamType: "rtsp",
                                                     viewCount: 5,
                                                 },
+                                                {
+                                                    _id: "60d21b4667d0d8992e610c86",
+                                                    cameraId: "68266cd1683978f9108a7394",
+                                                    streamKey: "stream_via_belenzani_cam2",
+                                                    streamUrl: "rtsp://cameras.comune.trento.it/via_belenzani_cam2",
+                                                    isActive: true,
+                                                    startTime: "2025-05-14T09:30:00Z",
+                                                    endTime: null,
+                                                    streamType: "rtsp",
+                                                    viewCount: 2,
+                                                }
                                             ]
                 "401":
                     $ref: "#/components/responses/Unauthorized"
@@ -1023,7 +1295,25 @@ paths:
                     $ref: "#/components/responses/InternalServerError"
         post:
             summary: Create a new stream
-            description: Creates a new stream in the system. Requires authentication.
+            description: |
+                Initiates a new surveillance camera stream in the system. This endpoint is used when
+                a new camera feed needs to be added for monitoring.
+                
+                Required information includes:
+                - Camera ID (must reference an existing camera)
+                - Stream URL (the connection URL for the video feed)
+                - Stream type (RTSP, HLS, or WebRTC protocol)
+                
+                Optional information:
+                - Stream key (a unique identifier, generated automatically if not provided)
+                
+                When a stream is created:
+                - It is immediately marked as active
+                - The start time is recorded
+                - Initial view count is set to zero
+                - It becomes available for monitoring in the surveillance interface
+                
+                Requires valid authentication with appropriate permissions.
             tags:
                 - Streams
             security:
@@ -1056,8 +1346,8 @@ paths:
                             example1:
                                 value:
                                     cameraId: "68266cd1683978f9108a7393"
-                                    streamKey: "stream_test_manuale"
-                                    streamUrl: "rtsp://example.com/stream1"
+                                    streamKey: "stream_piazza_duomo_sud"
+                                    streamUrl: "rtsp://cameras.comune.trento.it/piazza_duomo_sud"
                                     streamType: "rtsp"
             responses:
                 "201":
@@ -1080,8 +1370,8 @@ paths:
                                             {
                                                 _id: "60d21b4667d0d8992e610c85",
                                                 cameraId: "68266cd1683978f9108a7393",
-                                                streamKey: "stream_test_manuale",
-                                                streamUrl: "rtsp://example.com/stream1",
+                                                streamKey: "stream_piazza_duomo_sud",
+                                                streamUrl: "rtsp://cameras.comune.trento.it/piazza_duomo_sud",
                                                 isActive: true,
                                                 startTime: "2025-05-14T10:00:00Z",
                                                 streamType: "rtsp",
@@ -1108,7 +1398,22 @@ paths:
     /streams/{id}:
         get:
             summary: Obtain stream details
-            description: Returns details of a specific stream. Requires authentication.
+            description: |
+                Retrieves detailed information about a specific surveillance camera stream identified by its unique ID.
+                This endpoint provides complete stream configuration and status data.
+                
+                The response includes:
+                - Stream identification
+                - Associated camera information
+                - Stream connection details (URL, key)
+                - Stream status and statistics
+                - Start and end times (if applicable)
+                - View count and access statistics
+                
+                This information is used for stream management, troubleshooting, and auditing purposes.
+                The stream ID is typically obtained from the list of active streams.
+                
+                Requires valid authentication with appropriate permissions.
             tags:
                 - Streams
             security:
@@ -1161,9 +1466,28 @@ paths:
                                         errorCode: "STREAM_NOT_FOUND"
                 "500":
                     $ref: "#/components/responses/InternalServerError"
-        put:
+        patch:
             summary: Update existing stream parameters
-            description: Modifies the parameters of an existing stream. Requires authentication.
+            description: |
+                Modifies the configuration or status of an existing surveillance camera stream.
+                This endpoint allows partial updates, meaning you can send only the fields that need to be changed.
+                
+                Modifiable fields include:
+                - Stream key (the unique identifier)
+                - Stream URL (the connection URL for the video feed)
+                - Active status (can be toggled on/off)
+                - Stream type (protocol used)
+                
+                Common update scenarios include:
+                - Changing the stream URL when camera network configuration changes
+                - Updating the stream key for security purposes
+                - Temporarily disabling a stream during maintenance
+                - Changing the streaming protocol
+                
+                This endpoint does not modify view count or timestamp information, which are
+                managed automatically by the system.
+                
+                Requires valid authentication with appropriate permissions.
             tags:
                 - Streams
             security:
@@ -1198,7 +1522,8 @@ paths:
                         examples:
                             updateStream:
                                 value:
-                                    streamKey: "new_stream_key"
+                                    streamKey: "stream_piazza_duomo_sud_new"
+                                    streamUrl: "rtsp://cameras.comune.trento.it/piazza_duomo_sud_new"
                                     isActive: true
             responses:
                 "200":
@@ -1221,8 +1546,8 @@ paths:
                                             {
                                                 _id: "60d21b4667d0d8992e610c85",
                                                 cameraId: "68266cd1683978f9108a7393",
-                                                streamKey: "new_stream_key",
-                                                streamUrl: "rtsp://example.com/stream1",
+                                                streamKey: "stream_piazza_duomo_sud_new",
+                                                streamUrl: "rtsp://cameras.comune.trento.it/piazza_duomo_sud_new",
                                                 isActive: true,
                                                 startTime: "2025-05-14T10:00:00Z",
                                                 streamType: "rtsp",
@@ -1264,7 +1589,23 @@ paths:
     /streams/{id}/end:
         patch:
             summary: End a stream
-            description: Ends an active stream. Requires authentication.
+            description: |
+                Terminates an active surveillance camera stream. This endpoint changes the stream status
+                to inactive and records the end time.
+                
+                When a stream is ended:
+                - Its status is changed to inactive (isActive = false)
+                - The current timestamp is recorded as the end time
+                - It is no longer available for live monitoring
+                - Historical information remains accessible
+                
+                This endpoint is used when:
+                - A camera is being taken offline for maintenance
+                - A temporary surveillance operation has concluded
+                - Stream quality issues require reconnection
+                
+                Terminated streams can be reactivated by updating them with the stream update endpoint.
+                Requires valid authentication with appropriate permissions.
             tags:
                 - Streams
             security:
@@ -1297,8 +1638,8 @@ paths:
                                             {
                                                 _id: "60d21b4667d0d8992e610c85",
                                                 cameraId: "68266cd1683978f9108a7393",
-                                                streamKey: "stream_test_manuale",
-                                                streamUrl: "rtsp://example.com/stream1",
+                                                streamKey: "stream_piazza_duomo_sud",
+                                                streamUrl: "rtsp://cameras.comune.trento.it/piazza_duomo_sud",
                                                 isActive: false,
                                                 startTime: "2025-05-14T10:00:00Z",
                                                 endTime: "2025-05-14T11:30:00Z",
@@ -1350,82 +1691,127 @@ components:
             properties:
                 email:
                     type: string
-                    description: User's email address
+                    description: User's email address used for authentication (must be registered in the system)
+                    example: "dipendente@comune.it"
                 password:
                     type: string
-                    description: User's password
+                    description: User's password for authentication (case-sensitive, must match stored credentials)
                     format: password
+                    example: "Password!Sicura123"
 
         LoginResponse:
             type: object
             properties:
                 token:
                     type: string
-                    description: JWT access token
+                    description: JWT access token that must be included in subsequent API requests as a Bearer token
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwZDIxYjQ2NjdkMGQ4OTkyZTYxMGM4NiIsImVtYWlsIjoiZGlwZW5kZW50ZUBjb211bmUuaXQiLCJyb2xlIjoiZGlwZW5kZW50ZWNvbXVuYWxlIiwiaWF0IjoxNjI0MTkzMzYxLCJleHAiOjE2MjQyNzk3NjF9.7tKm-Vj8iec7OVaCb5QdoIfwkR-RG2djUXMT2Yz4IhM"
                 success:
                     type: boolean
-                    description: Whether the login was successful
+                    description: Whether the login attempt was successful
+                    example: true
                 user:
                     type: object
                     properties:
                         email:
                             type: string
                             description: User's email address
+                            example: "dipendente@comune.it"
                         name:
                             type: string
                             description: User's full name
+                            example: "Laura Bianchi"
                         role:
                             type: string
-                            description: User's role
+                            description: User's role in the system which determines access permissions
                             enum: [amministratore, sorvegliante, dipendentecomunale]
+                            example: "dipendentecomunale"
 
         ErrorResponse:
             type: object
             properties:
                 error:
                     type: string
-                    description: Error message
+                    description: Human-readable error message explaining what went wrong
+                    example: "Invalid credentials provided"
                 errorCode:
                     type: string
-                    description: Specific error code for the failure
+                    description: Machine-readable error code for programmatic handling of errors
+                    example: "INVALID_CREDENTIALS"
 
         Event:
             type: object
             properties:
+                _id:
+                    type: string
+                    description: Unique identifier for the event
+                    example: "60d21b4667d0d8992e610c85"
                 type:
                     type: string
                     enum: [incidente, ingorgo]
+                    description: Type of event (accident or traffic jam)
+                    example: "incidente"
                 title:
                     type: string
+                    description: Short title describing the event
+                    example: "Incidente in Via Roma"
                 description:
                     type: string
+                    description: Detailed description of the event, including relevant details and observations
+                    example: "Tamponamento tra due veicoli con danni lievi. Traffico rallentato."
                 createdAt:
                     type: string
                     format: date-time
+                    description: Timestamp when the event was created in the system
+                    example: "2025-05-15T09:42:01.646Z"
                 updatedAt:
                     type: string
                     format: date-time
+                    description: Timestamp when the event was last updated
+                    example: "2025-05-15T10:15:00.000Z"
                 eventDate:
                     type: string
                     format: date-time
+                    description: Actual date and time when the event occurred
+                    example: "2025-05-15T09:30:00.000Z"
                 location:
                     type: object
+                    description: Location information where the event occurred
                     properties:
                         address:
                             type: string
+                            description: Human-readable address of the event location
+                            example: "Via Roma 45, Trento"
+                        coordinates:
+                            type: array
+                            description: Geographic coordinates [longitude, latitude]
+                            items:
+                                type: number
+                            example: [11.1207, 46.0678]
                 status:
                     type: string
                     enum: [pending, solved, unsolved, false_alarm]
+                    description: Current status of the event (pending=awaiting action, solved=resolved, unsolved=active but unresolved, false_alarm=incorrectly reported)
+                    example: "pending"
                 cameraId:
                     type: string
+                    description: ID of the camera that detected or recorded the event
+                    example: "665fe9b27d204f50ae7c8d4a"
                 videoUrl:
                     type: string
+                    description: URL to access video footage of the event
+                    example: "https://video.comune.trento.it/events/60d21b4667d0d8992e610c85.mp4"
                 confirmed:
                     type: boolean
+                    description: Whether the event has been confirmed by a surveillance officer
+                    example: true
                 confirmedBy:
                     type: string
+                    description: ID of the user (surveillance officer) who confirmed the event
+                    example: "60d21b4667d0d8992e610c87"
                 notifiedServices:
                     type: array
+                    description: List of emergency services that have been notified about this event
                     items:
                         type: object
                         properties:
@@ -1439,50 +1825,66 @@ components:
                                         ambulanza,
                                         protezione_civile,
                                     ]
+                                description: Type of emergency service notified
+                                example: "polizia"
                             notifiedAt:
                                 type: string
                                 format: date-time
+                                description: Timestamp when the service was notified
+                                example: "2025-05-15T09:45:00.000Z"
                             responseTime:
                                 type: number
+                                description: Response time in minutes from notification to arrival
+                                example: 8
                 severity:
                     type: string
                     enum: [bassa, media, alta]
+                    description: Assessed severity level of the event (bassa=low, media=medium, alta=high)
+                    example: "media"
 
         PublicEvent:
-            description: "Public version of the Event schema, used for public access"
+            description: "Public version of the Event schema with limited information for citizen access"
             type: object
             properties:
                 _id:
                     type: string
                     description: Event unique identifier
+                    example: "60d21b4667d0d8992e610c85"
                 type:
                     type: string
                     enum: [incidente, ingorgo]
-                    description: Event type
+                    description: Type of event (accident or traffic jam)
+                    example: "incidente"
                 title:
                     type: string
-                    description: Event title
+                    description: Short title describing the event
+                    example: "Incidente in Via Roma"
                 description:
                     type: string
-                    description: Event description
+                    description: Public description of the event, with sensitive details removed
+                    example: "Traffico rallentato causa incidente. Si consiglia percorso alternativo."
                 eventDate:
                     type: string
                     format: date-time
-                    description: Event date and time
+                    description: Date and time when the event occurred
+                    example: "2025-05-15T09:30:00.000Z"
                 location:
                     type: object
                     properties:
                         address:
                             type: string
-                            description: Event location address
+                            description: Address of the event location
+                            example: "Via Roma 45, Trento"
                 status:
                     type: string
                     enum: [solved, unsolved]
-                    description: Event status
+                    description: Whether the event has been resolved (only shows solved or unsolved status)
+                    example: "unsolved"
                 severity:
                     type: string
                     enum: [bassa, media, alta]
-                    description: Event severity
+                    description: Severity level to indicate impact on traffic and public safety
+                    example: "media"
 
         User:
             type: object
@@ -1490,19 +1892,24 @@ components:
                 _id:
                     type: string
                     description: User unique identifier
+                    example: "60d21b4667d0d8992e610c85"
                 email:
                     type: string
                     description: User's email address
+                    example: "admin@comune.it"
                 name:
                     type: string
                     description: User's full name
+                    example: "Mario Rossi"
                 role:
                     type: string
                     description: User's role
                     enum: [amministratore, sorvegliante, dipendentecomunale]
+                    example: "amministratore"
                 hash:
                     type: string
                     description: User's hashed password
+                    example: "$2b$10$VjvZ5y6Z5y6Z5y6Z5y6Z5e"
 
         CreateUserRequest:
             type: object
@@ -1515,17 +1922,21 @@ components:
                 email:
                     type: string
                     description: User's email address
+                    example: "nuovo.admin@comune.it"
                 password:
                     type: string
                     description: User's password
                     format: password
+                    example: "Password!Sicura123"
                 name:
                     type: string
                     description: User's full name
+                    example: "Paolo Verdi"
                 role:
                     type: string
                     description: User's role
                     enum: [amministratore, sorvegliante, dipendentecomunale]
+                    example: "amministratore"
 
         UpdateUserRequest:
             type: object
@@ -1533,13 +1944,16 @@ components:
                 email:
                     type: string
                     description: User's email address
+                    example: "laura.bianchi.updated@comune.it"
                 name:
                     type: string
                     description: User's full name
+                    example: "Laura Bianchi-Rossi"
                 role:
                     type: string
                     description: User's role
                     enum: [amministratore, sorvegliante, dipendentecomunale]
+                    example: "dipendentecomunale"
 
         Camera:
             description: "Represents a camera in the system"
@@ -1548,123 +1962,168 @@ components:
                 id:
                     type: string
                     description: Camera unique identifier
+                    example: "60d21b4667d0d8992e610c85"
                 name:
                     type: string
                     description: Camera name
+                    example: "Camera Piazza Duomo"
                 location:
                     type: object
                     properties:
                         address:
                             type: string
                             description: Address of the camera location
+                            example: "Piazza Duomo, Trento"
                 installationDate:
                     type: string
                     format: date-time
                     description: Installation date of the camera
+                    example: "2025-05-01T10:00:00Z"
                 lastMaintenance:
                     type: string
                     format: date-time
                     description: Last maintenance date of the camera
+                    example: "2025-05-10T10:00:00Z"
                 isActive:
                     type: boolean
                     description: Indicates if the camera is active
+                    example: true
                 ipAddress:
                     type: string
                     description: IP address of the camera
+                    example: "192.168.1.10"
                 streamUrl:
                     type: string
                     description: URL of the camera stream
+                    example: "rtsp://cameras.comune.trento.it/piazza_duomo_cam1"
                 modelInfo:
                     type: object
                     properties:
                         brand:
                             type: string
                             description: Camera brand name
+                            example: "Hikvision"
                         model:
                             type: string
                             description: Camera model name
+                            example: "DS-2CD2142FWD-I"
 
         StreamResponse:
-            description: "Represents a stream in the system"
+            description: "Basic information about an active video stream"
             type: object
             properties:
                 _id:
                     type: string
                     description: Stream unique identifier
+                    example: "60d21b4667d0d8992e610c85"
                 cameraId:
                     type: string
-                    description: ID of the associated camera
+                    description: ID of the associated surveillance camera
+                    example: "68266cd1683978f9108a7393"
                 streamKey:
                     type: string
-                    description: Unique key for the stream
+                    description: Unique key used to identify and access the stream
+                    example: "stream_piazza_duomo_cam1"
                 streamUrl:
                     type: string
-                    description: Stream URL
+                    description: URL where the stream can be accessed
+                    example: "rtsp://cameras.comune.trento.it/piazza_duomo_cam1"
                 isActive:
                     type: boolean
-                    description: Indicates if the stream is active
+                    description: Whether the stream is currently active and broadcasting
+                    example: true
                 startTime:
                     type: string
                     format: date-time
-                    description: Date and time of stream start
+                    description: When the stream was started
+                    example: "2025-05-14T10:00:00Z"
                 endTime:
                     type: string
                     format: date-time
-                    description: Date and time of stream end (if ended)
+                    description: When the stream was ended (null if still active)
+                    example: null
                 streamType:
                     type: string
                     enum: [rtsp, hls, webrtc]
-                    description: Stream type
+                    description: Protocol used for the video stream
+                    example: "rtsp"
                 viewCount:
                     type: integer
-                    description: Number of views
+                    description: Number of times the stream has been viewed
+                    example: 5
                 lastAccessed:
                     type: string
                     format: date-time
-                    description: Last time the stream was accessed
+                    description: When the stream was last accessed by a user
+                    example: "2025-05-14T10:45:12Z"
 
         StreamDetails:
-            description: "Complete details of a stream"
+            description: "Complete details about a video stream including all metadata"
             type: object
             properties:
                 _id:
                     type: string
                     description: Stream unique identifier
+                    example: "60d21b4667d0d8992e610c85"
                 cameraId:
                     type: string
-                    description: ID of the associated camera
+                    description: ID of the associated surveillance camera
+                    example: "68266cd1683978f9108a7393"
                 streamKey:
                     type: string
-                    description: Camera unique key
+                    description: Unique key used to identify and access the stream
+                    example: "stream_piazza_duomo_cam1"
                 streamUrl:
                     type: string
-                    description: URL of the stream
+                    description: URL where the stream can be accessed
+                    example: "rtsp://cameras.comune.trento.it/piazza_duomo_cam1"
                 isActive:
                     type: boolean
-                    description: Indicates if the stream is active
+                    description: Whether the stream is currently active and broadcasting
+                    example: true
                 startTime:
                     type: string
                     format: date-time
-                    description: Date and time of stream start
+                    description: When the stream was started
+                    example: "2025-05-14T10:00:00Z"
                 endTime:
                     type: string
                     format: date-time
-                    description: Date and time of stream end (if ended)
+                    description: When the stream was ended (null if still active)
+                    example: null
                 streamType:
                     type: string
                     enum: [rtsp, hls, webrtc]
-                    description: Stream type
+                    description: Protocol used for the video stream
+                    example: "rtsp"
                 viewCount:
                     type: integer
-                    description: Number of views
+                    description: Number of times the stream has been viewed
+                    example: 5
                 lastAccessed:
                     type: string
                     format: date-time
-                    description: Last time the stream was accessed
+                    description: When the stream was last accessed by a user
+                    example: "2025-05-14T10:45:12Z"
+                resolution:
+                    type: string
+                    description: Video resolution of the stream
+                    example: "1920x1080"
+                frameRate:
+                    type: number
+                    description: Frame rate of the video stream in frames per second
+                    example: 25
+                bandwidthUsage:
+                    type: number
+                    description: Bandwidth consumption in Mbps
+                    example: 4.5
 
     responses:
         Unauthorized:
-            description: Unauthorized access (invalid token)
+            description: |
+              Authentication failure. The request lacks valid authentication credentials or the provided
+              credentials are invalid. The client should either provide valid credentials or obtain
+              new ones through the login endpoint.
             content:
                 application/json:
                     schema:
@@ -1680,7 +2139,11 @@ components:
                                 errorCode: "INVALID_TOKEN"
 
         Forbidden:
-            description: Forbidden access (user is not an admin or attempting unauthorized action)
+            description: |
+              Authorization failure. The authenticated user does not have sufficient permissions
+              to access this resource or perform this operation. This typically happens when a user
+              with a lower-privilege role attempts to access admin-only endpoints or when a user
+              attempts to modify resources they don't own.
             content:
                 application/json:
                     schema:
@@ -1700,7 +2163,10 @@ components:
                                 errorCode: "SELF_DELETION_FORBIDDEN"
 
         InternalServerError:
-            description: Internal server error
+            description: |
+              The server encountered an unexpected condition that prevented it from fulfilling the request.
+              This is a generic server error and does not indicate a problem with the client request.
+              Administrators should check server logs for more details about what went wrong.
             content:
                 application/json:
                     schema:

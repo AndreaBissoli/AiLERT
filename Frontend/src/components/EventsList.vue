@@ -133,7 +133,7 @@ const saveDescription = async (event) => {
     };
 
     const response = await fetch(`/api/v1/events/${event._id}`, {
-      method: "PUT",
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,
@@ -197,7 +197,7 @@ const markAsResolved = async (event) => {
     };
 
     const response = await fetch(`/api/v1/events/${event._id}`, {
-      method: "PUT",
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,

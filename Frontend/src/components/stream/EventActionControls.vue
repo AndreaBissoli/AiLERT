@@ -132,7 +132,7 @@ const saveEventChanges = async () => {
     }
 
     const response = await fetch(`/api/v1/events/${props.event._id}`, {
-      method: "PUT",
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,
