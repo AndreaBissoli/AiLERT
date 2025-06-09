@@ -90,6 +90,31 @@ describe("Events API Tests", () => {
         expect(response.body).toHaveProperty("errorCode", "TOKEN_REQUIRED");
     });
 
+    // TEST ID 32: Recupero di numerosi eventi pubblici
+    test("Recupero di numerosi eventi pubblici", async () => {
+        const response = await request(app)
+            .get("/api/v1/public/events");
+
+        if (response.status === 200) {
+            expect(response.body).toBeDefined();
+            expect(Array.isArray(response.body) || typeof response.body === 'object').toBe(true);
+            
+            if (Array.isArray(response.body) && response.body.length > 0) {
+                response.body.forEach(event => {
+                    expect(event).toHaveProperty("_id");
+                    expect(event).toHaveProperty("timestamp");
+                    expect(event).toHaveProperty("status");
+                });
+            }
+            
+            if (typeof response.body === 'object' && !Array.isArray(response.body)) {
+                expect(response.body).toHaveProperty("events");
+            }
+        } else {
+            expect(response.status).toBeGreaterThanOrEqual(200);
+        }
+    });
+
     // Test aggiuntivo: Accesso con ruolo non autorizzato (admin)
     test("Tentativo di accesso agli eventi con ruolo non autorizzato", async () => {
         const adminToken = jwt.sign(

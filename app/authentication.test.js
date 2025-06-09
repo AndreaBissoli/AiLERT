@@ -148,4 +148,18 @@ describe("POST /api/v1/auth/login", () => {
         expect(response.body).toHaveProperty("error", "Authentication token required");
         expect(response.body).toHaveProperty("errorCode", "TOKEN_REQUIRED");
     });
+    
+    // TEST ID 31: Invio di un JSON malformato
+    test("Invio di un JSON malformato", async () => {
+        const malformedJson = '{"email": "utente@example.com", "password": "pass"'; // Parentesi mancante
+        
+        const response = await request(app)
+            .post("/api/v1/auth/login")
+            .set("Content-Type", "application/json")
+            .send(malformedJson);
+
+        expect(response.status).toBe(400);
+        // Il server gestisce correttamente il JSON malformato restituendo 400
+        // Il body può essere vuoto - l'importante è che non crashi
+    });
 });
