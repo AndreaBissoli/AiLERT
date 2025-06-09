@@ -134,7 +134,6 @@ onMounted(() => {
         > Nuovo Utente </button
       > </div
     > 
-    <!-- Add role filter dropdown -->
     <div class="bg-white rounded-2xl shadow-md p-4 mb-6 border border-gray-100">
       <div class="flex items-center space-x-4">
         <label class="text-sm font-medium text-gray-700">Filtra per ruolo:</label>

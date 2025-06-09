@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const User = require("./models/user");
+const Event = require("./models/event");
 const SALT_ROUNDS = require("./config").SALT_ROUNDS;
 
 // GET all users, with optional query parameters for filtering between roles
@@ -154,6 +155,34 @@ router.get("/:id", async (req, res) => {
         }
         res.json(user);
     } catch (err) {
+        res.status(500).json({
+            error: "Internal server error",
+            errorCode: "INTERNAL_SERVER_ERROR",
+        });
+    }
+});
+
+// GET events confirmed by a specific user (only sorvegliante)
+router.get("/:id/events", async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: "User not found", errorCode: "USER_NOT_FOUND" });
+        }
+        if (user.role !== "sorvegliante") {
+            return res.status(400).json({
+                error: "Only users with 'sorvegliante' role can confirm events",
+                errorCode: "INVALID_USER",
+            });
+        }
+        const events = await Event.find({ confirmedBy: userId });
+        if (!events || events.length === 0) {   
+            return res.status(404).json({ error: "No events found for this user", errorCode: "NO_EVENTS_FOUND" });
+        }
+        res.json(events);
+    } catch (err) {
+        console.error(err);
         res.status(500).json({
             error: "Internal server error",
             errorCode: "INTERNAL_SERVER_ERROR",
