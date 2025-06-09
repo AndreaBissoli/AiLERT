@@ -39,32 +39,14 @@ describe("Events API Tests", () => {
         await mongoose.connection.close(true);
     }, 15000);
 
-    // TEST ID 19: Visualizzazione di tutti gli eventi storici
-    test("Visualizzazione di tutti gli eventi storici", async () => {
-        const response = await request(app)
-            .get("/api/v1/events")
-            .set("Authorization", `Bearer ${dipendenteToken}`);
-
-        if (response.status === 200) {
-            expect(response.body).toBeDefined();
-            expect(Array.isArray(response.body) || typeof response.body === 'object').toBe(true);
-        } else {
-            expect(response.status).toBeGreaterThanOrEqual(400);
-        }
-    });
-
     // TEST ID 19 variante: Test con sorvegliante
     test("Visualizzazione eventi storici con sorvegliante", async () => {
         const response = await request(app)
             .get("/api/v1/events")
             .set("Authorization", `Bearer ${sorveglianteToken}`);
 
-        if (response.status === 200) {
-            expect(response.body).toBeDefined();
-            expect(Array.isArray(response.body) || typeof response.body === 'object').toBe(true);
-        } else {
-            expect(response.status).toBeGreaterThanOrEqual(400);
-        }
+        expect(response.status).toBe(200);
+        expect(Array.isArray(response.body) || typeof response.body === 'object').toBe(true);
     });
 
     // TEST ID 20: Visualizzazione di eventi pubblici
@@ -72,11 +54,15 @@ describe("Events API Tests", () => {
         const response = await request(app)
             .get("/api/v1/public/events");
 
-        if (response.status === 200) {
-            expect(response.body).toBeDefined();
-            expect(Array.isArray(response.body) || typeof response.body === 'object').toBe(true);
-        } else {
-            expect(response.status).toBeGreaterThanOrEqual(400);
+        expect(response.status).toBe(200);
+        expect(Array.isArray(response.body)).toBe(true);
+        
+        if (response.body.length > 0) {
+            response.body.forEach(event => {
+                expect(event).toHaveProperty("_id");
+                expect(event).toHaveProperty("timestamp");
+                expect(event).toHaveProperty("status");
+            });
         }
     });
 
@@ -95,24 +81,9 @@ describe("Events API Tests", () => {
         const response = await request(app)
             .get("/api/v1/public/events");
 
-        if (response.status === 200) {
-            expect(response.body).toBeDefined();
-            expect(Array.isArray(response.body) || typeof response.body === 'object').toBe(true);
-            
-            if (Array.isArray(response.body) && response.body.length > 0) {
-                response.body.forEach(event => {
-                    expect(event).toHaveProperty("_id");
-                    expect(event).toHaveProperty("timestamp");
-                    expect(event).toHaveProperty("status");
-                });
-            }
-            
-            if (typeof response.body === 'object' && !Array.isArray(response.body)) {
-                expect(response.body).toHaveProperty("events");
-            }
-        } else {
-            expect(response.status).toBeGreaterThanOrEqual(200);
-        }
+        expect(response.status).toBe(200);
+        expect(Array.isArray(response.body)).toBe(true);
+        expect(response.body.length).toBeLessThanOrEqual(50);
     });
 
     // Test aggiuntivo: Accesso con ruolo non autorizzato (admin)
