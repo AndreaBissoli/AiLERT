@@ -163,12 +163,12 @@ describe("POST /api/v1/streams/", () => {
             });
 
         expect(response.status).toBe(400);
-        expect(response.body).toHaveProperty("error", "Campi obbligatori mancanti");
+        expect(response.body).toHaveProperty("error", "Missing required fields");
         expect(response.body).toHaveProperty("errorCode", "MISSING_FIELDS");
     });
 });
 
-describe("PUT /api/v1/streams/:streamId/end", () => {
+describe("PATCH /api/v1/streams/:streamId/end", () => {
     let token;
     let streamId;
 
@@ -202,7 +202,7 @@ describe("PUT /api/v1/streams/:streamId/end", () => {
 
     test("Termina uno stream attivo con successo", async () => {
         const response = await request(app)
-            .put(`/api/v1/streams/${streamId}/end`)
+            .patch(`/api/v1/streams/${streamId}/end`)
             .set("Authorization", `Bearer ${token}`);
 
         expect(response.status).toBe(200);

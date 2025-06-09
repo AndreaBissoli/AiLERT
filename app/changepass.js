@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const SALT_ROUNDS = require("./config").SALT_ROUNDS;
 const User = require("./models/user");
 
-router.put("", async function (req, res) {
+router.patch("", async function (req, res) {
     email = req.loggedUser.email;
     id = req.loggedUser.id;
     newpassword = req.body.newpassword;

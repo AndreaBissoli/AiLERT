@@ -9,10 +9,9 @@ router.get("/events", async (req, res) => {
         const eventi = await Event.findPublic().limit(50);
         res.json(eventi);
     } catch (err) {
-        console.error("Errore API pubblica:", err);
         res.status(500).json({
-            error: err.message,
-            errorCode: "PUBLIC_EVENTS_FETCH_ERROR",
+            error: "Internal server error",
+            errorCode: "INTERNAL_SERVER_ERROR",
         });
     }
 });
