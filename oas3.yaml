@@ -12,11 +12,27 @@ servers:
     - url: https://ailert.onrender.com/api/v1
       description: Production server
 
+tags:
+    - name: Authentication
+      description: User authentication endpoints
+    - name: Public API
+      description: Publicly accessible endpoints (no authentication required)
+    - name: Events
+      description: Event management endpoints
+    - name: Users
+      description: User management endpoints (admin only)
+    - name: User Profile
+      description: User profile management endpoints
+    - name: Streams
+      description: Stream management endpoints
+
 paths:
     /auth/login:
         post:
             summary: User Login
             description: Authenticate user and generate JWT token.
+            tags:
+                - Authentication
             requestBody:
                 required: true
                 content:
@@ -45,6 +61,15 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                invalidEmail:
+                                    value:
+                                        error: "Invalid email"
+                                        errorCode: "INVALID_EMAIL"
+                                invalidPassword:
+                                    value:
+                                        error: "Invalid password"
+                                        errorCode: "INVALID_PASSWORD"
 
     /public/events:
         get:
@@ -91,6 +116,8 @@ paths:
         get:
             summary: Get all events
             description: Returns a list of all events in the system. Requires authentication.
+            tags:
+                - Events
             security:
                 - BearerAuth: []
             responses:
@@ -141,9 +168,13 @@ paths:
                     $ref: "#/components/responses/Unauthorized"
                 "403":
                     $ref: "#/components/responses/Forbidden"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
         post:
             summary: Create new event
             description: Creates a new event in the system. Requires authentication.
+            tags:
+                - Events
             security:
                 - BearerAuth: []
             requestBody:
@@ -175,16 +206,16 @@ paths:
             responses:
                 "201":
                     description: Event created successfully
-                "400":
-                    description: Error in request body
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ErrorResponse"
+                                $ref: "#/components/schemas/Event"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
                 "403":
                     $ref: "#/components/responses/Forbidden"
+                "500":
+                    $ref: "#/components/responses/InternalServerError"
 
     /events/{id}:
         parameters:
@@ -197,6 +228,8 @@ paths:
         get:
             summary: Get event by ID
             description: Retrieves a specific event by its ID. Requires authentication.
+            tags:
+                - Events
             security:
                 - BearerAuth: []
             responses:
@@ -243,20 +276,13 @@ paths:
                                         error: "Event not found"
                                         errorCode: "EVENT_NOT_FOUND"
                 "500":
-                    description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/ErrorResponse"
-                            examples:
-                                serverError:
-                                    value:
-                                        error: "Internal server errror"
-                                        errorCode: "INTERNAL_SERVER_ERROR"
+                    $ref: "#/components/responses/InternalServerError"
 
         put:
             summary: Update event by ID
             description: Updates an existing event by its ID. Requires authentication.
+            tags:
+                - Events
             security:
                 - BearerAuth: []
             requestBody:
@@ -312,20 +338,13 @@ paths:
                                         error: "Event not found"
                                         errorCode: "EVENT_NOT_FOUND"
                 "500":
-                    description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/ErrorResponse"
-                            examples:
-                                serverError:
-                                    value:
-                                        error: "Internal server error"
-                                        errorCode: "INTERNAL_SERVER_ERROR"
+                    $ref: "#/components/responses/InternalServerError"
 
         delete:
             summary: Delete event by ID
             description: Deletes an event from the system by its ID. Requires authentication.
+            tags:
+                - Events
             security:
                 - BearerAuth: []
             responses:
@@ -363,22 +382,15 @@ paths:
                                         error: "Event not found"
                                         errorCode: "EVENT_NOT_FOUND"
                 "500":
-                    description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/ErrorResponse"
-                            examples:
-                                serverError:
-                                    value:
-                                        error: "Internal server error"
-                                        errorCode: "INTERNAL_SERVER_ERROR"
+                    $ref: "#/components/responses/InternalServerError"
 
     # Admin endpoints
     /users:
         get:
             summary: Get all users
             description: Retrieves a list of all users. Requires admin role authentication. Optionally filter by role using the 'role' query parameter.
+            tags:
+                - Users
             security:
                 - BearerAuth: []
             parameters:
@@ -456,6 +468,8 @@ paths:
         post:
             summary: Create new user
             description: Creates a new user in the system. Requires admin role authentication.
+            tags:
+                - Users
             security:
                 - BearerAuth: []
             requestBody:
@@ -535,6 +549,8 @@ paths:
         get:
             summary: Get user by ID
             description: Retrieves a specific user by their ID. Requires admin role authentication.
+            tags:
+                - Users
             security:
                 - BearerAuth: []
             responses:
@@ -580,6 +596,8 @@ paths:
         put:
             summary: Update user
             description: Updates an existing user's information. Requires admin role authentication.
+            tags:
+                - Users
             security:
                 - BearerAuth: []
             requestBody:
@@ -649,6 +667,8 @@ paths:
         delete:
             summary: Delete user
             description: Deletes a user from the system. Requires admin role authentication.
+            tags:
+                - Users
             security:
                 - BearerAuth: []
             responses:
@@ -694,6 +714,8 @@ paths:
         get:
             summary: Get events confirmed by user
             description: Retrieves events confirmed by a specific user. Only works for users with 'sorvegliante' role. Requires admin role authentication.
+            tags:
+                - Users
             security:
                 - BearerAuth: []
             responses:
@@ -772,9 +794,11 @@ paths:
                     $ref: "#/components/responses/InternalServerError"
 
     /users/me:
-        put:
+        patch:
             summary: Change Password
             description: Change the user's password. Requires authentication.
+            tags:
+                - User Profile
             security:
                 - BearerAuth: []
             requestBody:
@@ -818,6 +842,10 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/ErrorResponse"
                             examples:
+                                missingPassword:
+                                    value:
+                                        error: "New password is required"
+                                        errorCode: "MISSING_NEW_PASSWORD"
                                 samePassword:
                                     value:
                                         error: "New password cannot be the same as the old password"
@@ -831,6 +859,8 @@ paths:
         get:
             summary: Get active streams
             description: Returns a list of active streams. Requires authentication.
+            tags:
+                - Streams
             security:
                 - BearerAuth: []
             responses:
@@ -866,11 +896,15 @@ paths:
                                             ]
                 "401":
                     $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
                 "500":
                     $ref: "#/components/responses/InternalServerError"
         post:
             summary: Create a new stream
             description: Creates a new stream in the system. Requires authentication.
+            tags:
+                - Streams
             security:
                 - BearerAuth: []
             requestBody:
@@ -945,6 +979,8 @@ paths:
                                         errorCode: "MISSING_FIELDS"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
                 "500":
                     $ref: "#/components/responses/InternalServerError"
 
@@ -952,6 +988,8 @@ paths:
         get:
             summary: Obtain stream details
             description: Returns details of a specific stream. Requires authentication.
+            tags:
+                - Streams
             security:
                 - BearerAuth: []
             parameters:
@@ -976,6 +1014,8 @@ paths:
                                         $ref: "#/components/schemas/StreamDetails"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
                 "404":
                     description: Stream not found
                     content:
@@ -992,6 +1032,8 @@ paths:
         put:
             summary: Update existing stream parameters
             description: Modifies the parameters of an existing stream. Requires authentication.
+            tags:
+                - Streams
             security:
                 - BearerAuth: []
             parameters:
@@ -1060,8 +1102,19 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                invalidUpdateData:
+                                    value:
+                                        error: "Input update data not valid"
+                                        errorCode: "INVALID_UPDATE_DATA"
+                                invalidId:
+                                    value:
+                                        error: "ID dello stream non valido"
+                                        errorCode: "INVALID_ID"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
                 "404":
                     description: Stream not found
                     content:
@@ -1077,9 +1130,11 @@ paths:
                     $ref: "#/components/responses/InternalServerError"
 
     /streams/{streamId}/end:
-        put:
+        patch:
             summary: End a stream
             description: Ends an active stream. Requires authentication.
+            tags:
+                - Streams
             security:
                 - BearerAuth: []
             parameters:
@@ -1118,8 +1173,21 @@ paths:
                                                 streamType: "rtsp",
                                                 viewCount: 7,
                                             }
+                "400":
+                    description: Invalid stream ID format
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                            examples:
+                                invalidId:
+                                    value:
+                                        error: "ID dello stream non valido"
+                                        errorCode: "INVALID_ID"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
                 "404":
                     description: Stream not found
                     content:

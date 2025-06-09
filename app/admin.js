@@ -60,7 +60,7 @@ router.post("/", async (req, res) => {
             user: newUser,
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: "Internal server error", errorCode: "INTERNAL_SERVER_ERROR" });
     }
 });
 // UPDATE user

@@ -8,7 +8,7 @@ router.get("/", async (req, res) => {
         const eventi = await Event.find().sort({ eventDate: -1 });
         res.json(eventi);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: "Internal server error", errorCode: "INTERNAL_SERVER_ERROR" });
     }
 });
 
@@ -19,7 +19,7 @@ router.post("/", async (req, res) => {
         await nuovoEvento.save();
         res.status(201).json(nuovoEvento);
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(500).json({ error: "Internal server error", errorCode: "INTERNAL_SERVER_ERROR" });
     }
 });
 
@@ -32,7 +32,7 @@ router.get("/:id", async (req, res) => {
         }
         res.json(evento);
     } catch (err) {
-        res.status(500).json({ error: "Internal server errror", errorCode: "INTERNAL_SERVER_ERROR" });
+        res.status(500).json({ error: "Internal server error", errorCode: "INTERNAL_SERVER_ERROR" });
     }
 });
 

@@ -23,8 +23,8 @@ router.get("/", async (req, res) => {
     } catch (error) {
         console.error("Errore nel recupero degli stream:", error);
         return res.status(500).json({
-            error: "Errore interno del server",
-            errorCode: "SERVER_ERROR",
+            error: "Internal server error",
+            errorCode: "INTERNAL_SERVER_ERROR",
         });
     }
 });
@@ -70,8 +70,8 @@ router.get("/:streamId", async (req, res) => {
         }
 
         return res.status(500).json({
-            error: "Errore interno del server",
-            errorCode: "SERVER_ERROR",
+            error: "Internal server error",
+            errorCode: "INTERNAL_SERVER_ERROR",
         });
     }
 });
@@ -84,7 +84,7 @@ router.post("/", async (req, res) => {
         // Validazione dei campi obbligatori
         if (!cameraId || !streamUrl || !streamType) {
             return res.status(400).json({
-                error: "Campi obbligatori mancanti",
+                error: "Missing required fields",
                 errorCode: "MISSING_FIELDS",
             });
         }
@@ -119,8 +119,8 @@ router.post("/", async (req, res) => {
         }
 
         return res.status(500).json({
-            error: "Errore interno del server",
-            errorCode: "SERVER_ERROR",
+            error: "Internal server error",
+            errorCode: "INTERNAL_SERVER_ERROR",
         });
     }
 });
@@ -133,7 +133,7 @@ router.put("/:streamId", async (req, res) => {
 
         if (Object.keys(updateData).length === 0) {
             return res.status(400).json({
-                error: "Dati di aggiornamento non validi",
+                error: "Input update data not valid",
                 errorCode: "INVALID_UPDATE_DATA",
             });
         }
@@ -177,14 +177,14 @@ router.put("/:streamId", async (req, res) => {
         }
 
         return res.status(500).json({
-            error: "Errore interno del server",
-            errorCode: "SERVER_ERROR",
+            error: "Internal server error",
+            errorCode: "INTERNAL_SERVER_ERROR",
         });
     }
 });
 
 // Termina uno stream (imposta isActive = false e aggiunge endTime)
-router.put("/:streamId/end", async (req, res) => {
+router.patch("/:streamId/end", async (req, res) => {
     try {
         const { streamId } = req.params;
 
@@ -223,8 +223,8 @@ router.put("/:streamId/end", async (req, res) => {
         }
 
         return res.status(500).json({
-            error: "Errore interno del server",
-            errorCode: "SERVER_ERROR",
+            error: "Internal server error",
+            errorCode: "INTERNAL_SERVER_ERROR",
         });
     }
 });
