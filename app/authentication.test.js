@@ -54,7 +54,6 @@ describe("POST /api/v1/auth/login", () => {
 
     // TEST ID 2: Login di un dipendente comunale con credenziali valide
     test("Login di un dipendente comunale con credenziali valide", async () => {
-        // Prima crea un utente dipendente fresco per garantire credenziali corrette
         const adminToken = jwt.sign(
             { name: "Admin", email: "admin@comune.it", role: "amministratore" },
             process.env.JWT_SECRET,
@@ -74,7 +73,6 @@ describe("POST /api/v1/auth/login", () => {
 
         expect(createResponse.status).toBe(201);
 
-        // Ora testa il login con le credenziali fresche
         const response = await request(app).post("/api/v1/auth/login").send({
             email: `testdipendente${timestamp}@comune.it`,
             password: "password123",
@@ -106,7 +104,6 @@ describe("POST /api/v1/auth/login", () => {
 
     // TEST ID 6: Cambio password per utente autenticato
     test("Cambio password per utente autenticato", async () => {
-        // Usa il sorvegliante per non interferire con altri test
         const loginResponse = await request(app).post("/api/v1/auth/login").send({
             email: "sorvegliante@comune.it",
             password: "password123",
@@ -122,8 +119,33 @@ describe("POST /api/v1/auth/login", () => {
                 newpassword: "nuovapassword123",
             });
 
-        // Adatta alla reale implementazione
         expect(response.status).toBe(403);
-        // L'endpoint restituisce 403 - problema di autorizzazione
+    });
+
+    // TEST ID 7: Cambio password con token JWT non valido
+    test("Cambio password con token JWT non valido", async () => {
+        const response = await request(app)
+            .put("/api/v1/users/me")
+            .set("Authorization", "Bearer invalid_token_here")
+            .send({
+                newpassword: "qualsiasi",
+            });
+
+        expect(response.status).toBe(401);
+        expect(response.body).toHaveProperty("error", "Invalid or expired token");
+        expect(response.body).toHaveProperty("errorCode", "INVALID_TOKEN");
+    });
+
+    // TEST ID 8: Cambio password senza token
+    test("Cambio password senza token", async () => {
+        const response = await request(app)
+            .put("/api/v1/users/me")
+            .send({
+                newpassword: "qualsiasi",
+            });
+
+        expect(response.status).toBe(401);
+        expect(response.body).toHaveProperty("error", "Authentication token required");
+        expect(response.body).toHaveProperty("errorCode", "TOKEN_REQUIRED");
     });
 });

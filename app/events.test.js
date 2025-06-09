@@ -11,7 +11,6 @@ describe("Events API Tests", () => {
         jest.setTimeout(15000);
         app.locals.db = await mongoose.connect(process.env.MONGODB_URI);
         
-        // Setup token dipendente comunale per i test
         dipendenteToken = jwt.sign(
             {
                 name: "Marco Verdi",
@@ -22,7 +21,6 @@ describe("Events API Tests", () => {
             { expiresIn: 86400 }
         );
 
-        // Setup token sorvegliante per i test
         sorveglianteToken = jwt.sign(
             {
                 name: "Mario Rossi", 
@@ -47,12 +45,10 @@ describe("Events API Tests", () => {
             .get("/api/v1/events")
             .set("Authorization", `Bearer ${dipendenteToken}`);
 
-        // Adatta alla reale implementazione
         if (response.status === 200) {
             expect(response.body).toBeDefined();
             expect(Array.isArray(response.body) || typeof response.body === 'object').toBe(true);
         } else {
-            // Se il server restituisce errore, verifica che sia gestito correttamente
             expect(response.status).toBeGreaterThanOrEqual(400);
         }
     });
@@ -63,7 +59,6 @@ describe("Events API Tests", () => {
             .get("/api/v1/events")
             .set("Authorization", `Bearer ${sorveglianteToken}`);
 
-        // Adatta alla reale implementazione
         if (response.status === 200) {
             expect(response.body).toBeDefined();
             expect(Array.isArray(response.body) || typeof response.body === 'object').toBe(true);
@@ -77,12 +72,10 @@ describe("Events API Tests", () => {
         const response = await request(app)
             .get("/api/v1/public/events");
 
-        // Non richiede autenticazione, dovrebbe funzionare
         if (response.status === 200) {
             expect(response.body).toBeDefined();
             expect(Array.isArray(response.body) || typeof response.body === 'object').toBe(true);
         } else {
-            // Se il server restituisce errore, verifica che sia gestito
             expect(response.status).toBeGreaterThanOrEqual(400);
         }
     });
