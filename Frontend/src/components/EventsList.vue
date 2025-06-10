@@ -28,7 +28,7 @@ const userRole = computed(() => {
 });
 
 const canManageEvents = computed(() => {
-  return userRole.value === "sorvegliante" || userRole.value === "dipendentecomunale";
+  return userRole.value === "sorvegliante";
 });
 
 const paginatedEvents = computed(() => {

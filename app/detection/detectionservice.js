@@ -1,26 +1,18 @@
 const Event = require("../models/event");
 const Stream = require("../models/stream");
 const Camera = require("../models/camera");
+const { exec } = require("child_process");
 
 
 
 const CameraIds = [
-    '68443c5d2d56f26e2678b173', // CAM-001 Piazza Duomo - Piazza Duomo
-    '68443c5d2d56f26e2678b175', // CAM-002 Via San Marco - Via San Marco
-    '68443c5e2d56f26e2678b178', // CAM-003 Via Roma Centro - Via Roma
-    '68443c5e2d56f26e2678b17a', // CAM-004 Corso 3 Novembre - Corso 3 Novembre
-    '68443c5e2d56f26e2678b17c', // CAM-005 Via Belenzani - Via Belenzani
-    '68443c5e2d56f26e2678b17e', // CAM-006 Ponte San Lorenzo - Ponte San Lorenzo
-    '68443c5e2d56f26e2678b180', // CAM-007 Via Verdi - Via Verdi
-    '68443c5e2d56f26e2678b182', // CAM-008 Via Calepina Università - Via Calepina
-    '68443c5e2d56f26e2678b184', // CAM-009 Via Oss Mazzurana - Via Oss Mazzurana
-    '68443c5e2d56f26e2678b186', // CAM-010 Piazza Fiera - Piazza Fiera
-    '68443c5e2d56f26e2678b188', // CAM-011 Via Brennero Nord - Via Brennero
-    '68443c5e2d56f26e2678b18a', // CAM-012 Via Milano Sud - Via Milano
-    '68443c5e2d56f26e2678b18c', // CAM-013 Via Venezia Industriale - Via Venezia
-    '68443c5e2d56f26e2678b18e', // CAM-014 Rotatoria Spini Gardolo - Rotatoria Spini di Gardolo
-    '68443c5e2d56f26e2678b190', // CAM-015 Via del Ponte - Via del Ponte
-    '68443c5e2d56f26e2678b192', // CAM-016 Via Segantini Ospedale - Via Segantini
+    '68443c5e2d56f26e2678b182',
+    '68443c5e2d56f26e2678b17e',
+    '68443c5e2d56f26e2678b17a',
+    '68443c5e2d56f26e2678b180',
+    '68443c5e2d56f26e2678b188',
+    '68443c5e2d56f26e2678b18a',
+    '684808368431b5c72ab813d5', // PIAZZA DUOMO
 ];
 
 class DetectionService {
@@ -28,6 +20,8 @@ class DetectionService {
         this.io = io;
         this.isRunning = false;
         this.detectionInterval = null;
+        this.createEventsInterval = null;
+        this.rightawaytimeout = null;
     }
 
     start() {
@@ -38,7 +32,64 @@ class DetectionService {
 
         this.detectionInterval = setInterval(() => {
             this.runDetection();
-        }, 7000);
+        }, 30000);
+        
+        
+        /*
+        exec("node ./scripts/clean-events-only.js", (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error executing clean-events-only script: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                console.error(`Script stderr: ${stderr}`);
+                return;
+            }
+            console.log(`Script stdout: ${stdout}`);
+        }
+        );
+        exec("node ./scripts/create-realistic-events.js", (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error executing create-realistic-events script: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                console.error(`Script stderr: ${stderr}`);
+                return;
+            }
+            console.log(`Script stdout: ${stdout}`);
+        }
+        );
+        */
+        // Create a separate interval for creating events every two hours, 
+        // such that there is always something to show
+        this.createEventsInterval = setInterval(() => {
+            exec("node ./scripts/clean-events-only.js", (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`Error executing clean-events-only script: ${error.message}`);
+                    return;
+                }
+                if (stderr) {
+                    console.error(`Script stderr: ${stderr}`);
+                    return;
+                }
+                console.log(`Script stdout: ${stdout}`);
+            }
+            );
+            exec("node ./scripts/create-realistic-events.js", (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`Error executing create-realistic-events script: ${error.message}`);
+                    return;
+                }
+                if (stderr) {
+                    console.error(`Script stderr: ${stderr}`);
+                    return;
+                }
+                console.log(`Script stdout: ${stdout}`);
+            }
+            );
+        }
+        , 7200000); // 2 hours in milliseconds
     }
 
     stop() {

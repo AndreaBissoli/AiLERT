@@ -48,6 +48,17 @@ function generateNearbyCoordinates(cameraCoords) {
     };
 }
 
+function generateHistoricalTimestamp() {
+    // Eventi distribuiti nell'ultimo anno (escluse le ultime 2 ore)
+    const oneYearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+    
+    const timeRange = twoHoursAgo.getTime() - oneYearAgo.getTime();
+    const randomTime = oneYearAgo.getTime() + Math.random() * timeRange;
+    
+    return new Date(randomTime);
+}
+
 function selectRandomTemplate(templates) {
     return templates[Math.floor(Math.random() * templates.length)];
 }
@@ -58,11 +69,120 @@ function selectRandomStatus() {
     return Math.random() < weights[0] ? statuses[0] : statuses[1];
 }
 
+function selectRandomStatusHistorical() {
+    // Per eventi storici, più probabilità che siano risolti
+    const statuses = ["solved", "unsolved", "false_alarm"];
+    const weights = [0.7, 0.25, 0.05]; // 70% risolti, 25% non risolti, 5% falsi allarmi
+    
+    const random = Math.random();
+    if (random < weights[0]) return statuses[0];
+    if (random < weights[0] + weights[1]) return statuses[1];
+    return statuses[2];
+}
+
+async function createHistoricalEvents(cameras) {
+    console.log('\n' + '='.repeat(50));
+    console.log('CREAZIONE EVENTI STORICI (ULTIMO ANNO)');
+    console.log('='.repeat(50));
+    
+    const NUM_HISTORICAL_INCIDENTS = 60;
+    const NUM_HISTORICAL_TRAFFIC = 40;
+    
+    const results = { 
+        incidenti: 0, 
+        ingorghi: 0, 
+        errori: 0,
+        eventsWithCoords: 0 
+    };
+    
+    // CREA INCIDENTI STORICI
+    console.log(`\nCreazione ${NUM_HISTORICAL_INCIDENTS} incidenti storici:`);
+    console.log('-'.repeat(45));
+    
+    for (let i = 0; i < NUM_HISTORICAL_INCIDENTS; i++) {
+        try {
+            const camera = cameras[Math.floor(Math.random() * cameras.length)];
+            const template = selectRandomTemplate(EVENT_TEMPLATES.incidenti);
+            
+            const eventData = {
+                type: 'incidente',
+                title: template.title,
+                description: template.description,
+                severity: template.severity,
+                status: selectRandomStatusHistorical(),
+                eventDate: generateHistoricalTimestamp(),
+                cameraId: camera._id,
+                location: {
+                    address: camera.location.address
+                }
+            };
+            
+            const savedEvent = await Event.create(eventData);
+            results.incidenti++;
+            
+            if (savedEvent.location?.coordinates?.lat) {
+                results.eventsWithCoords++;
+            }
+            
+            if ((i + 1) % 20 === 0) {
+                console.log(`  Creati ${i + 1}/${NUM_HISTORICAL_INCIDENTS} incidenti storici...`);
+            }
+            
+        } catch (error) {
+            results.errori++;
+        }
+    }
+    
+    // CREA INGORGHI STORICI
+    console.log(`\nCreazione ${NUM_HISTORICAL_TRAFFIC} ingorghi storici:`);
+    console.log('-'.repeat(45));
+    
+    for (let i = 0; i < NUM_HISTORICAL_TRAFFIC; i++) {
+        try {
+            const camera = cameras[Math.floor(Math.random() * cameras.length)];
+            const template = selectRandomTemplate(EVENT_TEMPLATES.ingorghi);
+            const nearbyCoords = generateNearbyCoordinates(camera.location.coordinates);
+            
+            const eventData = {
+                type: 'ingorgo',
+                title: template.title,
+                description: template.description,
+                severity: template.severity,
+                status: selectRandomStatusHistorical(),
+                eventDate: generateHistoricalTimestamp(),
+                location: {
+                    address: `Zona ${camera.location.address}`,
+                    coordinates: nearbyCoords
+                }
+            };
+            
+            const savedEvent = await Event.create(eventData);
+            results.ingorghi++;
+            results.eventsWithCoords++;
+            
+            if ((i + 1) % 15 === 0) {
+                console.log(`  Creati ${i + 1}/${NUM_HISTORICAL_TRAFFIC} ingorghi storici...`);
+            }
+            
+        } catch (error) {
+            results.errori++;
+        }
+    }
+    
+    console.log('\nEventi storici completati:');
+    console.log(`  Incidenti: ${results.incidenti}`);
+    console.log(`  Ingorghi: ${results.ingorghi}`);
+    console.log(`  Con coordinate: ${results.eventsWithCoords}`);
+    console.log(`  Errori: ${results.errori}`);
+    
+    return results;
+}
+
 async function createRealisticEvents() {
     try {
         await mongoose.connect(process.env.MONGODB_URI);
         
-        console.log('CREAZIONE EVENTI CON 30 TELECAMERE');
+        console.log('CREAZIONE EVENTI RECENTI + STORICI');
         console.log('==================================');
         
         // Cancella eventi esistenti
@@ -81,14 +201,20 @@ async function createRealisticEvents() {
         }
         
         console.log(`Telecamere disponibili: ${cameras.length}`);
-        console.log(`Prima: ${cameras[0].name} - ${cameras[0].location.address}`);
-        console.log(`Ultima: ${cameras[cameras.length-1].name} - ${cameras[cameras.length-1].location.address}`);
         
-        // Configurazione eventi: più eventi con più telecamere
-        const NUM_INCIDENTS = 15;  // Aumentato da 8
-        const NUM_TRAFFIC = 12;    // Aumentato da 7
+        // PRIMA: Crea eventi storici
+        const historicalResults = await createHistoricalEvents(cameras);
         
-        const results = { 
+        // SECONDO: Crea eventi recenti (per API pubblica)
+        console.log('\n' + '='.repeat(50));
+        console.log('CREAZIONE EVENTI RECENTI (ULTIME 2 ORE)');
+        console.log('='.repeat(50));
+        
+        // Configurazione eventi recenti
+        const NUM_INCIDENTS = 15;
+        const NUM_TRAFFIC = 12;
+        
+        const recentResults = { 
             incidenti: 0, 
             ingorghi: 0, 
             errori: 0,
@@ -96,8 +222,8 @@ async function createRealisticEvents() {
             eventsWithCoords: 0 
         };
         
-        // CREA INCIDENTI (con cameraId, middleware assegna coordinate)
-        console.log(`\nCreazione ${NUM_INCIDENTS} incidenti:`);
+        // CREA INCIDENTI RECENTI
+        console.log(`\nCreazione ${NUM_INCIDENTS} incidenti recenti:`);
         console.log('-'.repeat(40));
         
         for (let i = 0; i < NUM_INCIDENTS; i++) {
@@ -121,8 +247,8 @@ async function createRealisticEvents() {
                 };
                 
                 const savedEvent = await Event.create(eventData);
-                results.incidenti++;
-                results.camerasUsed.add(camera.name);
+                recentResults.incidenti++;
+                recentResults.camerasUsed.add(camera.name);
                 
                 console.log(`${i+1}. ${template.title}`);
                 console.log(`   Camera: ${camera.name} - ${camera.location.address}`);
@@ -130,7 +256,7 @@ async function createRealisticEvents() {
                 
                 // Verifica middleware
                 if (savedEvent.location?.coordinates?.lat) {
-                    results.eventsWithCoords++;
+                    recentResults.eventsWithCoords++;
                     console.log(`   Coordinate: ${savedEvent.location.coordinates.lat.toFixed(4)}, ${savedEvent.location.coordinates.lng.toFixed(4)}`);
                 } else {
                     console.log(`   WARNING: Middleware non ha assegnato coordinate`);
@@ -138,12 +264,12 @@ async function createRealisticEvents() {
                 
             } catch (error) {
                 console.log(`ERRORE incidente ${i+1}: ${error.message}`);
-                results.errori++;
+                recentResults.errori++;
             }
         }
         
-        // CREA INGORGHI (coordinate manuali vicine alle telecamere)
-        console.log(`\nCreazione ${NUM_TRAFFIC} ingorghi:`);
+        // CREA INGORGHI RECENTI
+        console.log(`\nCreazione ${NUM_TRAFFIC} ingorghi recenti:`);
         console.log('-'.repeat(40));
         
         for (let i = 0; i < NUM_TRAFFIC; i++) {
@@ -168,9 +294,9 @@ async function createRealisticEvents() {
                 };
                 
                 const savedEvent = await Event.create(eventData);
-                results.ingorghi++;
-                results.eventsWithCoords++;
-                results.camerasUsed.add(camera.name);
+                recentResults.ingorghi++;
+                recentResults.eventsWithCoords++;
+                recentResults.camerasUsed.add(camera.name);
                 
                 console.log(`${i+1}. ${template.title}`);
                 console.log(`   Zona: ${camera.location.address}`);
@@ -179,7 +305,7 @@ async function createRealisticEvents() {
                 
             } catch (error) {
                 console.log(`ERRORE ingorgo ${i+1}: ${error.message}`);
-                results.errori++;
+                recentResults.errori++;
             }
         }
         
@@ -196,14 +322,56 @@ async function createRealisticEvents() {
             eventDate: { $gte: new Date(Date.now() - 2 * 60 * 60 * 1000) },
             status: { $in: ["solved", "unsolved"] }
         });
+        const historicalEvents = await Event.countDocuments({
+            eventDate: { $lt: new Date(Date.now() - 2 * 60 * 60 * 1000) }
+        });
         
-        console.log(`Incidenti creati: ${results.incidenti}/${NUM_INCIDENTS}`);
-        console.log(`Ingorghi creati: ${results.ingorghi}/${NUM_TRAFFIC}`);
-        console.log(`Errori: ${results.errori}`);
-        console.log(`Eventi totali: ${finalEvents}`);
-        console.log(`Eventi con coordinate: ${eventsWithCoords}/${finalEvents}`);
-        console.log(`Eventi pubblici (API): ${publicEvents}`);
-        console.log(`Telecamere utilizzate: ${results.camerasUsed.size}/${cameras.length}`);
+        console.log('EVENTI RECENTI (ultime 2 ore):');
+        console.log(`  Incidenti: ${recentResults.incidenti}/${NUM_INCIDENTS}`);
+        console.log(`  Ingorghi: ${recentResults.ingorghi}/${NUM_TRAFFIC}`);
+        console.log(`  Pubblici (API): ${publicEvents}`);
+        
+        console.log('\nEVENTI STORICI (ultimo anno):');
+        console.log(`  Incidenti: ${historicalResults.incidenti}`);
+        console.log(`  Ingorghi: ${historicalResults.ingorghi}`);
+        console.log(`  Totali storici: ${historicalEvents}`);
+        
+        console.log('\nTOTALI:');
+        console.log(`  Eventi totali: ${finalEvents}`);
+        console.log(`  Eventi con coordinate: ${eventsWithCoords}/${finalEvents}`);
+        console.log(`  Errori totali: ${recentResults.errori + historicalResults.errori}`);
+        console.log(`  Telecamere utilizzate: ${recentResults.camerasUsed.size}/${cameras.length}`);
+        
+        // Distribuzione temporale
+        const now = new Date();
+        const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const threeMonthsAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        
+        const timeDistribution = await Event.aggregate([
+            {
+                $group: {
+                    _id: {
+                        $switch: {
+                            branches: [
+                                { case: { $gte: ["$eventDate", new Date(now.getTime() - 2 * 60 * 60 * 1000)] }, then: "Ultime 2 ore" },
+                                { case: { $gte: ["$eventDate", oneWeekAgo] }, then: "Ultima settimana" },
+                                { case: { $gte: ["$eventDate", oneMonthAgo] }, then: "Ultimo mese" },
+                                { case: { $gte: ["$eventDate", threeMonthsAgo] }, then: "Ultimi 3 mesi" }
+                            ],
+                            default: "Oltre 3 mesi"
+                        }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+        
+        console.log('\nDistribuzione temporale:');
+        timeDistribution.forEach(stat => {
+            console.log(`  ${stat._id}: ${stat.count} eventi`);
+        });
         
         // Distribuzione per severity
         const severityStats = await Event.aggregate([
@@ -227,9 +395,9 @@ async function createRealisticEvents() {
             console.log(`  ${stat._id}: ${stat.count} eventi`);
         });
         
-        if (eventsWithCoords === finalEvents && results.errori === 0) {
+        if (eventsWithCoords === finalEvents && (recentResults.errori + historicalResults.errori) === 0) {
             console.log('\nSUCCESSO: Tutti gli eventi hanno coordinate!');
-            console.log('Sistema pronto per la mappa con auto-refresh.');
+            console.log('Sistema pronto con dati storici e recenti.');
         } else {
             console.log('\nAVVISO: Alcuni eventi non hanno coordinate o ci sono stati errori.');
         }
@@ -241,28 +409,31 @@ async function createRealisticEvents() {
         
         const sampleIncident = await Event.findOne({ type: 'incidente' }).populate('cameraId');
         const sampleTraffic = await Event.findOne({ type: 'ingorgo' });
+        const sampleHistorical = await Event.findOne({ 
+            eventDate: { $lt: new Date(Date.now() - 2 * 60 * 60 * 1000) }
+        }).populate('cameraId');
         
         if (sampleIncident) {
-            console.log('INCIDENTE esempio:');
+            console.log('INCIDENTE RECENTE esempio:');
             console.log(`  Titolo: ${sampleIncident.title}`);
             console.log(`  Camera: ${sampleIncident.cameraId?.name || 'N/A'}`);
-            console.log(`  Indirizzo: ${sampleIncident.location.address}`);
-            console.log(`  Coordinate: ${sampleIncident.location?.coordinates?.lat || 'N/A'}, ${sampleIncident.location?.coordinates?.lng || 'N/A'}`);
-            console.log(`  Severity: ${sampleIncident.severity} | Status: ${sampleIncident.status}`);
+            console.log(`  Data: ${sampleIncident.eventDate.toLocaleString('it-IT')}`);
+            console.log(`  Status: ${sampleIncident.status} | Severity: ${sampleIncident.severity}`);
         }
         
-        if (sampleTraffic) {
-            console.log('\nINGORGO esempio:');
-            console.log(`  Titolo: ${sampleTraffic.title}`);
-            console.log(`  Indirizzo: ${sampleTraffic.location.address}`);
-            console.log(`  Coordinate: ${sampleTraffic.location.coordinates.lat}, ${sampleTraffic.location.coordinates.lng}`);
-            console.log(`  Severity: ${sampleTraffic.severity} | Status: ${sampleTraffic.status}`);
+        if (sampleHistorical) {
+            console.log('\nEVENTO STORICO esempio:');
+            console.log(`  Titolo: ${sampleHistorical.title}`);
+            console.log(`  Tipo: ${sampleHistorical.type}`);
+            console.log(`  Data: ${sampleHistorical.eventDate.toLocaleString('it-IT')}`);
+            console.log(`  Status: ${sampleHistorical.status} | Severity: ${sampleHistorical.severity}`);
         }
         
-        console.log('\nPROSSIMI PASSI:');
-        console.log('1. npm start (avvia server)');
-        console.log('2. http://localhost:3000/map (testa mappa)');
-        console.log('3. Implementa auto-refresh mappa (ogni 30 secondi)');
+        console.log('\nVANTAGGI:');
+        console.log('✓ Statistiche storiche popolate');
+        console.log('✓ Dati per analisi trend');
+        console.log('✓ Events recenti per mappa live');
+        console.log('✓ Distribuzione realistica nel tempo');
         
     } catch (error) {
         console.error('ERRORE GENERALE:', error.message);

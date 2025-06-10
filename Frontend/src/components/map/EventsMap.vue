@@ -84,7 +84,7 @@ const updateMarkers = async () => {
     validEvents.forEach(event => {
       const coords = getEventCoordinates(event);
 
-      // Icona personalizzata - USA I TUOI MARKER
+      // Icona personalizzata
       const iconUrl = event.type === "incidente" 
         ? "/markers/accident-marker.png" 
         : "/markers/traffic-marker.png";
@@ -241,10 +241,8 @@ onUnmounted(() => {
   <div class="map-wrapper relative z-0">
     <div ref="mapContainer" class="h-[600px] w-full rounded-xl shadow-md overflow-hidden"></div>
     
-    <!-- Controlli Auto-refresh -->
     <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm p-3 rounded-lg shadow-md z-[1000] min-w-[200px]">
       <div class="flex flex-col gap-2">
-        <!-- Toggle auto-refresh -->
         <button 
           @click="toggleAutoRefresh"
           :class="{ 
@@ -256,7 +254,6 @@ onUnmounted(() => {
           {{ isAutoRefreshEnabled ? 'Stop Auto-refresh' : 'Start Auto-refresh' }}
         </button>
         
-        <!-- Refresh manuale -->
         <button 
           @click="refreshData"
           :disabled="props.isLoading"
@@ -265,7 +262,6 @@ onUnmounted(() => {
           {{ props.isLoading ? 'Caricamento...' : 'Refresh Now' }}
         </button>
         
-        <!-- Status auto-refresh -->
         <div class="text-xs text-gray-600 mt-1">
           <div v-if="isAutoRefreshEnabled" class="text-green-600">
             Prossimo refresh: {{ refreshCountdown }}s
@@ -279,14 +275,12 @@ onUnmounted(() => {
           </div>
         </div>
         
-        <!-- Contatore eventi -->
         <div class="text-xs text-gray-600 border-t pt-2">
           Eventi: {{ props.events.length }}
         </div>
       </div>
     </div>
     
-    <!-- Legenda -->
     <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm p-3 rounded-lg shadow-md z-10">
       <p class="text-sm font-semibold mb-2">Legenda:</p>
       <div class="flex items-center mb-1">
@@ -299,7 +293,6 @@ onUnmounted(() => {
       </div>
     </div>
     
-    <!-- Messaggio nessun evento -->
     <div
       v-if="props.events.length === 0 && !props.isLoading"
       class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-md text-center"
