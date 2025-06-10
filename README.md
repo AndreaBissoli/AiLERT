@@ -105,12 +105,6 @@ npm start
 
 Il server sarà disponibile su `http://localhost:8080`
 
-### Popolazione Database (Opzionale)
-Per popolare il database con dati di esempio:
-```bash
-node scripts/setup.js
-```
-
 ## API Principali
 
 ### Endpoints Pubblici
