@@ -60,7 +60,7 @@ describe("Events API Tests", () => {
         if (response.body.length > 0) {
             response.body.forEach(event => {
                 expect(event).toHaveProperty("_id");
-                expect(event).toHaveProperty("timestamp");
+                expect(event).toHaveProperty("eventDate");
                 expect(event).toHaveProperty("status");
             });
         }
