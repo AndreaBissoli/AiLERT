@@ -94,13 +94,8 @@ Configurare le variabili nel file `.env`:
 
 3. **Installazione dipendenze e build**
 ```bash
-npm install
+npm install -save dotenv
 npm run buildall
-```
-
-4. **Avvio del server**
-```bash
-npm start
 ```
 
 Il server sarà disponibile su `http://localhost:8080`
