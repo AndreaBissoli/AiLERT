@@ -4,7 +4,7 @@ const User = require("./models/user");
 
 router.post("", async function (req, res) {
     const { email } = req.body;
-    
+
     if (!email) {
         return res.status(400).json({
             error: "Email is required",
@@ -33,7 +33,7 @@ router.post("", async function (req, res) {
                 requestTime: new Date().toISOString(),
                 requestIP: req.ip || req.socket.remoteAddress,
             });
-            
+
             // TODO: In una implementazione reale qui si dovrebbe:
             // 1. Generare un token di reset della password
             // 2. Archiviarlo nel database con un timestamp di scadenza
@@ -44,16 +44,16 @@ router.post("", async function (req, res) {
                 email: email,
                 requestTime: new Date().toISOString(),
                 requestIP: req.ip || req.socket.remoteAddress,
-                result: "EMAIL_NOT_FOUND"
+                result: "EMAIL_NOT_FOUND",
             });
         }
 
         // Ritornare sempre una risposta positiva per evitare di rivelare se l'email esiste o meno nel sistema
         res.json({
             success: true,
-            message: "If the email exists in our system, you will receive password reset instructions"
+            message:
+                "If the email exists in our system, you will receive password reset instructions",
         });
-
     } catch (error) {
         console.error("Error processing password reset request:", error);
         res.status(500).json({

@@ -60,7 +60,10 @@ router.post("/", async (req, res) => {
             user: newUser,
         });
     } catch (err) {
-        res.status(500).json({ error: "Internal server error", errorCode: "INTERNAL_SERVER_ERROR" });
+        res.status(500).json({
+            error: "Internal server error",
+            errorCode: "INTERNAL_SERVER_ERROR",
+        });
     }
 });
 // UPDATE user
@@ -115,7 +118,6 @@ router.patch("/:id", async (req, res) => {
         }
         res.json(user);
     } catch (err) {
-
         if (error.name === "CastError" && error.kind === "ObjectId") {
             return res.status(400).json({
                 error: "Specified ID is not valid format",
@@ -147,14 +149,13 @@ router.delete("/:id", async (req, res) => {
         }
         res.json({ message: "User deleted successfully" });
     } catch (err) {
-        
         if (error.name === "CastError" && error.kind === "ObjectId") {
             return res.status(400).json({
                 error: "Specified ID is not valid format",
                 errorCode: "INVALID_ID",
             });
         }
-        
+
         res.status(500).json({
             error: "Internal server error",
             errorCode: "INTERNAL_SERVER_ERROR",
@@ -171,7 +172,6 @@ router.get("/:id", async (req, res) => {
         }
         res.json(user);
     } catch (err) {
-
         if (error.name === "CastError" && error.kind === "ObjectId") {
             return res.status(400).json({
                 error: "Specified ID is not valid format",
@@ -201,12 +201,13 @@ router.get("/:id/events", async (req, res) => {
             });
         }
         const events = await Event.find({ confirmedBy: userId });
-        if (!events || events.length === 0) {   
-            return res.status(404).json({ error: "No events found for this user", errorCode: "NO_EVENTS_FOUND" });
+        if (!events || events.length === 0) {
+            return res
+                .status(404)
+                .json({ error: "No events found for this user", errorCode: "NO_EVENTS_FOUND" });
         }
         res.json(events);
     } catch (err) {
-
         if (error.name === "CastError" && error.kind === "ObjectId") {
             return res.status(400).json({
                 error: "Specified ID is not valid format",

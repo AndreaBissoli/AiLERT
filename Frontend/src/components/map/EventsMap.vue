@@ -31,12 +31,12 @@ const DEFAULT_ZOOM = 13;
 const REFRESH_INTERVAL = 30000; // 30 secondi
 
 // Funzione per ottenere coordinate evento
-const getEventCoordinates = (event) => {
+const getEventCoordinates = event => {
   if (event.location?.coordinates?.lat && event.location?.coordinates?.lng) {
     return [event.location.coordinates.lat, event.location.coordinates.lng];
   }
-  
-  console.warn('Evento senza coordinate dal backend:', event.title);
+
+  console.warn("Evento senza coordinate dal backend:", event.title);
   return TRENTO_CENTER;
 };
 
@@ -74,8 +74,8 @@ const updateMarkers = async () => {
     const L = await import("leaflet");
 
     // Filtra eventi con coordinate valide
-    const validEvents = props.events.filter(event => 
-      event.location?.coordinates?.lat && event.location?.coordinates?.lng
+    const validEvents = props.events.filter(
+      event => event.location?.coordinates?.lat && event.location?.coordinates?.lng
     );
 
     console.log(`Auto-refresh: ${validEvents.length}/${props.events.length} eventi con coordinate`);
@@ -85,9 +85,8 @@ const updateMarkers = async () => {
       const coords = getEventCoordinates(event);
 
       // Icona personalizzata
-      const iconUrl = event.type === "incidente" 
-        ? "/markers/accident-marker.png" 
-        : "/markers/traffic-marker.png";
+      const iconUrl =
+        event.type === "incidente" ? "/markers/accident-marker.png" : "/markers/traffic-marker.png";
 
       let icon;
       try {
@@ -114,19 +113,21 @@ const updateMarkers = async () => {
           <p><strong>Coordinate:</strong> ${coords[0].toFixed(4)}, ${coords[1].toFixed(4)}</p>
           <p><strong>Data:</strong> ${new Date(event.eventDate).toLocaleString("it-IT")}</p>
           <p><strong>Stato:</strong> ${
-            event.status === "solved" ? "Risolto"
-            : event.status === "pending" ? "In corso"
-            : event.status === "unsolved" ? "Non risolto"
-            : event.status
+            event.status === "solved"
+              ? "Risolto"
+              : event.status === "pending"
+                ? "In corso"
+                : event.status === "unsolved"
+                  ? "Non risolto"
+                  : event.status
           }</p>
           <p><strong>Severità:</strong> ${event.severity || "N/A"}</p>
-          ${event.cameraId ? `<p><strong>Camera ID:</strong> ${event.cameraId}</p>` : ''}
+          ${event.cameraId ? `<p><strong>Camera ID:</strong> ${event.cameraId}</p>` : ""}
         </div>
       `);
 
       markers.push(marker);
     });
-
   } catch (error) {
     console.error("Errore aggiornamento marker:", error);
   }
@@ -135,14 +136,14 @@ const updateMarkers = async () => {
 // Gestione countdown
 const startCountdown = () => {
   refreshCountdown.value = 30;
-  
+
   if (countdownInterval) {
     clearInterval(countdownInterval);
   }
-  
+
   countdownInterval = setInterval(() => {
     refreshCountdown.value--;
-    
+
     if (refreshCountdown.value <= 0) {
       clearInterval(countdownInterval);
     }
@@ -154,12 +155,12 @@ const startAutoRefresh = () => {
   if (refreshInterval) {
     clearInterval(refreshInterval);
   }
-  
+
   // Primo refresh immediato
   refreshData();
   startCountdown();
   lastRefreshTime.value = new Date();
-  
+
   // Poi ogni 30 secondi
   refreshInterval = setInterval(() => {
     if (isAutoRefreshEnabled.value) {
@@ -168,8 +169,8 @@ const startAutoRefresh = () => {
       lastRefreshTime.value = new Date();
     }
   }, REFRESH_INTERVAL);
-  
-  console.log('Auto-refresh attivato ogni 30 secondi');
+
+  console.log("Auto-refresh attivato ogni 30 secondi");
 };
 
 // Ferma auto-refresh
@@ -178,19 +179,19 @@ const stopAutoRefresh = () => {
     clearInterval(refreshInterval);
     refreshInterval = null;
   }
-  
+
   if (countdownInterval) {
     clearInterval(countdownInterval);
     countdownInterval = null;
   }
-  
-  console.log('Auto-refresh fermato');
+
+  console.log("Auto-refresh fermato");
 };
 
 // Toggle auto-refresh
 const toggleAutoRefresh = () => {
   isAutoRefreshEnabled.value = !isAutoRefreshEnabled.value;
-  
+
   if (isAutoRefreshEnabled.value) {
     startAutoRefresh();
   } else {
@@ -229,7 +230,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   stopAutoRefresh();
-  
+
   if (map) {
     map.remove();
     map = null;
@@ -238,66 +239,50 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="map-wrapper relative z-0">
-    <div ref="mapContainer" class="h-[600px] w-full rounded-xl shadow-md overflow-hidden"></div>
-    
-    <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm p-3 rounded-lg shadow-md z-[1000] min-w-[200px]">
-      <div class="flex flex-col gap-2">
-        <button 
+   <div class="map-wrapper relative z-0"
+    > <div ref="mapContainer" class="h-[600px] w-full rounded-xl shadow-md overflow-hidden"></div>
+    <div
+      class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm p-3 rounded-lg shadow-md z-[1000] min-w-[200px]"
+      > <div class="flex flex-col gap-2"
+        > <button
           @click="toggleAutoRefresh"
-          :class="{ 
-            'bg-green-500 text-white': isAutoRefreshEnabled, 
-            'bg-gray-500 text-white': !isAutoRefreshEnabled 
+          :class="{
+            'bg-green-500 text-white': isAutoRefreshEnabled,
+            'bg-gray-500 text-white': !isAutoRefreshEnabled,
           }"
           class="px-3 py-1 rounded text-sm font-medium transition-colors"
-        >
-          {{ isAutoRefreshEnabled ? 'Stop Auto-refresh' : 'Start Auto-refresh' }}
-        </button>
-        
-        <button 
+          > {{ isAutoRefreshEnabled ? "Stop Auto-refresh" : "Start Auto-refresh" }} </button
+        > <button
           @click="refreshData"
           :disabled="props.isLoading"
           class="px-3 py-1 bg-blue-500 text-white rounded text-sm font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
-        >
-          {{ props.isLoading ? 'Caricamento...' : 'Refresh Now' }}
-        </button>
-        
-        <div class="text-xs text-gray-600 mt-1">
-          <div v-if="isAutoRefreshEnabled" class="text-green-600">
-            Prossimo refresh: {{ refreshCountdown }}s
-          </div>
-          <div v-else class="text-gray-500">
-            Auto-refresh disattivato
-          </div>
-          
-          <div v-if="lastRefreshTime" class="mt-1">
-            Ultimo: {{ lastRefreshTime.toLocaleTimeString() }}
-          </div>
-        </div>
-        
-        <div class="text-xs text-gray-600 border-t pt-2">
-          Eventi: {{ props.events.length }}
-        </div>
-      </div>
-    </div>
-    
-    <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm p-3 rounded-lg shadow-md z-10">
-      <p class="text-sm font-semibold mb-2">Legenda:</p>
-      <div class="flex items-center mb-1">
-        <div class="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
-        <span class="text-sm">Incidente</span>
-      </div>
-      <div class="flex items-center">
-        <div class="w-4 h-4 bg-orange-500 rounded-full mr-2"></div>
-        <span class="text-sm">Ingorgo</span>
-      </div>
-    </div>
-    
-    <div
+          > {{ props.isLoading ? "Caricamento..." : "Refresh Now" }} </button
+        > <div class="text-xs text-gray-600 mt-1"
+          > <div v-if="isAutoRefreshEnabled" class="text-green-600"
+            > Prossimo refresh: {{ refreshCountdown }}s </div
+          > <div v-else class="text-gray-500"> Auto-refresh disattivato </div> <div
+            v-if="lastRefreshTime"
+            class="mt-1"
+            > Ultimo: {{ lastRefreshTime.toLocaleTimeString() }} </div
+          > </div
+        > <div class="text-xs text-gray-600 border-t pt-2"> Eventi: {{ props.events.length }} </div>
+        </div
+      > </div
+    > <div
+      class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm p-3 rounded-lg shadow-md z-10"
+      > <p class="text-sm font-semibold mb-2">Legenda:</p> <div class="flex items-center mb-1"
+        > <div class="w-4 h-4 bg-red-500 rounded-full mr-2"></div> <span class="text-sm"
+          >Incidente</span
+        > </div
+      > <div class="flex items-center"
+        > <div class="w-4 h-4 bg-orange-500 rounded-full mr-2"></div> <span class="text-sm"
+          >Ingorgo</span
+        > </div
+      > </div
+    > <div
       v-if="props.events.length === 0 && !props.isLoading"
       class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-md text-center"
-    >
-      <p class="text-gray-600">Nessun evento nelle ultime 2 ore</p>
-    </div>
-  </div>
+      > <p class="text-gray-600">Nessun evento nelle ultime 2 ore</p> </div
+    > </div
+  >
 </template>

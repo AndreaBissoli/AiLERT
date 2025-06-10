@@ -19,8 +19,8 @@ const cameraSchema = new mongoose.Schema({
             lng: {
                 type: Number,
                 required: true,
-            }
-        }
+            },
+        },
     },
     installationDate: {
         type: Date,

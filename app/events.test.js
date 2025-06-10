@@ -10,7 +10,7 @@ describe("Events API Tests", () => {
     beforeAll(async () => {
         jest.setTimeout(15000);
         app.locals.db = await mongoose.connect(process.env.MONGODB_URI);
-        
+
         dipendenteToken = jwt.sign(
             {
                 name: "Marco Verdi",
@@ -23,7 +23,7 @@ describe("Events API Tests", () => {
 
         sorveglianteToken = jwt.sign(
             {
-                name: "Mario Rossi", 
+                name: "Mario Rossi",
                 email: "sorvegliante@comune.it",
                 role: "sorvegliante",
             },
@@ -46,17 +46,16 @@ describe("Events API Tests", () => {
             .set("Authorization", `Bearer ${sorveglianteToken}`);
 
         expect(response.status).toBe(200);
-        expect(Array.isArray(response.body) || typeof response.body === 'object').toBe(true);
+        expect(Array.isArray(response.body) || typeof response.body === "object").toBe(true);
     });
 
     // TEST ID 20: Visualizzazione di eventi pubblici
     test("Visualizzazione di eventi pubblici", async () => {
-        const response = await request(app)
-            .get("/api/v1/public/events");
+        const response = await request(app).get("/api/v1/public/events");
 
         expect(response.status).toBe(200);
         expect(Array.isArray(response.body)).toBe(true);
-        
+
         if (response.body.length > 0) {
             response.body.forEach(event => {
                 expect(event).toHaveProperty("_id");
@@ -68,8 +67,7 @@ describe("Events API Tests", () => {
 
     // TEST ID 21: Tentativo di accesso agli eventi senza autenticazione
     test("Tentativo di accesso agli eventi senza autenticazione", async () => {
-        const response = await request(app)
-            .get("/api/v1/events");
+        const response = await request(app).get("/api/v1/events");
 
         expect(response.status).toBe(401);
         expect(response.body).toHaveProperty("error", "Authentication token required");
@@ -78,8 +76,7 @@ describe("Events API Tests", () => {
 
     // TEST ID 32: Recupero di numerosi eventi pubblici
     test("Recupero di numerosi eventi pubblici", async () => {
-        const response = await request(app)
-            .get("/api/v1/public/events");
+        const response = await request(app).get("/api/v1/public/events");
 
         expect(response.status).toBe(200);
         expect(Array.isArray(response.body)).toBe(true);

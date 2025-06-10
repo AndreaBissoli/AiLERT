@@ -37,7 +37,7 @@ const eventSchema = new mongoose.Schema({
         coordinates: {
             lat: {
                 type: Number,
-                required: false, 
+                required: false,
             },
             lng: {
                 type: Number,
@@ -65,7 +65,7 @@ const eventSchema = new mongoose.Schema({
     },
     confirmedBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Sorvegliante", 
+        ref: "Sorvegliante",
         required: function () {
             return this.confirmed;
         }, // solo se è stato confermato
@@ -100,28 +100,28 @@ const eventSchema = new mongoose.Schema({
 });
 
 // Middleware per aggiornare updatedAt prima di salvare
-eventSchema.pre('save', async function(next) {
+eventSchema.pre("save", async function (next) {
     // Solo per incidenti con cameraId ma senza coordinates
-    if (this.type === 'incidente' && this.cameraId && !this.location.coordinates?.lat) {
+    if (this.type === "incidente" && this.cameraId && !this.location.coordinates?.lat) {
         try {
-            const Camera = mongoose.model('Camera');
-            const camera = await Camera.findById(this.cameraId).select('location.coordinates');
-            
+            const Camera = mongoose.model("Camera");
+            const camera = await Camera.findById(this.cameraId).select("location.coordinates");
+
             if (camera && camera.location && camera.location.coordinates) {
                 this.location.coordinates = {
                     lat: camera.location.coordinates.lat,
-                    lng: camera.location.coordinates.lng
+                    lng: camera.location.coordinates.lng,
                 };
                 // console.log(`Auto-populated coordinates for event ${this._id} from camera ${this.cameraId}`);
             }
         } catch (error) {
-            console.error('Error auto-populating coordinates:', error);
+            console.error("Error auto-populating coordinates:", error);
         }
     }
     next();
 });
 
-// Metodo per ottenere la versione pubblica 
+// Metodo per ottenere la versione pubblica
 eventSchema.methods.toPublicJSON = function () {
     return {
         _id: this._id,
@@ -129,7 +129,7 @@ eventSchema.methods.toPublicJSON = function () {
         title: this.title,
         description: this.description,
         eventDate: this.eventDate,
-        location: this.location, 
+        location: this.location,
         status: this.status,
         severity: this.severity,
         cameraId: this.cameraId,
@@ -142,9 +142,9 @@ eventSchema.statics.findPublic = function (filters = {}) {
     const now = new Date(); // Momento attuale
 
     return this.find({
-        eventDate: { 
-            $gte: twoHoursAgo,  // Eventi non più vecchi di 2 ore
-            $lte: now           // Eventi non futuri (massimo ora)
+        eventDate: {
+            $gte: twoHoursAgo, // Eventi non più vecchi di 2 ore
+            $lte: now, // Eventi non futuri (massimo ora)
         },
         status: { $in: ["solved", "unsolved"] },
         ...filters,

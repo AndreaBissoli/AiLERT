@@ -1,7 +1,7 @@
 // scripts/create-realistic-cameras.js
-const mongoose = require('mongoose');
-const Camera = require('../app/models/camera');
-require('dotenv').config();
+const mongoose = require("mongoose");
+const Camera = require("../app/models/camera");
+require("dotenv").config();
 
 const REALISTIC_TRENTO_CAMERAS = [
     // ... (array identico a prima)
@@ -22,11 +22,15 @@ async function createRealisticCameras() {
         for (const cameraData of REALISTIC_TRENTO_CAMERAS) {
             try {
                 const installationDate = new Date();
-                installationDate.setMonth(installationDate.getMonth() - Math.floor(Math.random() * 24));
+                installationDate.setMonth(
+                    installationDate.getMonth() - Math.floor(Math.random() * 24)
+                );
                 const cameraToCreate = {
                     ...cameraData,
                     installationDate,
-                    lastMaintenance: new Date(installationDate.getTime() + Math.random() * 365 * 24 * 60 * 60 * 1000)
+                    lastMaintenance: new Date(
+                        installationDate.getTime() + Math.random() * 365 * 24 * 60 * 60 * 1000
+                    ),
                 };
                 await Camera.create(cameraToCreate);
                 successCount++;
@@ -36,9 +40,11 @@ async function createRealisticCameras() {
         }
 
         const totalCameras = await Camera.countDocuments();
-        console.log(`Telecamere create con successo: ${successCount}. Totale telecamere nel database: ${totalCameras}`);
+        console.log(
+            `Telecamere create con successo: ${successCount}. Totale telecamere nel database: ${totalCameras}`
+        );
     } catch (error) {
-        console.error('Errore durante la creazione:', error);
+        console.error("Errore durante la creazione:", error);
     } finally {
         await mongoose.connection.close();
     }
@@ -53,7 +59,7 @@ async function listCameras() {
             console.log(`${index + 1}. ${camera.name}`);
         });
     } catch (error) {
-        console.error('Errore:', error);
+        console.error("Errore:", error);
     } finally {
         await mongoose.connection.close();
     }
@@ -62,10 +68,10 @@ async function listCameras() {
 if (require.main === module) {
     const command = process.argv[2];
     switch (command) {
-        case 'list':
+        case "list":
             listCameras();
             break;
-        case 'create':
+        case "create":
         default:
             createRealisticCameras();
             break;

@@ -3,14 +3,14 @@ info:
     version: "1.0"
     title: "AiLERT API"
     description: |
-      API for the AiLERT application.
-      
-      This API provides endpoints for managing emergency events, user authentication, 
-      surveillance streams, and administrative functions. It facilitates real-time 
-      monitoring and response to urban incidents like traffic accidents and congestion.
-      
-      Proper authentication is required for most endpoints, with different access levels
-      based on user roles (administrator, municipal employee, or surveillance officer).
+        API for the AiLERT application.
+
+        This API provides endpoints for managing emergency events, user authentication, 
+        surveillance streams, and administrative functions. It facilitates real-time 
+        monitoring and response to urban incidents like traffic accidents and congestion.
+
+        Proper authentication is required for most endpoints, with different access levels
+        based on user roles (administrator, municipal employee, or surveillance officer).
     license:
         name: MIT
 
@@ -39,10 +39,10 @@ paths:
         post:
             summary: User Login
             description: |
-              Authenticates a user with email and password credentials and generates a JWT token for subsequent API requests.
-              This token must be included in the Authorization header for authenticated endpoints.
-              Different user roles (amministratore, dipendentecomunale, sorvegliante) receive different access permissions.
-              The token includes user information and expires after a defined period.
+                Authenticates a user with email and password credentials and generates a JWT token for subsequent API requests.
+                This token must be included in the Authorization header for authenticated endpoints.
+                Different user roles (amministratore, dipendentecomunale, sorvegliante) receive different access permissions.
+                The token includes user information and expires after a defined period.
             tags:
                 - Authentication
             requestBody:
@@ -63,16 +63,16 @@ paths:
             responses:
                 "200":
                     description: |
-                      Authentication successful. Returns a JWT token that should be included in subsequent API requests
-                      as a Bearer token in the Authorization header. Also returns basic user information.
+                        Authentication successful. Returns a JWT token that should be included in subsequent API requests
+                        as a Bearer token in the Authorization header. Also returns basic user information.
                     content:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/LoginResponse"
                 "401":
                     description: |
-                      Authentication failed due to invalid credentials. Could be because the email doesn't exist
-                      in the system or the password doesn't match the stored credentials.
+                        Authentication failed due to invalid credentials. Could be because the email doesn't exist
+                        in the system or the password doesn't match the stored credentials.
                     content:
                         application/json:
                             schema:
@@ -90,12 +90,12 @@ paths:
         post:
             summary: Request Password Reset
             description: |
-              Initiates the password reset flow for a user who has forgotten their password.
-              For security reasons, the endpoint always returns a success response regardless of whether the email exists
-              in the system. If the email exists, the system will send a password reset link to the user's email address.
-              The link will contain a temporary token that expires after a short period.
-              
-              No authentication is required for this endpoint.
+                Initiates the password reset flow for a user who has forgotten their password.
+                For security reasons, the endpoint always returns a success response regardless of whether the email exists
+                in the system. If the email exists, the system will send a password reset link to the user's email address.
+                The link will contain a temporary token that expires after a short period.
+
+                No authentication is required for this endpoint.
             tags:
                 - Authentication
             requestBody:
@@ -149,7 +149,6 @@ paths:
                                         errorCode: "MISSING_EMAIL"
                 "500":
                     $ref: "#/components/responses/InternalServerError"
-                
 
     /public/events:
         get:
@@ -157,13 +156,13 @@ paths:
             description: |
                 Returns a list of events from the last 2 hours that are suitable for public viewing.
                 This endpoint is designed for citizen-facing interfaces.
-                
+
                 Important filtering applied:
                 - Only includes events from the past 2 hours
                 - Only includes events with status 'solved' or 'unsolved'
                 - Sensitive information is removed from the response
                 - No authentication is required
-                
+
                 This endpoint helps keep citizens informed about current traffic conditions and incidents
                 while protecting sensitive operational details.
             tags:
@@ -171,9 +170,9 @@ paths:
             responses:
                 "200":
                     description: |
-                      Successfully retrieved the list of public events. The response is an array of events
-                      with limited information suitable for public viewing. Each event includes basic details
-                      like location, type, status, and severity, but excludes sensitive operational information.
+                        Successfully retrieved the list of public events. The response is an array of events
+                        with limited information suitable for public viewing. Each event includes basic details
+                        like location, type, status, and severity, but excludes sensitive operational information.
                     content:
                         application/json:
                             schema:
@@ -211,7 +210,7 @@ paths:
                 Retrieves a comprehensive list of all events in the system with complete details.
                 This endpoint is intended for municipal employees and administrators to monitor
                 and manage all urban incidents and traffic situations.
-                
+
                 The response includes full event information including:
                 - Event identification and classification
                 - Timestamps for creation and updates
@@ -220,7 +219,7 @@ paths:
                 - Camera and video evidence links
                 - Confirmation status and authority
                 - Emergency services notification history
-                
+
                 Results are typically ordered by creation date (newest first).
                 Requires valid authentication token with appropriate permissions.
             tags:
@@ -230,10 +229,10 @@ paths:
             responses:
                 "200":
                     description: |
-                      Successfully retrieved the list of all events with complete details.
-                      Municipal employees can use this data to track, manage, and respond to
-                      urban incidents. Each event contains comprehensive information about
-                      its status, location, confirmation, and emergency response history.
+                        Successfully retrieved the list of all events with complete details.
+                        Municipal employees can use this data to track, manage, and respond to
+                        urban incidents. Each event contains comprehensive information about
+                        its status, location, confirmation, and emergency response history.
                     content:
                         application/json:
                             schema:
@@ -244,7 +243,7 @@ paths:
                                 exampleResponse:
                                     summary: Example response for GET /events
                                     value:
-                                        - _id: "60d21b4667d0d8992e610c85" 
+                                        - _id: "60d21b4667d0d8992e610c85"
                                           type: "incidente"
                                           title: "Auto contro semaforo su Via Roma"
                                           description: "Incidente lieve senza feriti, danneggiamento del semaforo all'incrocio principale"
@@ -290,7 +289,7 @@ paths:
             description: |
                 Creates a new urban event or incident in the system. This endpoint is used when a new
                 incident is detected, either automatically by AI systems or manually by surveillance officers.
-                
+
                 Required information includes:
                 - Event type (accident or traffic jam)
                 - Title and description
@@ -301,11 +300,11 @@ paths:
                 - Video evidence URL (if available)
                 - Confirmation status and authority
                 - Severity assessment
-                
+
                 Optional information:
                 - Emergency services that have been notified
                 - Response times
-                
+
                 The created event will automatically have creation and update timestamps added.
                 Requires valid authentication with appropriate permissions.
             tags:
@@ -367,13 +366,13 @@ paths:
                 Retrieves detailed information about a specific event identified by its unique ID.
                 This endpoint provides the complete event record with all available information,
                 including creation metadata, status updates, confirmation details, and notification history.
-                
+
                 Used for:
                 - Viewing detailed information about a specific incident
                 - Checking the current status of an emergency response
                 - Verifying what services have been notified
                 - Accessing evidence like video footage
-                
+
                 The event ID is typically obtained from the list of events or from notification systems.
                 Requires valid authentication with appropriate permissions.
             tags:
@@ -383,9 +382,9 @@ paths:
             responses:
                 "200":
                     description: |
-                      Successfully retrieved the specified event with all available details.
-                      This comprehensive record includes all metadata, status information,
-                      location data, confirmation details, and response tracking.
+                        Successfully retrieved the specified event with all available details.
+                        This comprehensive record includes all metadata, status information,
+                        location data, confirmation details, and response tracking.
                     content:
                         application/json:
                             schema:
@@ -450,13 +449,13 @@ paths:
             description: |
                 Updates an existing event's information. This endpoint allows partial updates,
                 meaning you can send only the fields that need to be changed.
-                
+
                 Common update scenarios include:
                 - Changing the event status (e.g., from 'pending' to 'solved')
                 - Updating the description with new information
                 - Adding notification records for emergency services
                 - Marking an event as confirmed after verification
-                
+
                 The system automatically updates the 'updatedAt' timestamp when changes are made.
                 Only authorized personnel can update events, and the original creation data is preserved.
                 Requires valid authentication with appropriate permissions.
@@ -544,15 +543,15 @@ paths:
             summary: Delete event by ID
             description: |
                 Permanently removes an event from the system. This operation cannot be undone.
-                
+
                 Deletion should be used carefully, typically in these situations:
                 - False alarms that were incorrectly entered
                 - Test data that needs to be removed
                 - Events that were duplicated in error
-                
+
                 For most situations where an event is no longer active, it's better to update its
                 status to 'solved' or 'false_alarm' rather than deleting it, to maintain a historical record.
-                
+
                 Requires valid authentication with appropriate permissions.
             tags:
                 - Events
@@ -613,18 +612,18 @@ paths:
             description: |
                 Retrieves a list of all users registered in the system. This administrative endpoint
                 allows for user management and auditing of system access.
-                
+
                 The response includes details about each user, including:
                 - User ID
                 - Email address
                 - Full name
                 - Role assignment
                 - Password hash (for verification purposes)
-                
+
                 Results can be optionally filtered by role using the query parameter.
                 This allows administrators to view specific user categories like all administrators,
                 all municipal employees, or all surveillance officers.
-                
+
                 This endpoint is restricted to administrators only.
             tags:
                 - Users
@@ -712,18 +711,18 @@ paths:
             description: |
                 Creates a new user account in the system. This administrative endpoint allows 
                 for the creation of users with different role levels.
-                
+
                 Required information includes:
                 - Email address (must be unique in the system)
                 - Initial password (will be hashed before storage)
                 - Full name
                 - Role assignment (amministratore, dipendentecomunale, or sorvegliante)
-                
+
                 User roles determine access permissions:
                 - amministratore: Full system access including user management
                 - dipendentecomunale: Access to view and manage events
                 - sorvegliante: Access to confirm events and manage surveillance streams
-                
+
                 Newly created users can immediately log in with their credentials.
                 This endpoint is restricted to administrators only.
             tags:
@@ -809,17 +808,17 @@ paths:
             description: |
                 Retrieves detailed information about a specific user identified by their unique ID.
                 This administrative endpoint provides complete user account details.
-                
+
                 The response includes:
                 - User ID
                 - Email address
                 - Full name
                 - Role assignment
                 - Password hash (for verification purposes)
-                
+
                 This information is used for user account management, auditing, and troubleshooting.
                 The user ID is typically obtained from the list of users or from system logs.
-                
+
                 This endpoint is restricted to administrators only.
             tags:
                 - Users
@@ -881,20 +880,20 @@ paths:
             description: |
                 Updates an existing user's account information. This administrative endpoint
                 allows partial updates, meaning you can send only the fields that need to be changed.
-                
+
                 Modifiable fields include:
                 - Email address (must remain unique in the system)
                 - Full name
                 - Role assignment
-                
+
                 Note that this endpoint does not update passwords. Password changes should be
                 handled through the dedicated password change endpoint or password reset flow.
-                
+
                 Common update scenarios include:
                 - Changing a user's role (promotion or responsibility change)
                 - Updating contact information
                 - Correcting name spelling
-                
+
                 This endpoint is restricted to administrators only, and administrators cannot
                 modify their own accounts using this endpoint.
             tags:
@@ -973,16 +972,16 @@ paths:
             summary: Delete user
             description: |
                 Permanently removes a user account from the system. This operation cannot be undone.
-                
+
                 Deletion should be used carefully, typically in these situations:
                 - Employees who no longer work for the organization
                 - Test accounts that are no longer needed
                 - Accounts created in error
-                
+
                 When a user is deleted:
                 - They can no longer log in to the system
                 - Their account information is permanently removed
-                
+
                 This endpoint is restricted to administrators only, and administrators cannot
                 delete their own accounts using this endpoint.
             tags:
@@ -1045,17 +1044,17 @@ paths:
             description: |
                 Retrieves a list of all events that have been confirmed by a specific surveillance officer.
                 This administrative endpoint provides accountability and audit tracking for event confirmations.
-                
+
                 The endpoint only works for users with the 'sorvegliante' (surveillance officer) role,
                 as only they have the authority to confirm events in the system.
-                
+
                 The response includes complete details of each confirmed event, including:
                 - Event identification and classification
                 - Timestamps for creation and confirmation
                 - Location details
                 - Status and severity information
                 - Camera and video evidence links
-                
+
                 This information is used for performance monitoring, accountability, and audit purposes.
                 This endpoint is restricted to administrators only.
             tags:
@@ -1149,15 +1148,15 @@ paths:
             description: |
                 Allows a logged-in user to change their own password. This endpoint is available to all
                 authenticated users regardless of role.
-                
+
                 Security features:
                 - Requires valid authentication
                 - Cannot reuse the current password
                 - Password is hashed before storage
-                
+
                 This endpoint is a self-service feature that allows users to proactively manage their
                 account security without administrator intervention.
-                
+
                 After a successful password change, existing sessions remain valid, but new logins
                 will require the new password.
             tags:
@@ -1224,18 +1223,18 @@ paths:
             description: |
                 Retrieves a list of all currently active surveillance camera streams in the system.
                 This endpoint provides information about live video feeds that can be monitored.
-                
+
                 The response includes:
                 - Stream identification
                 - Associated camera information
                 - Stream connection details (URL, key)
                 - Stream status and statistics
                 - Start time and duration
-                
+
                 This information is used by the surveillance interface to display available
                 camera feeds and their status. Streams that are not currently active are not included
                 in the response.
-                
+
                 Requires valid authentication with appropriate permissions.
             tags:
                 - Streams
@@ -1244,8 +1243,8 @@ paths:
             responses:
                 "200":
                     description: |
-                      Successfully retrieved the list of active streams. The response includes an array of stream
-                      objects with details like stream ID, camera ID, stream URL, and status.
+                        Successfully retrieved the list of active streams. The response includes an array of stream
+                        objects with details like stream ID, camera ID, stream URL, and status.
                     content:
                         application/json:
                             schema:
@@ -1285,7 +1284,7 @@ paths:
                                                     endTime: null,
                                                     streamType: "rtsp",
                                                     viewCount: 2,
-                                                }
+                                                },
                                             ]
                 "401":
                     $ref: "#/components/responses/Unauthorized"
@@ -1298,21 +1297,21 @@ paths:
             description: |
                 Initiates a new surveillance camera stream in the system. This endpoint is used when
                 a new camera feed needs to be added for monitoring.
-                
+
                 Required information includes:
                 - Camera ID (must reference an existing camera)
                 - Stream URL (the connection URL for the video feed)
                 - Stream type (RTSP, HLS, or WebRTC protocol)
-                
+
                 Optional information:
                 - Stream key (a unique identifier, generated automatically if not provided)
-                
+
                 When a stream is created:
                 - It is immediately marked as active
                 - The start time is recorded
                 - Initial view count is set to zero
                 - It becomes available for monitoring in the surveillance interface
-                
+
                 Requires valid authentication with appropriate permissions.
             tags:
                 - Streams
@@ -1401,7 +1400,7 @@ paths:
             description: |
                 Retrieves detailed information about a specific surveillance camera stream identified by its unique ID.
                 This endpoint provides complete stream configuration and status data.
-                
+
                 The response includes:
                 - Stream identification
                 - Associated camera information
@@ -1409,10 +1408,10 @@ paths:
                 - Stream status and statistics
                 - Start and end times (if applicable)
                 - View count and access statistics
-                
+
                 This information is used for stream management, troubleshooting, and auditing purposes.
                 The stream ID is typically obtained from the list of active streams.
-                
+
                 Requires valid authentication with appropriate permissions.
             tags:
                 - Streams
@@ -1471,22 +1470,22 @@ paths:
             description: |
                 Modifies the configuration or status of an existing surveillance camera stream.
                 This endpoint allows partial updates, meaning you can send only the fields that need to be changed.
-                
+
                 Modifiable fields include:
                 - Stream key (the unique identifier)
                 - Stream URL (the connection URL for the video feed)
                 - Active status (can be toggled on/off)
                 - Stream type (protocol used)
-                
+
                 Common update scenarios include:
                 - Changing the stream URL when camera network configuration changes
                 - Updating the stream key for security purposes
                 - Temporarily disabling a stream during maintenance
                 - Changing the streaming protocol
-                
+
                 This endpoint does not modify view count or timestamp information, which are
                 managed automatically by the system.
-                
+
                 Requires valid authentication with appropriate permissions.
             tags:
                 - Streams
@@ -1592,18 +1591,18 @@ paths:
             description: |
                 Terminates an active surveillance camera stream. This endpoint changes the stream status
                 to inactive and records the end time.
-                
+
                 When a stream is ended:
                 - Its status is changed to inactive (isActive = false)
                 - The current timestamp is recorded as the end time
                 - It is no longer available for live monitoring
                 - Historical information remains accessible
-                
+
                 This endpoint is used when:
                 - A camera is being taken offline for maintenance
                 - A temporary surveillance operation has concluded
                 - Stream quality issues require reconnection
-                
+
                 Terminated streams can be reactivated by updating them with the stream update endpoint.
                 Requires valid authentication with appropriate permissions.
             tags:
@@ -2121,9 +2120,9 @@ components:
     responses:
         Unauthorized:
             description: |
-              Authentication failure. The request lacks valid authentication credentials or the provided
-              credentials are invalid. The client should either provide valid credentials or obtain
-              new ones through the login endpoint.
+                Authentication failure. The request lacks valid authentication credentials or the provided
+                credentials are invalid. The client should either provide valid credentials or obtain
+                new ones through the login endpoint.
             content:
                 application/json:
                     schema:
@@ -2140,10 +2139,10 @@ components:
 
         Forbidden:
             description: |
-              Authorization failure. The authenticated user does not have sufficient permissions
-              to access this resource or perform this operation. This typically happens when a user
-              with a lower-privilege role attempts to access admin-only endpoints or when a user
-              attempts to modify resources they don't own.
+                Authorization failure. The authenticated user does not have sufficient permissions
+                to access this resource or perform this operation. This typically happens when a user
+                with a lower-privilege role attempts to access admin-only endpoints or when a user
+                attempts to modify resources they don't own.
             content:
                 application/json:
                     schema:
@@ -2164,9 +2163,9 @@ components:
 
         InternalServerError:
             description: |
-              The server encountered an unexpected condition that prevented it from fulfilling the request.
-              This is a generic server error and does not indicate a problem with the client request.
-              Administrators should check server logs for more details about what went wrong.
+                The server encountered an unexpected condition that prevented it from fulfilling the request.
+                This is a generic server error and does not indicate a problem with the client request.
+                Administrators should check server logs for more details about what went wrong.
             content:
                 application/json:
                     schema:

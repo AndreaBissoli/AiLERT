@@ -3,16 +3,14 @@ const Stream = require("../models/stream");
 const Camera = require("../models/camera");
 const { exec } = require("child_process");
 
-
-
 const CameraIds = [
-    '68443c5e2d56f26e2678b182',
-    '68443c5e2d56f26e2678b17e',
-    '68443c5e2d56f26e2678b17a',
-    '68443c5e2d56f26e2678b180',
-    '68443c5e2d56f26e2678b188',
-    '68443c5e2d56f26e2678b18a',
-    '684808368431b5c72ab813d5', // PIAZZA DUOMO
+    "68443c5e2d56f26e2678b182",
+    "68443c5e2d56f26e2678b17e",
+    "68443c5e2d56f26e2678b17a",
+    "68443c5e2d56f26e2678b180",
+    "68443c5e2d56f26e2678b188",
+    "68443c5e2d56f26e2678b18a",
+    "684808368431b5c72ab813d5", // PIAZZA DUOMO
 ];
 
 class DetectionService {
@@ -33,9 +31,7 @@ class DetectionService {
         this.detectionInterval = setInterval(() => {
             this.runDetection();
         }, 30000);
-        
-        
-        /*
+
         exec("node ./scripts/clean-events-only.js", (error, stdout, stderr) => {
             if (error) {
                 console.error(`Error executing clean-events-only script: ${error.message}`);
@@ -46,8 +42,7 @@ class DetectionService {
                 return;
             }
             console.log(`Script stdout: ${stdout}`);
-        }
-        );
+        });
         exec("node ./scripts/create-realistic-events.js", (error, stdout, stderr) => {
             if (error) {
                 console.error(`Error executing create-realistic-events script: ${error.message}`);
@@ -58,10 +53,8 @@ class DetectionService {
                 return;
             }
             console.log(`Script stdout: ${stdout}`);
-        }
-        );
-        */
-        // Create a separate interval for creating events every two hours, 
+        });
+        // Create a separate interval for creating events every two hours,
         // such that there is always something to show
         this.createEventsInterval = setInterval(() => {
             exec("node ./scripts/clean-events-only.js", (error, stdout, stderr) => {
@@ -74,11 +67,12 @@ class DetectionService {
                     return;
                 }
                 console.log(`Script stdout: ${stdout}`);
-            }
-            );
+            });
             exec("node ./scripts/create-realistic-events.js", (error, stdout, stderr) => {
                 if (error) {
-                    console.error(`Error executing create-realistic-events script: ${error.message}`);
+                    console.error(
+                        `Error executing create-realistic-events script: ${error.message}`
+                    );
                     return;
                 }
                 if (stderr) {
@@ -86,10 +80,8 @@ class DetectionService {
                     return;
                 }
                 console.log(`Script stdout: ${stdout}`);
-            }
-            );
-        }
-        , 7200000); // 2 hours in milliseconds
+            });
+        }, 600000); // 10 minutes
     }
 
     stop() {

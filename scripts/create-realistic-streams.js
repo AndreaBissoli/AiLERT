@@ -1,8 +1,8 @@
 // scripts/create-realistic-streams.js
-const mongoose = require('mongoose');
-const Camera = require('../app/models/camera');
-const Stream = require('../app/models/stream');
-require('dotenv').config();
+const mongoose = require("mongoose");
+const Camera = require("../app/models/camera");
+const Stream = require("../app/models/stream");
+require("dotenv").config();
 
 async function createRealisticStreams() {
     try {
@@ -25,13 +25,14 @@ async function createRealisticStreams() {
                     continue;
                 }
 
-                const streamKey = `stream_${camera.name.toLowerCase()
-                    .replace(/cam-\d+\s/, '')
-                    .replace(/\s+/g, '_')
-                    .replace(/[^a-z0-9_]/g, '')
-                }`;
+                const streamKey = `stream_${camera.name
+                    .toLowerCase()
+                    .replace(/cam-\d+\s/, "")
+                    .replace(/\s+/g, "_")
+                    .replace(/[^a-z0-9_]/g, "")}`;
 
-                const streamUrl = camera.streamUrl || `rtsp://${camera.ipAddress}:8554/live/${streamKey}`;
+                const streamUrl =
+                    camera.streamUrl || `rtsp://${camera.ipAddress}:8554/live/${streamKey}`;
 
                 const startTime = new Date(camera.installationDate);
                 startTime.setHours(startTime.getHours() + Math.floor(Math.random() * 24));
@@ -40,25 +41,26 @@ async function createRealisticStreams() {
                     cameraId: camera._id,
                     streamKey: streamKey,
                     streamUrl: streamUrl,
-                    streamType: 'rtsp',
+                    streamType: "rtsp",
                     isActive: true,
                     startTime: startTime,
                     viewCount: Math.floor(Math.random() * 1000),
-                    lastAccessed: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000)
+                    lastAccessed: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
                 };
 
                 await Stream.create(streamData);
                 successCount++;
-
             } catch (error) {
                 // Silenzio sugli errori per singole camere
             }
         }
 
         const totalStreams = await Stream.countDocuments();
-        console.log(`Stream creati con successo: ${successCount}. Totale stream nel database: ${totalStreams}`);
+        console.log(
+            `Stream creati con successo: ${successCount}. Totale stream nel database: ${totalStreams}`
+        );
     } catch (error) {
-        console.error('Errore durante la creazione:', error);
+        console.error("Errore durante la creazione:", error);
     } finally {
         await mongoose.connection.close();
     }
@@ -81,22 +83,22 @@ async function checkCameraStreamRelations() {
                     from: "streams",
                     localField: "_id",
                     foreignField: "cameraId",
-                    as: "streams"
-                }
+                    as: "streams",
+                },
             },
             {
                 $project: {
                     name: 1,
-                    'location.address': 1,
+                    "location.address": 1,
                     streamCount: { $size: "$streams" },
                     streamKey: { $arrayElemAt: ["$streams.streamKey", 0] },
-                    isActive: { $arrayElemAt: ["$streams.isActive", 0] }
-                }
-            }
+                    isActive: { $arrayElemAt: ["$streams.isActive", 0] },
+                },
+            },
         ]);
         // Nessun log, funzione silenziosa come richiesto
     } catch (error) {
-        console.error('Errore:', error);
+        console.error("Errore:", error);
     } finally {
         await mongoose.connection.close();
     }
@@ -105,10 +107,10 @@ async function checkCameraStreamRelations() {
 if (require.main === module) {
     const command = process.argv[2];
     switch (command) {
-        case 'check':
+        case "check":
             checkCameraStreamRelations();
             break;
-        case 'create':
+        case "create":
         default:
             createRealisticStreams();
             break;

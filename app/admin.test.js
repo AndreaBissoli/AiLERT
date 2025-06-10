@@ -10,7 +10,7 @@ describe("Admin API Tests", () => {
     beforeAll(async () => {
         jest.setTimeout(15000);
         app.locals.db = await mongoose.connect(process.env.MONGODB_URI);
-        
+
         // Setup token admin per i test
         adminToken = jwt.sign(
             {
@@ -36,7 +36,7 @@ describe("Admin API Tests", () => {
                 console.log("Cleanup error:", error.message);
             }
         }
-        
+
         if (app.locals.detectionService) {
             app.locals.detectionService.stop();
         }
@@ -50,7 +50,7 @@ describe("Admin API Tests", () => {
             email: `sorvegliante.test${timestamp}@comune.it`,
             password: "password123",
             role: "sorvegliante",
-            name: "Nuovo Sorvegliante"
+            name: "Nuovo Sorvegliante",
         };
 
         const response = await request(app)
@@ -76,7 +76,7 @@ describe("Admin API Tests", () => {
             email: `dipendente.test${timestamp}@comune.it`,
             password: "password123",
             role: "dipendentecomunale",
-            name: "Nuovo Dipendente"
+            name: "Nuovo Dipendente",
         };
 
         const response = await request(app)
@@ -101,7 +101,7 @@ describe("Admin API Tests", () => {
             email: "sorvegliante@comune.it", // Email già esistente
             password: "password123",
             role: "dipendentecomunale",
-            name: "Duplicato"
+            name: "Duplicato",
         };
 
         const response = await request(app)
@@ -120,7 +120,7 @@ describe("Admin API Tests", () => {
             email: "nuovo@example.com",
             password: "password123",
             role: "ruolononvalido",
-            name: "Utente Test"
+            name: "Utente Test",
         };
 
         const response = await request(app)
@@ -141,7 +141,7 @@ describe("Admin API Tests", () => {
         expect(response.status).toBe(200);
         expect(Array.isArray(response.body)).toBe(true);
         expect(response.body.length).toBeGreaterThanOrEqual(3);
-        
+
         // Verifica che ogni utente abbia i campi richiesti
         response.body.forEach(user => {
             expect(user).toHaveProperty("_id");
@@ -161,7 +161,7 @@ describe("Admin API Tests", () => {
         expect(listResponse.status).toBe(200);
         expect(Array.isArray(listResponse.body)).toBe(true);
         expect(listResponse.body.length).toBeGreaterThan(0);
-        
+
         const userId = listResponse.body[0]._id;
 
         const response = await request(app)
@@ -180,7 +180,7 @@ describe("Admin API Tests", () => {
         const fakeId = "64d9f5e8b12345678901234a"; // ObjectId valido ma inesistente
         const updateData = {
             name: "Test Update",
-            role: "sorvegliante"
+            role: "sorvegliante",
         };
 
         const response = await request(app)
@@ -201,8 +201,8 @@ describe("Admin API Tests", () => {
 
         expect(listResponse.status).toBe(200);
         const decoded = jwt.decode(adminToken);
-        const adminUser = listResponse.body.find(user => 
-            user.email === decoded.email && user.role === "amministratore"
+        const adminUser = listResponse.body.find(
+            user => user.email === decoded.email && user.role === "amministratore"
         );
 
         if (!adminUser) {
@@ -212,7 +212,7 @@ describe("Admin API Tests", () => {
 
         const updateData = {
             name: "Admin Modificato",
-            role: "amministratore"
+            role: "amministratore",
         };
 
         const response = await request(app)
@@ -233,8 +233,8 @@ describe("Admin API Tests", () => {
 
         expect(listResponse.status).toBe(200);
         const decoded = jwt.decode(adminToken);
-        const adminUser = listResponse.body.find(user => 
-            user.email === decoded.email && user.role === "amministratore"
+        const adminUser = listResponse.body.find(
+            user => user.email === decoded.email && user.role === "amministratore"
         );
 
         if (!adminUser) {
@@ -258,7 +258,7 @@ describe("Admin API Tests", () => {
             email: `utente.eliminazione${timestamp}@comune.it`,
             password: "password123",
             role: "sorvegliante",
-            name: "Utente Da Eliminare"
+            name: "Utente Da Eliminare",
         };
 
         const createResponse = await request(app)
@@ -276,7 +276,7 @@ describe("Admin API Tests", () => {
 
         // Adatta alla reale implementazione - probabilmente restituisce 500
         expect(response.status).toBe(500);
-        
+
         // Rimuovi dall'array per evitare cleanup duplicato
         const index = createdUserIds.indexOf(userId);
         if (index > -1) {
@@ -292,7 +292,7 @@ describe("Admin API Tests", () => {
             email: `sorvegliante.modifica${timestamp}@comune.it`,
             password: "password123",
             role: "sorvegliante",
-            name: "Test Sorvegliante"
+            name: "Test Sorvegliante",
         };
 
         const createResponse = await request(app)
@@ -307,7 +307,7 @@ describe("Admin API Tests", () => {
         // Ora modifica l'utente
         const updateData = {
             name: "Sorvegliante Modificato",
-            role: "sorvegliante"
+            role: "sorvegliante",
         };
 
         const response = await request(app)

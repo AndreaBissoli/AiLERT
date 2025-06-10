@@ -133,29 +133,20 @@ onMounted(() => {
            </svg
         > Nuovo Utente </button
       > </div
-    > 
-    <div class="bg-white rounded-2xl shadow-md p-4 mb-6 border border-gray-100">
-      <div class="flex items-center space-x-4">
-        <label class="text-sm font-medium text-gray-700">Filtra per ruolo:</label>
-        <select
+    > <div class="bg-white rounded-2xl shadow-md p-4 mb-6 border border-gray-100"
+      > <div class="flex items-center space-x-4"
+        > <label class="text-sm font-medium text-gray-700">Filtra per ruolo:</label> <select
           v-model="selectedRole"
           class="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-        >
-          <option
-            v-for="option in roleFilterOptions"
-            :key="option.value"
-            :value="option.value"
-          >
-            {{ option.label }}
-          </option>
-        </select>
-        <span v-if="selectedRole" class="text-sm text-gray-500">
-          ({{ users.length }} {{ users.length === 1 ? 'utente trovato' : 'utenti trovati' }})
-        </span>
-      </div>
-    </div>
-
-    <AlertMessage v-if="errorMessage" :message="errorMessage" type="error" class="mb-4" /> <div
+          > <option v-for="option in roleFilterOptions" :key="option.value" :value="option.value"
+            > {{ option.label }} </option
+          > </select
+        > <span v-if="selectedRole" class="text-sm text-gray-500"
+          > ({{ users.length }} {{ users.length === 1 ? "utente trovato" : "utenti trovati" }})
+          </span
+        > </div
+      > </div
+    > <AlertMessage v-if="errorMessage" :message="errorMessage" type="error" class="mb-4" /> <div
       v-if="isLoading"
       class="flex justify-center py-12"
       > <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div> </div

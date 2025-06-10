@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 const mongoose = require("mongoose");
 const User = require("../app/models/user");
 
@@ -18,19 +18,18 @@ async function cleanupTestUsers() {
                 { email: { $regex: /^utente\.eliminazione\d+@comune\.it$/ } },
                 { email: { $regex: /^sorvegliante\.modifica\d+@comune\.it$/ } },
                 { email: { $regex: /^testuser\d+@comune\.it$/ } },
-                { email: 'sorvegliante.test@comune.it' },
-                { email: 'utente.da.eliminare@comune.it' }
-            ]
+                { email: "sorvegliante.test@comune.it" },
+                { email: "utente.da.eliminare@comune.it" },
+            ],
         });
 
         console.log(`Eliminati ${result.deletedCount} utenti di test`);
-        
-        const remainingUsers = await User.find({}, 'email name role');
+
+        const remainingUsers = await User.find({}, "email name role");
         console.log(`\nUtenti rimanenti (${remainingUsers.length}):`);
         remainingUsers.forEach(user => {
             console.log(`- ${user.email} (${user.role})`);
         });
-
     } catch (error) {
         console.error("Errore:", error);
     } finally {

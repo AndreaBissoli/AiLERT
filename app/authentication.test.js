@@ -68,15 +68,17 @@ describe("POST /api/v1/auth/login", () => {
                 email: `testdipendente${timestamp}@comune.it`,
                 password: "password123",
                 role: "dipendentecomunale",
-                name: "Test Dipendente"
+                name: "Test Dipendente",
             });
 
         expect(createResponse.status).toBe(201);
 
-        const response = await request(app).post("/api/v1/auth/login").send({
-            email: `testdipendente${timestamp}@comune.it`,
-            password: "password123",
-        });
+        const response = await request(app)
+            .post("/api/v1/auth/login")
+            .send({
+                email: `testdipendente${timestamp}@comune.it`,
+                password: "password123",
+            });
 
         expect(response.status).toBe(200);
         expect(response.body).toHaveProperty("success", true);
@@ -115,7 +117,7 @@ describe("POST /api/v1/auth/login", () => {
             email: `testchangepass${timestamp}@comune.it`,
             password: "password123",
             role: "sorvegliante",
-            name: "Test Cambio Password"
+            name: "Test Cambio Password",
         };
 
         const createResponse = await request(app)
@@ -129,12 +131,12 @@ describe("POST /api/v1/auth/login", () => {
             email: userData.email,
             password: userData.password,
         });
-        
+
         expect(loginResponse.status).toBe(200);
         const token = loginResponse.body.token;
-        
+
         const response = await request(app)
-            .patch("/api/v1/users/me")  
+            .patch("/api/v1/users/me")
             .set("Authorization", `Bearer ${token}`)
             .send({
                 newpassword: "nuovapassword123",
@@ -165,21 +167,19 @@ describe("POST /api/v1/auth/login", () => {
 
     // TEST ID 8: Cambio password senza token
     test("Cambio password senza token", async () => {
-        const response = await request(app)
-            .patch("/api/v1/users/me")
-            .send({
-                newpassword: "qualsiasi",
-            });
+        const response = await request(app).patch("/api/v1/users/me").send({
+            newpassword: "qualsiasi",
+        });
 
         expect(response.status).toBe(401);
         expect(response.body).toHaveProperty("error", "Authentication token required");
         expect(response.body).toHaveProperty("errorCode", "TOKEN_REQUIRED");
     });
-    
+
     // TEST ID 31: Invio di un JSON malformato
     test("Invio di un JSON malformato", async () => {
         const malformedJson = '{"email": "utente@example.com", "password": "pass"'; // Parentesi mancante
-        
+
         const response = await request(app)
             .post("/api/v1/auth/login")
             .set("Content-Type", "application/json")

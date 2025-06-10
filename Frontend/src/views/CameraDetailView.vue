@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import LiteYouTubeEmbed from 'vue-lite-youtube-embed'
-import EventActionControls from '../components/stream/EventActionControls.vue'
-import 'vue-lite-youtube-embed/style.css'
+import LiteYouTubeEmbed from "vue-lite-youtube-embed";
+import EventActionControls from "../components/stream/EventActionControls.vue";
+import "vue-lite-youtube-embed/style.css";
 
 const route = useRoute();
 const router = useRouter();
@@ -108,7 +108,7 @@ const refreshData = async () => {
   await fetchEvents();
 };
 
-const handleEventUpdated = (updatedEvent) => {
+const handleEventUpdated = updatedEvent => {
   const index = events.value.findIndex(e => e._id === updatedEvent._id);
   if (index !== -1) {
     events.value[index] = updatedEvent;
@@ -225,15 +225,14 @@ onMounted(async () => {
                   class="absolute top-6 right-6 bg-red-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center animate-pulse z-10"
                   > <span class="mr-2">⚠️</span> Incidente attivo su questa telecamera </div
                 > <LiteYouTubeEmbed
-                    id="UGBfH55InbQ"
-                    title="Trento live cam - centro città (Piazza Duomo)"
-                    class="w-full h-full rounded-t-2xl"
-                    autoplay="true"
-                  />
-                  </div
-                > </div
+                  id="UGBfH55InbQ"
+                  title="Trento live cam - centro città (Piazza Duomo)"
+                  class="w-full h-full rounded-t-2xl"
+                  autoplay="true"
+                /> </div
               > </div
-            > <div class="bg-white rounded-2xl shadow-md p-6"
+            > </div
+          > <div class="bg-white rounded-2xl shadow-md p-6"
             > <h2 class="text-xl font-bold text-gray-900 mb-6 pb-3 border-b border-gray-100"
               > Dettagli Stream </h2
             > <div class="space-y-4"
@@ -505,28 +504,22 @@ onMounted(async () => {
                 'border-green-200 bg-green-50': event.status === 'solved',
                 'border-gray-200': event.status === 'false_alarm',
               }"
-              > 
-              <div class="flex items-start justify-between mb-2">
-                <h3 class="font-bold text-gray-900">{{ event.title }}</h3>
-                <div
+              > <div class="flex items-start justify-between mb-2"
+                > <h3 class="font-bold text-gray-900">{{ event.title }}</h3
+                > <div
                   class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold"
                   :class="{
                     'bg-red-100 text-red-800 border border-red-200': event.type === 'incidente',
                     'bg-orange-100 text-orange-800 border border-orange-200':
                       event.type === 'ingorgo',
                   }"
-                > 
-                  {{ translateEventType(event.type) }} 
-                </div>
-              </div>
-              
-              <p v-if="event.description" class="text-gray-600 mb-3 text-sm">{{
+                  > {{ translateEventType(event.type) }} </div
+                > </div
+              > <p v-if="event.description" class="text-gray-600 mb-3 text-sm">{{
                 event.description
-              }}</p>
-              
-              <div class="flex items-center justify-between text-sm mb-3">
-                <div class="text-gray-500"> {{ formatDate(event.eventDate) }} </div> 
-                <div
+              }}</p
+              > <div class="flex items-center justify-between text-sm mb-3"
+                > <div class="text-gray-500"> {{ formatDate(event.eventDate) }} </div> <div
                   class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold"
                   :class="{
                     'bg-green-100 text-green-800 border border-green-200':
@@ -537,32 +530,23 @@ onMounted(async () => {
                     'bg-gray-100 text-gray-800 border border-gray-200':
                       event.status === 'false_alarm',
                   }"
-                > 
-                  {{ translateStatus(event.status) }} 
-                </div>
-              </div>
-
-              <div v-if="event.notifiedServices && event.notifiedServices.length > 0" class="mb-3">
-                <div class="text-sm font-medium text-gray-600 mb-1">Servizi allertati:</div>
-                <div class="flex flex-wrap gap-1">
-                  <span
+                  > {{ translateStatus(event.status) }} </div
+                > </div
+              > <div v-if="event.notifiedServices && event.notifiedServices.length > 0" class="mb-3"
+                > <div class="text-sm font-medium text-gray-600 mb-1">Servizi allertati:</div> <div
+                  class="flex flex-wrap gap-1"
+                  > <span
                     v-for="service in event.notifiedServices"
                     :key="service.service"
                     class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                  >
-                    {{ service.service }}
-                  </span>
-                </div>
-              </div>
-
-              <EventActionControls 
-                :event="event" 
-                :onEventUpdated="handleEventUpdated"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+                    > {{ service.service }} </span
+                  > </div
+                > </div
+              > <EventActionControls :event="event" :onEventUpdated="handleEventUpdated" /> </div
+            > </div
+          > </div
+        > </div
+      > </div
+    > </div
+  >
 </template>
