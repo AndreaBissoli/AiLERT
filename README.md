@@ -269,7 +269,7 @@ AiLERT/
 ## Demo e Links
 
 - **Applicazione Live**: [https://ailert.onrender.com](https://ailert.onrender.com)
-- **Documentazione API**: [https://ailert.docs.apiary.io](https://ailert.docs.apiary.io)
+- **Documentazione API**: [https://app.swaggerhub.com/apis-docs/unitn-c34/ai-lert_api/1.0](https://app.swaggerhub.com/apis-docs/unitn-c34/ai-lert_api/1.0)
 
 ### Credenziali Demo
 - Sono indicate nel Deliverable 4
