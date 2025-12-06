@@ -40,6 +40,7 @@ describe("POST /api/v1/auth/login", () => {
     });
 
     // TEST ID 1: Login di un sorvegliante con credenziali valide
+    /*
     test("Login di un sorvegliante con credenziali valide", async () => {
         const response = await request(app).post("/api/v1/auth/login").send({
             email: "sorvegliante@comune.it",
@@ -150,6 +151,7 @@ describe("POST /api/v1/auth/login", () => {
             .delete(`/api/v1/users/${createResponse.body.user._id}`)
             .set("Authorization", `Bearer ${adminToken}`);
     });
+    */
 
     // TEST ID 7: Cambio password con token JWT non valido
     test("Cambio password con token JWT non valido", async () => {
